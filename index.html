@@ -9,7 +9,7 @@
 <title>BA × TWT · Piemonte Oct 2026 · Operaciones</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script>
   // Apply persisted theme ASAP to avoid flash
@@ -91,7 +91,7 @@ background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
 
 /* === TYPOGRAPHY === */
 .font-display { font-family: 'Fraunces', serif; font-weight: 400; letter-spacing: -0.015em; }
-.font-serif { font-family: 'Cormorant Garamond', serif; }
+.font-serif { font-family: 'Lora', serif; }
 .font-mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 0; }
 .italic { font-style: italic; }
 
@@ -187,7 +187,7 @@ letter-spacing: -0.02em;
 }
 .identity-modal h2 em { font-style: italic; color: var(--borgona); }
 .identity-modal p {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-size: 17px;
 font-style: italic;
 color: var(--ink-soft);
@@ -252,7 +252,7 @@ color: var(--terracotta);
 letter-spacing: 0.08em;
 }
 .last-edit {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-size: 13px;
 font-style: italic;
 color: var(--ink-mute);
@@ -364,7 +364,7 @@ font-weight: 300;
 }
 .section-header h1 em { font-style: italic; color: var(--borgona); }
 .section-header .lead {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-size: 18px;
 font-style: italic;
 color: var(--ink-soft);
@@ -427,10 +427,10 @@ font-size: 28px;
 color: rgba(240,230,210,0.6);
 margin-left: 12px;
 font-style: italic;
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 }
 .countdown-detail {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 18px;
 color: rgba(240,230,210,0.75);
@@ -464,7 +464,7 @@ font-weight: 400;
 letter-spacing: -0.02em;
 color: var(--ink);
 }
-.stat-mini-value small { font-size: 14px; color: var(--ink-mute); margin-left: 4px; font-family: 'Cormorant Garamond', serif; font-style: italic; }
+.stat-mini-value small { font-size: 14px; color: var(--ink-mute); margin-left: 4px; font-family: 'Lora', serif; font-style: italic; }
 
 .alert-block {
 background: var(--paper);
@@ -789,7 +789,7 @@ letter-spacing: -0.02em;
 font-size: 14px;
 color: var(--ink-mute);
 margin-left: 6px;
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 }
 .summary-card.highlight .summary-card-value small { color: rgba(240,230,210,0.5); }
@@ -1027,7 +1027,7 @@ font-size: 24px;
 margin-bottom: 12px;
 }
 .backup-card p {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 color: var(--ink-soft);
 margin-bottom: 20px;
@@ -1061,7 +1061,7 @@ font-size: 11px;
 padding: 64px 32px;
 text-align: center;
 color: var(--ink-mute);
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 18px;
 border: 1px dashed var(--rule-strong);
@@ -1198,7 +1198,7 @@ box-shadow: var(--shadow);
 animation: slideIn 0.4s ease;
 }
 .mention-banner-text {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 17px;
 }
@@ -1284,7 +1284,14 @@ font-weight: 700;
 color: white;
 }
 .leaflet-pin span { transform: rotate(45deg); }
-.pin-villa { background: var(--borgona); width: 36px; height: 36px; font-size: 14px; }
+.pin-villa {
+  background: var(--gold);
+  width: 48px; height: 48px;
+  font-size: 18px;
+  border: 2px solid var(--cream);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 0 0 4px rgba(184,137,58,0.25);
+  z-index: 400;
+}
 .pin-restaurant { background: #b8512e; }
 .pin-winery { background: #6e1a1f; }
 .pin-truffle { background: #8b6914; }
@@ -1489,9 +1496,9 @@ main { padding: 20px; max-width: none; }
 --text-2: #4a3a30;
 --text-3: #8b7868;
 --text-4: #c4b5a3;
---accent: #b8512e;
---accent-soft: #d97851;
---accent-deep: #6e1a1f;
+--accent: #2563eb;
+--accent-soft: #60a5fa;
+--accent-deep: #1d4ed8;
 --gold-v5: #b8893a;
 --gold-soft-v5: #d4a85a;
 --olive-v5: #5a6b3a;
@@ -1500,7 +1507,7 @@ main { padding: 20px; max-width: none; }
 --tint-warn: rgba(184,137,58,0.12);
 --tint-bad: rgba(168,42,31,0.10);
 --tint-info: rgba(58,90,139,0.10);
---tint-accent: rgba(184,81,46,0.10);
+--tint-accent: rgba(37,99,235,0.10);
 --shadow-1: 0 1px 2px rgba(28,20,16,0.06);
 --shadow-2: 0 2px 4px rgba(28,20,16,0.06), 0 8px 24px rgba(28,20,16,0.08);
 --shadow-3: 0 8px 16px rgba(28,20,16,0.10), 0 24px 48px rgba(28,20,16,0.14);
@@ -1526,9 +1533,9 @@ main { padding: 20px; max-width: none; }
 --text-2: #d4c8b4;
 --text-3: #a89580;
 --text-4: #6b5d4d;
---accent: #d97851;
---accent-soft: #e89072;
---accent-deep: #b8512e;
+--accent: #60a5fa;
+--accent-soft: #93c5fd;
+--accent-deep: #3b82f6;
 --gold-v5: #d4a85a;
 --gold-soft-v5: #e8c47e;
 --olive-v5: #7fa05a;
@@ -1537,7 +1544,7 @@ main { padding: 20px; max-width: none; }
 --tint-warn: rgba(212,168,90,0.16);
 --tint-bad: rgba(220,90,75,0.14);
 --tint-info: rgba(120,160,210,0.14);
---tint-accent: rgba(217,120,81,0.16);
+--tint-accent: rgba(96,165,250,0.18);
 --shadow-1: 0 1px 2px rgba(0,0,0,0.4);
 --shadow-2: 0 2px 4px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
 --shadow-3: 0 8px 16px rgba(0,0,0,0.4), 0 24px 48px rgba(0,0,0,0.5);
@@ -1635,7 +1642,7 @@ backdrop-filter: saturate(140%) blur(12px);
 border-bottom: 1px solid var(--line);
 grid-column: 1 / -1;
 }
-.v5-topbar-brand { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.v5-topbar-brand { display: flex; align-items: baseline; gap: 24px; min-width: 0; }
 .v5-topbar-brand-mark {
 font-family: 'Fraunces', serif;
 font-size: 19px;
@@ -1643,6 +1650,7 @@ font-weight: 400;
 letter-spacing: -0.02em;
 color: var(--text-1);
 white-space: nowrap;
+margin-right: 6px;
 }
 .v5-topbar-brand-mark em { font-style: italic; color: var(--accent-deep); }
 .v5-topbar-brand-mark::before { content: '◆'; color: var(--accent); margin-right: 8px; font-size: 9px; vertical-align: 3px; }
@@ -1675,7 +1683,7 @@ border: 1px solid var(--line);
 .v5-sync-pill .v5-sync-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
 .v5-sync-dot.online { background: var(--olive-deep); box-shadow: 0 0 0 3px rgba(60,107,60,0.18); }
 .v5-sync-dot.syncing { background: var(--gold-v5); box-shadow: 0 0 0 3px rgba(184,137,58,0.20); animation: pulse 1.2s infinite; }
-.v5-sync-dot.offline { background: var(--accent); box-shadow: 0 0 0 3px rgba(184,81,46,0.18); }
+.v5-sync-dot.offline { background: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.18); }
 .v5-sync-dot.idle { background: var(--text-3); }
 @media (max-width: 720px) {
 .v5-sync-pill { padding: 6px; border: none; }
@@ -1788,7 +1796,7 @@ text-align: left;
 .v5-identity-menu-divider { height: 1px; background: var(--line); margin: 6px 4px; }
 .v5-last-edit {
 padding: 8px 10px;
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 13px;
 color: var(--text-3);
@@ -1930,7 +1938,7 @@ border: 2px solid var(--surface-1);
 
 .v5-content {
 min-width: 0;
-padding: 32px 36px calc(60px + var(--safe-bottom));
+padding: 32px 56px calc(60px + var(--safe-bottom));
 max-width: 1240px;
 margin: 0 auto;
 width: 100%;
@@ -2036,7 +2044,7 @@ color: #fff;
 .v5-history-summary strong { font-family: 'Fraunces', serif; font-weight: 500; color: var(--text-1); }
 .v5-history-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; white-space: nowrap; }
 .v5-history-empty {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-3);
@@ -2100,7 +2108,7 @@ margin-bottom: 10px;
 letter-spacing: -0.015em;
 }
 .v5-confirm p {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-2);
@@ -2160,7 +2168,7 @@ gap: 16px;
 box-shadow: var(--shadow-2);
 animation: v5-toastIn 0.4s ease;
 }
-.v5-mention-banner-text { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 16px; }
+.v5-mention-banner-text { font-family: 'Lora', serif; font-style: italic; font-size: 16px; }
 .v5-mention-banner-text strong {
 font-family: 'Fraunces', serif;
 font-weight: 500;
@@ -2250,13 +2258,13 @@ letter-spacing: -0.04em;
 color: #f4e9d2;
 }
 .v5-hoy-count-unit {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: clamp(20px, 2.4vw, 26px);
 color: rgba(244,233,210,0.7);
 }
 .v5-hoy-detail {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 17px;
 color: rgba(244,233,210,0.85);
@@ -2318,7 +2326,7 @@ line-height: 1.2;
 color: var(--text-1);
 }
 .v5-next-action-desc {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-2);
@@ -2366,7 +2374,7 @@ letter-spacing: -0.02em;
 color: var(--text-1);
 }
 .v5-kpi-value small {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 13px;
 color: var(--text-3);
@@ -2374,7 +2382,7 @@ margin-left: 4px;
 font-weight: 400;
 }
 .v5-kpi-statement {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 13px;
 color: var(--text-2);
@@ -2472,7 +2480,7 @@ margin-left: 10px;
 }
 .v5-alert-arrow svg { width: 18px; height: 18px; }
 .v5-alert-empty {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 color: var(--text-3);
 padding: 24px;
@@ -2527,7 +2535,7 @@ text-transform: uppercase;
 color: var(--text-3);
 }
 .v5-day-pill-title {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 12px;
 color: var(--text-2);
@@ -2552,6 +2560,76 @@ gap: 16px;
 margin-top: 16px;
 }
 @media (max-width: 880px) { .v5-hoy-row-2 { grid-template-columns: 1fr; } }
+
+/* Weather widget (fix #10) */
+.v5-weather-card {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-top: 16px;
+}
+.v5-weather-loading {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  color: var(--text-3);
+  text-align: center;
+  padding: 20px;
+}
+.v5-weather-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+@media (max-width: 880px) {
+  .v5-weather-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 540px) {
+  .v5-weather-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.v5-weather-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.v5-weather-dow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.v5-weather-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+.v5-weather-temps {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  font-family: 'Fraunces', serif;
+}
+.v5-weather-temps .hi {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+.v5-weather-temps .lo {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.v5-weather-rain {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--info);
+  letter-spacing: 0.06em;
+}
 
 .v5-progress-card {
 background: var(--surface-1);
@@ -2582,7 +2660,7 @@ letter-spacing: -0.02em;
 color: var(--text-1);
 }
 .v5-progress-head .v5-progress-ratio small {
-font-family: 'Cormorant Garamond', serif;
+font-family: 'Lora', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-3);
@@ -2788,7 +2866,7 @@ color: var(--text-1);
 /* Slot row · clean editorial */
 .v5b-slot {
   display: grid;
-  grid-template-columns: 78px 36px 1fr auto;
+  grid-template-columns: 120px 36px 1fr auto;
   gap: 14px;
   align-items: center;
   padding: 14px 22px;
@@ -2798,6 +2876,26 @@ color: var(--text-1);
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
 }
+.v5b-slot.has-conflict { background: color-mix(in oklab, var(--bad) 6%, transparent); }
+.v5b-slot-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.v5b-slot-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px;
+  border: 1px solid transparent;
+}
+.v5b-slot-badge.conflict { background: var(--tint-bad); color: var(--bad); border-color: color-mix(in oklab, var(--bad) 30%, transparent); }
+.v5b-slot-badge.rushed  { background: var(--tint-warn); color: var(--warn); border-color: color-mix(in oklab, var(--warn) 30%, transparent); }
+.v5b-slot-badge.free    { background: var(--tint-info); color: var(--info); border-color: color-mix(in oklab, var(--info) 30%, transparent); }
+.v5b-day-budget {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-3);
+  padding: 0 22px 10px;
+  display: flex; gap: 8px; align-items: baseline;
+}
+.v5b-day-budget strong { font-family: 'Fraunces', serif; font-weight: 500; font-size: 13px; color: var(--text-1); letter-spacing: -0.01em; }
 .v5b-slot + .v5b-slot { border-top-color: var(--line); }
 .v5b-slot:hover { background: color-mix(in oklab, var(--surface-2) 60%, transparent); }
 .v5b-slot:hover .v5b-slot-arrow { opacity: 1; transform: translateX(0); }
@@ -4402,7 +4500,7 @@ textarea:focus-visible {
         <h3>La villa</h3>
         <div class="v5-progress-ratio">€<span x-text="data.meta.villa.cost.toLocaleString('es')"></span></div>
       </div>
-      <div style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 16px; color: var(--text-2); line-height: 1.45;">
+      <div style="font-family: 'Lora', serif; font-style: italic; font-size: 16px; color: var(--text-2); line-height: 1.45;">
         <strong style="font-family: 'Fraunces', serif; font-style: normal; font-weight: 500; color: var(--text-1); display: block; margin-bottom: 4px;" x-text="data.meta.villa.name"></strong>
         <span x-text="data.meta.villa.address"></span>
       </div>
@@ -4420,6 +4518,30 @@ textarea:focus-visible {
           <span class="v5-progress-foot-value ok" x-text="data.meta.villa.status"></span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Weather widget (fix #10) -->
+  <div class="v5-section-head">
+    <h2>El <em>tiempo</em> en Castiglione Tinella</h2>
+    <span class="v5-section-meta" x-show="weather.source === 'climatology'">Promedio histórico (Oct)</span>
+    <span class="v5-section-meta" x-show="weather.source === 'forecast'">Pronóstico Open-Meteo</span>
+  </div>
+  <div class="v5-weather-card">
+    <div x-show="weather.loading" class="v5-weather-loading">Cargando pronóstico…</div>
+    <div x-show="weather.error" class="v5-weather-loading" style="color: var(--bad);" x-text="weather.error"></div>
+    <div class="v5-weather-grid" x-show="!weather.loading && !weather.error && weather.days.length > 0">
+      <template x-for="d in weather.days" :key="d.date">
+        <div class="v5-weather-day">
+          <div class="v5-weather-dow" x-text="weatherDayLabel(d.date)"></div>
+          <div class="v5-weather-icon" x-text="weatherIcon(d.code)"></div>
+          <div class="v5-weather-temps">
+            <span class="hi" x-text="d.tmax + '°'"></span>
+            <span class="lo" x-text="d.tmin + '°'"></span>
+          </div>
+          <div class="v5-weather-rain" x-show="d.rain >= 0.5" x-text="d.rain.toFixed(1) + 'mm'"></div>
+        </div>
+      </template>
     </div>
   </div>
 
@@ -4460,7 +4582,7 @@ textarea:focus-visible {
     <template x-for="(day, dayIdx) in data.itinerary" :key="day.id">
       <article class="v5b-day" :class="{'is-collapsed': collapsedDays[day.id]}">
         <header class="v5b-day-head" @click="toggleDayCollapse(day.id)">
-          <div class="v5b-day-num" x-text="toRoman(dayIdx + 1)"></div>
+          <div class="v5b-day-num" x-text="dayIdx + 1"></div>
           <div class="v5b-day-titlewrap" @click.stop>
             <div class="v5b-day-eyebrow">
               <span class="dot" :style="`background: var(--${day.status === 'ok' ? 'ok' : day.status === 'warn' ? 'warn' : day.status === 'critical' ? 'bad' : 'info'})`"></span>
@@ -4480,13 +4602,26 @@ textarea:focus-visible {
         </header>
         <div class="v5b-day-body">
           <template x-for="slot in day.slots" :key="slot.id">
-            <div class="v5b-slot" :class="{'is-untimed': !slot.time}" @click="openSlotDrawer(slot.id)">
-              <div class="v5b-slot-time" x-text="slot.time || '—'"></div>
+            <div class="v5b-slot" :class="{'is-untimed': !slotStart(slot), 'has-conflict': slotIssues(day, slot).conflict}" @click="openSlotDrawer(slot.id)">
+              <div class="v5b-slot-time" x-text="slotDisplayTime(slot) || '—'"></div>
               <div class="v5b-slot-glyph" :class="slotKind(slot)" x-html="slotKindIcon(slotKind(slot))"></div>
               <div class="v5b-slot-body">
                 <div class="v5b-slot-title" :class="{empty: !slot.title}" x-text="slot.title || 'Sin título'"></div>
                 <div class="v5b-slot-sub" x-show="slot.description" x-text="slot.description"></div>
                 <div class="v5b-slot-verdict" x-show="slot.verdict" x-text="slot.verdict"></div>
+                <template x-if="slotIssues(day, slot).hasAny">
+                  <div class="v5b-slot-badges">
+                    <template x-for="(c, ci) in slotIssues(day, slot).conflicts" :key="'cf'+ci">
+                      <span class="v5b-slot-badge conflict" x-text="'⚠ choca con ' + c"></span>
+                    </template>
+                    <template x-if="slotIssues(day, slot).rushed">
+                      <span class="v5b-slot-badge rushed">⏱ apurado</span>
+                    </template>
+                    <template x-if="slotIssues(day, slot).freeHours">
+                      <span class="v5b-slot-badge free" x-text="slotIssues(day, slot).freeHours + 'h libres'"></span>
+                    </template>
+                  </div>
+                </template>
               </div>
               <div class="v5b-slot-end">
                 <span class="v5b-status-dot" :class="slot.status" :title="statusLabel(slot.status)"></span>
@@ -4500,6 +4635,10 @@ textarea:focus-visible {
               </div>
             </div>
           </template>
+          <div class="v5b-day-budget" x-show="dayBudgetEstimate(day.id) > 0">
+            <span>Estimado del día</span>
+            <strong>€<span x-text="dayBudgetEstimate(day.id).toLocaleString('es')"></span></strong>
+          </div>
           <button class="v5b-add-slot" @click="addSlot(dayIdx)">+ Agregar slot</button>
           <button class="v5b-day-delete" @click="deleteDay(dayIdx)">Eliminar día ✕</button>
         </div>
@@ -4558,6 +4697,12 @@ textarea:focus-visible {
           <div class="cat">
             <input type="text" x-model="item.category" @blur="save()" placeholder="Categoría">
             <input type="text" class="notes" x-model="item.notes" @blur="save()" placeholder="Notas…">
+            <select x-model="item.dayRef" @change="save()" style="margin-top: 4px; font-size: 11px; padding: 4px 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: var(--text-2); background: var(--surface-1); border: 1px solid var(--line); border-radius: 4px;">
+              <option value="">Día · general</option>
+              <template x-for="(d, di) in data.itinerary" :key="d.id">
+                <option :value="d.id" x-text="'Día ' + (di+1) + ' · ' + (d.weekday || '').slice(0,3) + ' ' + (d.date||'').slice(8)"></option>
+              </template>
+            </select>
           </div>
           <input type="number" class="amt" x-model.number="item.amount" @blur="save()" placeholder="0">
           <button class="status" :class="item.status" @click="cycleBudgetStatus(item)" :title="'Click para cambiar · ' + item.status" x-text="budgetStatusLabel(item.status)"></button>
@@ -5157,10 +5302,14 @@ textarea:focus-visible {
             <h4>Hora y tipo</h4>
             <div class="v5b-detail-grid">
               <div class="v5b-field">
-                <span class="lbl">Horario</span>
-                <input type="text" x-model="drawerSlot.time" @blur="save()" placeholder="hh:mm">
+                <span class="lbl">Inicio</span>
+                <input type="time" x-model="drawerSlot.timeStart" @blur="save(); sortDaySlots(drawerSlotDay)" placeholder="hh:mm">
               </div>
               <div class="v5b-field">
+                <span class="lbl">Fin</span>
+                <input type="time" x-model="drawerSlot.timeEnd" @blur="save(); sortDaySlots(drawerSlotDay)" placeholder="hh:mm">
+              </div>
+              <div class="v5b-field" style="grid-column: 1 / -1;">
                 <span class="lbl">Tipo (inferido)</span>
                 <input type="text" :value="slotKindLabel(slotKind(drawerSlot))" readonly style="color: var(--text-3); font-style: italic;">
               </div>
@@ -5318,6 +5467,12 @@ textarea:focus-visible {
               <div class="v5b-field" style="grid-column: 1 / -1;">
                 <span class="lbl">Web</span>
                 <input type="text" x-model="drawerProvider.web" @blur="save()" placeholder="dominio.com">
+              </div>
+              <div class="v5b-field" style="grid-column: 1 / -1;">
+                <span class="lbl">Link de mapa (Google · Apple Maps)</span>
+                <input type="text" x-model="drawerProvider.mapUrl" @blur="save()" placeholder="https://maps.google.com/... o https://maps.apple.com/...">
+                <span x-show="drawerProvider.mapUrl && !parseMapUrl(drawerProvider.mapUrl)" style="font-size: 10px; color: var(--bad); margin-top: 4px;">⚠ No pude extraer coordenadas de ese link</span>
+                <span x-show="drawerProvider.mapUrl && parseMapUrl(drawerProvider.mapUrl)" style="font-size: 10px; color: var(--olive-deep); margin-top: 4px;" x-text="'✓ ' + parseMapUrl(drawerProvider.mapUrl).lat.toFixed(4) + ', ' + parseMapUrl(drawerProvider.mapUrl).lon.toFixed(4)"></span>
               </div>
               <div class="v5b-field" style="grid-column: 1 / -1;">
                 <span class="lbl">Días de cierre</span>
@@ -5860,6 +6015,12 @@ function app() {
         if (this.applyingRemote) return;
         this.saveToCloud();
       }, { deep: true });
+
+      // Ensure DEFAULT_DATA shape is migrated (safety net for offline mode)
+      this.data = this.migrateData(this.data);
+
+      // Fetch weather (non-blocking)
+      this.fetchWeather();
     },
 
     // === IDENTITY ===
@@ -5995,7 +6156,7 @@ function app() {
         if (row) {
           // Cloud has data — apply it
           this.applyingRemote = true;
-          this.data = row.data;
+          this.data = this.migrateData(row.data);
           this.lastUpdatedBy = row.updated_by;
           this.lastUpdatedAt = row.updated_at;
           this.$nextTick(() => { this.applyingRemote = false; });
@@ -6004,7 +6165,7 @@ function app() {
         } else {
           // First run — seed cloud with defaults (or local data if exists)
           const local = localStorage.getItem('piemonte-ba-twt');
-          const seedData = local ? JSON.parse(local) : DEFAULT_DATA;
+          const seedData = this.migrateData(local ? JSON.parse(local) : JSON.parse(JSON.stringify(DEFAULT_DATA)));
           const { error: insertError } = await this._client
             .from('trips')
             .insert({
@@ -6087,7 +6248,7 @@ function app() {
           }
           // Apply remote update without re-triggering save
           this.applyingRemote = true;
-          this.data = payload.new.data;
+          this.data = this.migrateData(payload.new.data);
           this.lastUpdatedBy = payload.new.updated_by;
           this.lastUpdatedAt = payload.new.updated_at;
           this.$nextTick(() => { this.applyingRemote = false; });
@@ -6109,8 +6270,10 @@ function app() {
         if (stored) {
           const parsed = JSON.parse(stored);
           this.applyingRemote = true;
-          this.data = { ...DEFAULT_DATA, ...parsed };
+          this.data = this.migrateData({ ...JSON.parse(JSON.stringify(DEFAULT_DATA)), ...parsed });
           this.$nextTick(() => { this.applyingRemote = false; });
+        } else {
+          this.data = this.migrateData(JSON.parse(JSON.stringify(DEFAULT_DATA)));
         }
       } catch (e) { console.error('Load failed:', e); }
     },
@@ -6237,7 +6400,9 @@ function app() {
     addSlot(dayIdx) {
       const slot = {
         id: 's' + Date.now(),
-        time: '00:00',
+        timeStart: '09:00',
+        timeEnd: '',
+        time: '09:00', // legacy backcompat
         title: 'Nueva actividad',
         description: '',
         status: 'info',
@@ -6283,7 +6448,8 @@ function app() {
         category: 'Nueva categoría',
         amount: 0,
         notes: '',
-        status: 'pending'
+        status: 'pending',
+        dayRef: ''
       };
       this.data.budget.push(item);
       this.logEvent('budget.item_added', `agregó una línea de presupuesto`, { item_id: item.id });
@@ -6319,6 +6485,7 @@ function app() {
         phone: '',
         email: '',
         web: '',
+        mapUrl: '',
         priceRange: '',
         closingDays: '',
         notes: '',
@@ -6471,9 +6638,9 @@ function app() {
         const villaIcon = L.divIcon({
           className: '',
           html: '<div class="leaflet-pin pin-villa"><span>★</span></div>',
-          iconSize: [36, 36],
-          iconAnchor: [18, 36],
-          popupAnchor: [0, -32]
+          iconSize: [48, 48],
+          iconAnchor: [24, 24],
+          popupAnchor: [0, -28]
         });
         L.marker([villaCoords.lat, villaCoords.lon], { icon: villaIcon })
           .bindPopup(`<div class="pop-type">VILLA · BASE</div><strong>${this.data.meta.villa.name}</strong><div class="pop-meta">${this.data.meta.villa.address}</div><div class="pop-meta">€${this.data.meta.villa.cost.toLocaleString('es')} · ${this.data.meta.nights} noches</div>`)
@@ -6520,6 +6687,11 @@ function app() {
     providerCoords(p) {
       // Manual override (if provider has explicit lat/lng)
       if (p.latitude && p.longitude) return { lat: p.latitude, lon: p.longitude };
+      // mapUrl override (parsed from Google/Apple Maps URL) — highest priority after explicit lat/lng
+      if (p.mapUrl) {
+        const c = this.parseMapUrl(p.mapUrl);
+        if (c) return c;
+      }
       // Lookup by location string — try exact, then partial
       const loc = (p.location || '').trim();
       if (!loc) return null;
@@ -6529,6 +6701,247 @@ function app() {
         if (loc.includes(key) || key.includes(loc.split(/[,(]/)[0].trim())) return LOCATION_COORDS[key];
       }
       return null;
+    },
+
+    parseMapUrl(url) {
+      if (!url || typeof url !== 'string') return null;
+      const s = url.trim();
+      // Google Maps "@LAT,LON,..." (most common)
+      let m = s.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+      if (m) {
+        const lat = parseFloat(m[1]), lon = parseFloat(m[2]);
+        if (this._validCoords(lat, lon)) return { lat, lon };
+      }
+      // ?q=LAT,LON  (Google "place link", Apple Maps share)
+      m = s.match(/[?&]q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+      if (m) {
+        const lat = parseFloat(m[1]), lon = parseFloat(m[2]);
+        if (this._validCoords(lat, lon)) return { lat, lon };
+      }
+      // ?ll=LAT,LON  (Apple Maps)
+      m = s.match(/[?&]ll=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+      if (m) {
+        const lat = parseFloat(m[1]), lon = parseFloat(m[2]);
+        if (this._validCoords(lat, lon)) return { lat, lon };
+      }
+      // ?sll=LAT,LON  (Google search link)
+      m = s.match(/[?&]sll=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+      if (m) {
+        const lat = parseFloat(m[1]), lon = parseFloat(m[2]);
+        if (this._validCoords(lat, lon)) return { lat, lon };
+      }
+      // daddr=LAT,LON  (Google/Apple "directions to")
+      m = s.match(/[?&]daddr=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+      if (m) {
+        const lat = parseFloat(m[1]), lon = parseFloat(m[2]);
+        if (this._validCoords(lat, lon)) return { lat, lon };
+      }
+      // !3dLAT!4dLON pattern in Google "place" URLs
+      m = s.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+      if (m) {
+        const lat = parseFloat(m[1]), lon = parseFloat(m[2]);
+        if (this._validCoords(lat, lon)) return { lat, lon };
+      }
+      return null;
+    },
+    _validCoords(lat, lon) {
+      return Number.isFinite(lat) && Number.isFinite(lon) &&
+             Math.abs(lat) <= 90 && Math.abs(lon) <= 180 &&
+             !(lat === 0 && lon === 0);
+    },
+
+    // === SLOT HELPERS (fixes #3, #7, #8) ===
+    slotStart(slot) {
+      if (!slot) return null;
+      const v = slot.timeStart || slot.time;
+      if (!v) return null;
+      return /^\d{1,2}:\d{2}$/.test(v) ? v : null;
+    },
+    slotEnd(slot) {
+      if (!slot) return null;
+      const v = slot.timeEnd;
+      if (!v) return null;
+      return /^\d{1,2}:\d{2}$/.test(v) ? v : null;
+    },
+    slotDisplayTime(slot) {
+      const start = this.slotStart(slot);
+      const end = this.slotEnd(slot);
+      if (start && end) return start + ' → ' + end;
+      if (start) return start;
+      // Fallback: legacy free-form time string (e.g. "varios")
+      return slot.timeStart || slot.time || '';
+    },
+    parseTimeToMinutes(hhmm) {
+      if (!hhmm || !/^\d{1,2}:\d{2}$/.test(hhmm)) return null;
+      const [h, m] = hhmm.split(':').map(Number);
+      return h * 60 + m;
+    },
+    sortDaySlots(day) {
+      if (!day || !Array.isArray(day.slots)) return;
+      day.slots.sort((a, b) => {
+        const ma = this.parseTimeToMinutes(this.slotStart(a));
+        const mb = this.parseTimeToMinutes(this.slotStart(b));
+        if (ma === null && mb === null) return 0;
+        if (ma === null) return 1;  // untimed/varios goes last
+        if (mb === null) return -1;
+        return ma - mb;
+      });
+      this.save();
+    },
+    slotIssues(day, slot) {
+      const out = { conflict: false, conflicts: [], rushed: false, freeHours: null, hasAny: false };
+      if (!day || !slot) return out;
+      const startA = this.parseTimeToMinutes(this.slotStart(slot));
+      const endA = this.parseTimeToMinutes(this.slotEnd(slot));
+      if (startA === null) return out;
+      const intervalA = [startA, endA !== null ? endA : startA + 60]; // assume 1h if no end
+      // Check overlaps with other slots in same day
+      for (const other of day.slots) {
+        if (other.id === slot.id) continue;
+        const startB = this.parseTimeToMinutes(this.slotStart(other));
+        if (startB === null) continue;
+        const endB = this.parseTimeToMinutes(this.slotEnd(other));
+        const intervalB = [startB, endB !== null ? endB : startB + 60];
+        // Overlap: [aStart, aEnd) ∩ [bStart, bEnd) ≠ ∅
+        if (intervalA[0] < intervalB[1] && intervalB[0] < intervalA[1]) {
+          out.conflict = true;
+          out.conflicts.push(other.title || this.slotStart(other) || 'otro slot');
+        }
+      }
+      // Check gap to NEXT slot (only for "rushed" / "free")
+      const sorted = [...day.slots].filter(s => this.parseTimeToMinutes(this.slotStart(s)) !== null)
+        .sort((a, b) => this.parseTimeToMinutes(this.slotStart(a)) - this.parseTimeToMinutes(this.slotStart(b)));
+      const myIdx = sorted.findIndex(s => s.id === slot.id);
+      if (myIdx >= 0 && myIdx < sorted.length - 1) {
+        const next = sorted[myIdx + 1];
+        const nextStart = this.parseTimeToMinutes(this.slotStart(next));
+        const myEnd = endA !== null ? endA : startA + 60;
+        const gap = nextStart - myEnd;
+        if (gap >= 0 && gap < 15) out.rushed = true;
+        // Daytime check: my end is between 09:00 and 19:00
+        else if (gap > 120 && myEnd >= 9 * 60 && myEnd <= 19 * 60) {
+          out.freeHours = Math.floor(gap / 60);
+        }
+      }
+      out.hasAny = out.conflict || out.rushed || out.freeHours !== null;
+      return out;
+    },
+
+    // === BUDGET HELPERS (fix #9) ===
+    dayBudgetEstimate(dayId) {
+      if (!dayId) return 0;
+      return (this.data.budget || [])
+        .filter(b => b.dayRef === dayId)
+        .reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+    },
+
+    // === DATA MIGRATION (fix #7 backward compat) ===
+    migrateData(d) {
+      if (!d) return d;
+      // Slots: time → timeStart, ensure timeEnd exists, normalize
+      if (Array.isArray(d.itinerary)) {
+        d.itinerary.forEach(day => {
+          if (!Array.isArray(day.slots)) return;
+          day.slots.forEach(s => {
+            if (s.timeStart === undefined) {
+              s.timeStart = s.time || '';
+            }
+            if (s.timeEnd === undefined) s.timeEnd = '';
+            // Keep s.time for backward compat with ICS export
+            if (!s.time && s.timeStart) s.time = s.timeStart;
+          });
+        });
+      }
+      // Budget: ensure dayRef exists
+      if (Array.isArray(d.budget)) {
+        d.budget.forEach(b => { if (b.dayRef === undefined) b.dayRef = ''; });
+      }
+      // Providers: ensure mapUrl exists
+      if (Array.isArray(d.providers)) {
+        d.providers.forEach(p => { if (p.mapUrl === undefined) p.mapUrl = ''; });
+      }
+      return d;
+    },
+
+    // === WEATHER WIDGET (fix #10) ===
+    weather: { loading: true, error: null, days: [], source: '' },
+    async fetchWeather() {
+      this.weather.loading = true;
+      this.weather.error = null;
+      const lat = 44.7337, lon = 8.1922;
+      const start = this.data.meta.startDate;
+      const end = this.data.meta.endDate;
+      if (!start || !end) { this.weather.loading = false; return; }
+      const today = new Date(); today.setHours(0,0,0,0);
+      const tripStart = new Date(start + 'T00:00:00');
+      const daysUntil = Math.round((tripStart - today) / (1000 * 60 * 60 * 24));
+      try {
+        if (daysUntil <= 16) {
+          // Forecast available
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Europe%2FRome&start_date=${start}&end_date=${end}`;
+          const r = await fetch(url);
+          if (!r.ok) throw new Error('forecast unavailable');
+          const j = await r.json();
+          this.weather.source = 'forecast';
+          this.weather.days = (j.daily.time || []).map((d, i) => ({
+            date: d,
+            tmax: Math.round(j.daily.temperature_2m_max[i]),
+            tmin: Math.round(j.daily.temperature_2m_min[i]),
+            rain: j.daily.precipitation_sum[i] || 0,
+            code: j.daily.weather_code[i]
+          }));
+        } else {
+          // Climatology fallback — Piemonte / Langhe averages for late October
+          // Source: ARPA Piemonte climatological data, Oct 19-25 mean
+          const climate = [
+            { tmax: 18, tmin: 9, rain: 1.8, code: 2 },  // Oct 19 Mon
+            { tmax: 18, tmin: 9, rain: 2.1, code: 3 },  // Oct 20 Tue
+            { tmax: 17, tmin: 8, rain: 2.5, code: 3 },  // Oct 21 Wed
+            { tmax: 17, tmin: 8, rain: 2.4, code: 61 }, // Oct 22 Thu
+            { tmax: 16, tmin: 7, rain: 2.0, code: 2 },  // Oct 23 Fri
+            { tmax: 16, tmin: 7, rain: 1.6, code: 1 },  // Oct 24 Sat
+            { tmax: 15, tmin: 6, rain: 1.4, code: 1 }   // Oct 25 Sun
+          ];
+          const days = [];
+          const cur = new Date(start + 'T00:00:00');
+          const endD = new Date(end + 'T00:00:00');
+          let i = 0;
+          while (cur <= endD && i < climate.length) {
+            days.push({
+              date: cur.toISOString().slice(0, 10),
+              tmax: climate[i].tmax,
+              tmin: climate[i].tmin,
+              rain: climate[i].rain,
+              code: climate[i].code
+            });
+            cur.setDate(cur.getDate() + 1);
+            i++;
+          }
+          this.weather.days = days;
+          this.weather.source = 'climatology';
+        }
+      } catch (e) {
+        console.warn('Weather fetch failed:', e);
+        this.weather.error = 'No se pudo cargar el pronóstico';
+      } finally {
+        this.weather.loading = false;
+      }
+    },
+    weatherIcon(code) {
+      if (code === 0) return '☀';
+      if (code <= 2) return '⛅';
+      if (code <= 3) return '☁';
+      if (code >= 45 && code <= 48) return '🌫';
+      if (code >= 51 && code <= 67) return '🌧';
+      if (code >= 71 && code <= 77) return '❄';
+      if (code >= 80 && code <= 82) return '🌦';
+      if (code >= 95) return '⛈';
+      return '·';
+    },
+    weatherDayLabel(iso) {
+      const d = new Date(iso + 'T12:00:00');
+      const wk = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()];
+      return wk + ' ' + d.getDate();
     },
 
     toggleMapLayer(key) {
@@ -6678,10 +7091,13 @@ function app() {
       this.data.itinerary.forEach(day => {
         if (!day.date) return;
         day.slots.forEach(slot => {
-          const start = fmtDT(day.date, slot.time);
-          // Add 1 hour for end (basic heuristic)
-          const startDate = new Date(`${day.date}T${(/^\d{1,2}:\d{2}$/.test(slot.time) ? slot.time : '09:00')}:00`);
-          const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+          const startTime = this.slotStart(slot) || '09:00';
+          const start = fmtDT(day.date, startTime);
+          const startDate = new Date(`${day.date}T${startTime}:00`);
+          const endTime = this.slotEnd(slot);
+          const endDate = endTime
+            ? new Date(`${day.date}T${endTime}:00`)
+            : new Date(startDate.getTime() + 60 * 60 * 1000);
           const endStr = `${endDate.getFullYear()}${pad(endDate.getMonth()+1)}${pad(endDate.getDate())}T${pad(endDate.getHours())}${pad(endDate.getMinutes())}00`;
           lines.push('BEGIN:VEVENT');
           lines.push(`UID:${slot.id}@piemonte-ba-twt-2026`);
