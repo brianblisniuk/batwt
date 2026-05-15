@@ -1,0 +1,210 @@
+BRIEF: Rediseño UI/UX · Piemonte BA × TWT
+El proyecto
+App operativa real para 2 personas (Brian en Buenos Aires, Federico en Europa) planeando
+un viaje de lujo gastronómico a Piemonte / Le Langhe del 19 al 25 de octubre 2026.
+10 pasajeros (4 parejas pagantes + 2 hosts argentinos)
+6 noches en villa privada en Castiglione Tinella
+Foco: catas de vino, restaurantes Michelin, truffle hunt, Fiera del Tartufo
+Ticket: USD $9.000 pp · 8 pagantes · ingreso bruto ~$72k
+Margen objetivo: 60-70%
+La app está en uso real. No es un prototipo. Funciona, sincroniza entre los dos en tiempo
+real vía Supabase, y maneja itinerario, presupuesto, proveedores, reservas, mapa,
+comentarios, historial y snapshots.
+El problema: la UI funciona pero es densa y técnica. Necesita ser mucho más linda y la UX
+necesita más cuidado: jerarquía visual, micro-interacciones, mobile experience, onboarding,
+estados vacíos, feedback de acciones, accesibilidad.
+Stack técnico (NO TOCAR)
+Single file: index.html con todo embebido (CSS + JS inline)
+Sin build step: nada de npm, webpack, vite, tsx, react
+Librerías vía CDN únicamente:
+Alpine.js 3.13.5 (reactividad)
+Supabase JS SDK 2.x (sync real-time)
+Leaflet 1.9.4 (mapa)
+Google Fonts (Fraunces, Cormorant Garamond, Inter, JetBrains Mono)
+Persistencia: Supabase + localStorage como fallback offline
+Deploy: drag-and-drop a Netlify o git push (repo conectado)
+
+-- 1 of 8 --
+
+Si querés sumar microlibrerías vía CDN para mejorar interacciones (motion one, gsap, etc)
+está OK, siempre que sea liviano y sin build step.
+Tablas Supabase (NO TOCAR schema)
+Ya existen y están en uso con datos reales. No cambiar columnas ni RLS:
+Todas con RLS habilitada, policies para anon , y publicadas en supabase_realtime . La
+publishable key vive en el HTML — eso es el patrón correcto de Supabase, no es un leak.
+Modelo de datos (NO TOCAR estructura)
+El objeto DEFAULT_DATA define el contrato:
+Y LOCATION_COORDS mapea strings de lugares a {lat, lon} para el mapa.
+Podés agregar campos nuevos a los objetos si mejoran la UX (ej: tags por slot, photo URL
+en provider). No remuevas campos existentes.
+Las pestañas actuales
+1. Dashboard — countdown, alertas críticas (computadas de slots con status critical),
+KPIs (villa, costo total, ingreso, margen), estado de reservas
+2. Itinerario — 7 días con slots editables inline (hora, título, descripción, estado, veredicto,
+comentarios)
+3. Presupuesto — tabla con 12 líneas + parámetros (pax, ticket, eur/usd) + gráfico de
+distribución + 4 cards de totales
+trips 	(id text PK, data jsonb, updated_at, updated_by)
+comments 	(id uuid PK, trip_id, item_type, item_id, author, text, created_at)
+snapshots 	(id uuid PK, trip_id, name, data jsonb, author, created_at)
+changes 	(id uuid PK, trip_id, author, event_type, summary, payload, created_at)
+{
+meta: { tripName, startDate, endDate, nights, pax, payingPax, ticketUSD, eurUsdRate, villa:
+itinerary: [{ id, dayNumber, date, weekday, title, status, slots: [{id, time, title, descri
+budget: [{ id, category, amount, notes, status }],
+providers: [{ id, name, type, michelin, location, phone, email, web, priceRange, closingDay
+actions: [{ id, priority, task, description, contact, done }]
+}
+
+-- 2 of 8 --
+
+4. Proveedores — 43 cards con búsqueda + filtros por tipo + estado de reserva +
+comentarios
+5. Mapa — Leaflet con pins por tipo + rutas día por día en polilíneas + filtros de capas
+6. Reservas — 17 tareas P1/P2/P3 con checkbox + filtros + comentarios
+7. Historial — event log con filtros (todo/persona/comentarios/ediciones)
+8. Backup — export JSON, import JSON, export iCal, snapshots versionados, print, reset
+Lo que funciona bien (preservar)
+Sync real-time vía Supabase con identificación Brian/Federico
+Modal de identidad en el primer load
+Sistema de comentarios con @menciones y banner notificador
+Mapa con rutas día por día
+Snapshots versionados compartidos
+Historial con avatares y filtros
+Indicador de sync en header (con última edición y autor)
+Export iCal funcional con Europe/Rome timezone
+Mobile-aware (tabs scrollables, touch targets 40px+, evita zoom iOS)
+Lo que está clunky (mejorar)
+General
+La densidad de información es alta. Cards y rows tienen muchos inputs inline que se
+ven técnicos, no editoriales.
+Los inputs editables-on-blur son funcionales pero invisibles. No es obvio que sean
+editables hasta que hovereás.
+Estados vacíos genéricos.
+Feedback de acciones poco celebrado (un toast pequeño en la esquina).
+Las acciones destructivas usan confirm() nativo del browser.
+No hay onboarding después del primer modal de identidad.
+
+-- 3 of 8 --
+
+Accesibilidad: contrast ratios no auditados, focus states genéricos.
+Dashboard
+KPIs son números fríos. Podrían contar una historia.
+Las alertas críticas se computan desde el itinerario pero la lista resultante puede ser
+corta o vacía y queda raro.
+Falta una sección “qué pasa hoy/esta semana” o un próximo step claro.
+Itinerario
+Cada día es una card grande con muchos slots. Visualmente es pesado.
+El estado de slot (OK/A revisar/Problema/Info) es un select pill — funciona pero podría
+ser más visual.
+El “verdict” es texto plano. Podría ser tags estructurados.
+No hay timeline visual con horarios proporcionales.
+Proveedores
+43 cards x mucho info = scroll infinito.
+Las cards tienen muchos <dl> rows con labels mono. Se siente como un dump técnico.
+El estado de reserva (pendiente/contactado/confirmado/cancelado) podría ser más
+visual y celebratorio cuando se confirma.
+Mapa
+La legend funciona pero podría ser un panel lateral con conteos y mini-stats.
+Click en un pin abre popup pero no hay back-link al provider en la lista.
+Las polilíneas de día están bien pero no hay control granular.
+Reservas
+Checkboxes funcionan pero la sensación de “todo en orden” cuando todo está hecho es
+pobre.
+Falta agrupación visual P1/P2/P3.
+Sin fecha límite explícita por tarea.
+
+-- 4 of 8 --
+
+Historial
+Tab nuevo, OK funcional pero falta diseño. Los event rows podrían tener animación de
+entrada para los nuevos eventos.
+Mobile
+Funciona pero los formularios siguen sintiéndose como desktop apretado a mobile.
+Las tabs scrollean pero no hay indicación de overflow.
+Las cards de proveedores no aprovechan bien el ancho de mobile.
+Dirección estética actual
+Editorial italiano de lujo: paleta cálida (terracota, borgoña, oro, crema), fuentes serif
+elegantes (Fraunces display, Cormorant Garamond para texto), JetBrains Mono para
+datos/labels. Textura sutil de grano. Inspiración: revistas gastronómicas de alta gama
+(Cherry Bombe, Apartamento, Cabana Magazine).
+Está OK como punto de partida pero puede evolucionar. Es bienvenido:
+Modo oscuro como opción
+Más uso de fotografía (imágenes de Unsplash con tag de Piemonte/Italia)
+Iconos custom o set consistente (Lucide via CDN, Heroicons)
+Más animaciones suaves (Motion One? Anime.js?)
+Layout más espacioso, menos denso
+Evitar:
+Estética genérica de SaaS
+Gradientes púrpura sobre blanco
+Cards rectangulares uniformes sin personalidad
+Inter como única fuente
+Objetivos del rediseño
+En orden de prioridad:
+1. Mobile-first real. La mayoría del uso ahora va a ser desde el teléfono. Re-pensar la nav,
+los formularios, las cards.
+
+-- 5 of 8 --
+
+2. Onboarding más cálido. El primer load tiene que sentirse como abrir una guía de viaje,
+no un dashboard corporativo.
+3. Jerarquía visual clara. Qué es importante salta. Qué es secundario respeta su lugar.
+4. Menos densidad, más respiración. Especialmente en proveedores e itinerario.
+5. Micro-interacciones que celebran las acciones. Confirmar una reserva debe sentirse
+bien, no como tocar un select.
+6. Estados vacíos y de loading más cuidados.
+7. Accesibilidad: contrast ratios AA mínimo, focus states visibles, navegación por teclado.
+8. Performance: cargar bien en 4G, animaciones a 60fps.
+Lo que SÍ podés hacer
+Reorganizar pestañas o cambiar la navegación (drawer, bottom tabs mobile, etc.)
+Cambiar el layout de cualquier sección
+Agregar nuevos componentes (timeline visual, stepper, drawer, modal, toast custom)
+Sumar librerías livianas vía CDN (Motion One, Lucide, Sonner-like toasts, etc.)
+Agregar imágenes (Unsplash) en las secciones donde aporten
+Modo oscuro / claro
+Mejorar el onboarding con un tour rápido
+Refinar la tipografía y la paleta
+Lo que NO podés hacer
+Cambiar el schema de Supabase (las 4 tablas y RLS están fijos)
+Cambiar la estructura de DEFAULT_DATA (sí podés agregar campos opcionales)
+Romper el sync real-time, los comentarios, las menciones, los snapshots o el historial
+Reemplazar Alpine.js por React/Vue/Svelte (sin build step)
+Agregar build tools (webpack/vite/etc)
+Romper el export iCal o el modal de identidad
+Cambiar la publishable key o las URLs de Supabase (ya configuradas)
+
+-- 6 of 8 --
+
+Borrar features existentes sin reemplazarlas con algo mejor
+Output esperado
+Un único index.html (puede ser más grande que el actual) que:
+Funciona drag-and-drop en Netlify
+Mantiene toda la funcionalidad actual
+Tiene una UI/UX notablemente mejor: más linda, más mobile-friendly, mejor jerarquía,
+más cuidada
+Se conecta correctamente a las tablas Supabase existentes
+Permite identificación Brian/Federico con su sistema de avatares/colores
+Si el rediseño es muy grande para hacer en una sola iteración, está bien proponer un plan
+por fases (ej: V5a = nueva nav + dashboard, V5b = itinerario + proveedores, V5c = mapa +
+historial).
+Cómo testearlo
+Después de generar, abrir index.html localmente. Debería:
+1. Cargar sin errores en console
+2. Mostrar el modal de identidad
+3. Sincronizar con Supabase (mismo data que el V4)
+4. Comparar lado a lado con la V4 actual para validar que ninguna feature se perdió
+Personas / contexto humano
+Brian — opera desde BA. Argentino, sofisticado en viajes, primer trip de esta línea. Va a
+usar la app mucho desde mobile entre meetings.
+Federico — opera desde Europa (probablemente Italia o cerca). Habla con proveedores
+en italiano, conoce el terreno. Va a editar más desde laptop.
+Ambos manejan viajes premium para clientes argentinos high-end. La app es interna, no la
+ve el cliente final (eso vendría después, idealmente como una vista pública read-only de
+algunos elementos del itinerario).
+
+-- 7 of 8 --
+
+
+
+-- 8 of 8 --
+
