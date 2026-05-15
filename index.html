@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 <style>
 :root {
@@ -128,6 +129,131 @@ text-transform: uppercase;
 color: var(–ink-mute);
 }
 
+/* === IDENTITY MODAL === */
+.identity-overlay {
+position: fixed;
+inset: 0;
+background: rgba(28, 20, 16, 0.85);
+backdrop-filter: blur(8px);
+z-index: 2000;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 24px;
+animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.identity-modal {
+background: var(–paper);
+padding: 48px 40px;
+border-radius: 4px;
+max-width: 480px;
+width: 100%;
+text-align: center;
+box-shadow: var(–shadow-lg);
+position: relative;
+}
+.identity-modal::before {
+content: ‘◆’;
+color: var(–terracotta);
+font-size: 16px;
+display: block;
+margin-bottom: 16px;
+}
+.identity-modal h2 {
+font-family: ‘Fraunces’, serif;
+font-size: 32px;
+font-weight: 300;
+margin-bottom: 12px;
+letter-spacing: -0.02em;
+}
+.identity-modal h2 em { font-style: italic; color: var(–borgona); }
+.identity-modal p {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 17px;
+font-style: italic;
+color: var(–ink-soft);
+margin-bottom: 32px;
+line-height: 1.5;
+}
+.identity-choices {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 12px;
+}
+.identity-btn {
+font-family: ‘Fraunces’, serif;
+font-size: 22px;
+font-weight: 400;
+padding: 24px 16px;
+background: white;
+border: 1px solid var(–rule-strong);
+border-radius: 4px;
+cursor: pointer;
+transition: all 0.2s;
+letter-spacing: -0.01em;
+}
+.identity-btn:hover {
+background: var(–ink);
+color: var(–cream);
+border-color: var(–ink);
+transform: translateY(-2px);
+box-shadow: var(–shadow);
+}
+
+/* === SYNC STATUS === */
+.sync-status {
+display: flex;
+align-items: center;
+gap: 16px;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 10px;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+color: var(–ink-mute);
+flex-wrap: wrap;
+}
+.sync-pill {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+}
+.sync-dot {
+width: 8px;
+height: 8px;
+border-radius: 50%;
+display: inline-block;
+}
+.sync-dot.online { background: var(–ok); box-shadow: 0 0 0 3px rgba(60, 107, 60, 0.15); }
+.sync-dot.syncing { background: var(–warn); box-shadow: 0 0 0 3px rgba(184, 137, 58, 0.15); animation: pulse 1s infinite; }
+.sync-dot.offline { background: var(–bad); box-shadow: 0 0 0 3px rgba(168, 42, 31, 0.15); }
+.sync-dot.idle { background: var(–ink-mute); }
+.who-am-i {
+font-weight: 700;
+color: var(–terracotta);
+letter-spacing: 0.08em;
+}
+.last-edit {
+font-family: ‘Cormorant Garamond’, serif;
+font-size: 13px;
+font-style: italic;
+color: var(–ink-mute);
+letter-spacing: 0;
+text-transform: none;
+}
+
+/* === REMOTE EDIT TOAST === */
+.toast.remote {
+background: var(–borgona);
+}
+.toast.remote::before {
+content: ‘◆’;
+color: var(–gold-soft);
+margin-right: 8px;
+}
+
+/* === STYLES === */
 .save-indicator {
 display: flex;
 align-items: center;
@@ -988,9 +1114,14 @@ main { padding: 20px; max-width: none; }
         <div class="brand-mark">BA × <em>TWT</em></div>
         <div class="brand-sub">Piemonte · Oct 2026 · Operaciones</div>
       </div>
-      <div class="save-indicator">
-        <span><span class="save-dot" :class="{ saving: isSaving }"></span> <span x-text="isSaving ? 'Guardando' : 'Guardado'"></span></span>
-        <span x-text="'v' + version" style="opacity:0.5;"></span>
+      <div class="sync-status">
+        <span class="sync-pill">
+          <span class="sync-dot" :class="syncStatus"></span>
+          <span x-text="syncLabel"></span>
+        </span>
+        <span class="who-am-i" x-show="identity" x-text="'Vos: ' + (identity || '')"></span>
+        <span class="last-edit" x-show="lastUpdatedBy" x-text="'· última edición: ' + (lastUpdatedBy || '') + ' ' + relativeTime(lastUpdatedAt)"></span>
+        <button class="btn-icon" @click="switchIdentity()" title="Cambiar identidad" style="font-size: 10px; padding: 2px 6px;">⇄</button>
       </div>
     </div>
     <nav class="tabs">
@@ -1421,7 +1552,20 @@ main { padding: 20px; max-width: none; }
 
   <!-- Toast -->
 
-  <div class="toast" x-show="showToast" x-transition x-text="toastMessage"></div>
+  <div class="toast" :class="{ remote: toastRemote }" x-show="showToast" x-transition x-text="toastMessage"></div>
+
+  <!-- Identity Modal -->
+
+  <div class="identity-overlay" x-show="!identity" x-cloak>
+    <div class="identity-modal">
+      <h2>¿Quién <em>sos</em>?</h2>
+      <p>Elegí tu identidad para esta sesión. Aparecerá junto a cada edición y permite saber quién cambió qué.</p>
+      <div class="identity-choices">
+        <button class="identity-btn" @click="setIdentity('Brian')">Brian</button>
+        <button class="identity-btn" @click="setIdentity('Federico')">Federico</button>
+      </div>
+    </div>
+  </div>
 
 </div>
 
@@ -1606,15 +1750,32 @@ const DEFAULT_DATA = {
 
 function app() {
   return {
+    // === CONFIG ===
+    SUPABASE_URL: 'https://pptldpjwggrnbkvppolu.supabase.co',
+    SUPABASE_KEY: 'sb_publishable_6Xs9DoveG6nvB8FK1q_RAw_apQCmTr_',
+    TRIP_ID: 'piemonte-ba-twt-2026',
+
+    // === STATE ===
     tab: 'dashboard',
-    version: '1.0',
+    version: '2.0',
+    identity: null,
     isSaving: false,
+    isOnline: navigator.onLine,
+    syncStatus: 'idle',
+    syncLabel: 'Cargando',
     saveTimeout: null,
+    applyingRemote: false,
     showToast: false,
     toastMessage: '',
+    toastRemote: false,
     providerSearch: '',
     providerFilter: 'all',
     actionFilter: 'all',
+    lastUpdatedBy: null,
+    lastUpdatedAt: null,
+    _now: Date.now(),
+    _client: null,
+    _channel: null,
     data: JSON.parse(JSON.stringify(DEFAULT_DATA)),
 
     providerTypes: [
@@ -1626,46 +1787,229 @@ function app() {
       { key: 'service', label: 'Servicios' }
     ],
 
-    init() {
-      this.load();
-      // Auto-save on data changes (debounced)
-      this.$watch('data', () => this.save(), { deep: true });
-      // Auto-save also on tab change just in case
-      this.$watch('tab', () => this.save());
+    // === INITIALIZATION ===
+    async init() {
+      // Guard against double-init
+      if (this._initialized) return;
+      this._initialized = true;
+
+      // Load identity from localStorage
+      this.identity = localStorage.getItem('piemonte-identity');
+
+      // Tick relative time every 30s
+      setInterval(() => { this._now = Date.now(); }, 30000);
+
+      // Online/offline listeners
+      window.addEventListener('online', () => { this.isOnline = true; });
+      window.addEventListener('offline', () => { this.isOnline = false; this.syncStatus = 'offline'; this.syncLabel = 'Offline'; });
+
+      // Initialize Supabase client
+      try {
+        this._client = window.supabase.createClient(this.SUPABASE_URL, this.SUPABASE_KEY);
+      } catch (e) {
+        console.error('Supabase init failed:', e);
+        this.syncStatus = 'offline';
+        this.syncLabel = 'Sin sync';
+        this.loadFromLocal();
+        return;
+      }
+
+      // Load initial data from cloud (or seed if first run)
+      const loadOk = await this.loadFromCloud();
+
+      // Subscribe to real-time changes ONLY if load succeeded (table exists)
+      if (loadOk) {
+        this.subscribeToChanges();
+      }
+
+      // Watch for local changes -> save to cloud
+      this.$watch('data', () => {
+        if (this.applyingRemote) return;
+        this.saveToCloud();
+      }, { deep: true });
     },
 
-    save() {
-      if (this.saveTimeout) clearTimeout(this.saveTimeout);
-      this.isSaving = true;
-      this.saveTimeout = setTimeout(() => {
-        try {
-          localStorage.setItem('piemonte-ba-twt', JSON.stringify(this.data));
-          this.isSaving = false;
-        } catch (e) {
-          console.error('Save failed:', e);
-          this.isSaving = false;
-          this.notify('Error al guardar');
+    // === IDENTITY ===
+    setIdentity(name) {
+      this.identity = name;
+      localStorage.setItem('piemonte-identity', name);
+    },
+    switchIdentity() {
+      if (confirm('¿Cambiar de identidad? Vas a tener que elegir de nuevo.')) {
+        localStorage.removeItem('piemonte-identity');
+        this.identity = null;
+      }
+    },
+
+    // === CLOUD SYNC ===
+    async loadFromCloud() {
+      this.syncStatus = 'syncing';
+      this.syncLabel = 'Sincronizando';
+      try {
+        const { data: row, error } = await this._client
+          .from('trips')
+          .select('*')
+          .eq('id', this.TRIP_ID)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (row) {
+          // Cloud has data — apply it
+          this.applyingRemote = true;
+          this.data = row.data;
+          this.lastUpdatedBy = row.updated_by;
+          this.lastUpdatedAt = row.updated_at;
+          this.$nextTick(() => { this.applyingRemote = false; });
+          this.syncStatus = 'online';
+          this.syncLabel = 'Sincronizado';
+        } else {
+          // First run — seed cloud with defaults (or local data if exists)
+          const local = localStorage.getItem('piemonte-ba-twt');
+          const seedData = local ? JSON.parse(local) : DEFAULT_DATA;
+          const { error: insertError } = await this._client
+            .from('trips')
+            .insert({
+              id: this.TRIP_ID,
+              data: seedData,
+              updated_by: this.identity || 'sistema',
+              updated_at: new Date().toISOString()
+            });
+          if (insertError) throw insertError;
+          this.data = seedData;
+          this.lastUpdatedBy = this.identity || 'sistema';
+          this.lastUpdatedAt = new Date().toISOString();
+          this.syncStatus = 'online';
+          this.syncLabel = 'Inicializado';
         }
-      }, 400);
+        return true;
+      } catch (e) {
+        console.error('Load from cloud failed:', e);
+        this.syncStatus = 'offline';
+        this.syncLabel = 'Sin sync · solo local';
+        this.loadFromLocal();
+        if (e.message && e.message.includes('schema cache')) {
+          setTimeout(() => this.notify('⚠ La tabla "trips" no existe aún. Corré el SQL setup en Supabase.'), 1000);
+        }
+        return false;
+      }
     },
 
-    load() {
+    async saveToCloud() {
+      // Always save local as fallback
+      try { localStorage.setItem('piemonte-ba-twt', JSON.stringify(this.data)); } catch (e) {}
+
+      if (!this._client || !this.isOnline) {
+        this.syncStatus = 'offline';
+        this.syncLabel = 'Solo local';
+        return;
+      }
+
+      if (this.saveTimeout) clearTimeout(this.saveTimeout);
+      this.syncStatus = 'syncing';
+      this.syncLabel = 'Guardando';
+      this.saveTimeout = setTimeout(async () => {
+        try {
+          const now = new Date().toISOString();
+          const { error } = await this._client
+            .from('trips')
+            .update({
+              data: this.data,
+              updated_by: this.identity || 'anónimo',
+              updated_at: now
+            })
+            .eq('id', this.TRIP_ID);
+
+          if (error) throw error;
+          this.lastUpdatedBy = this.identity || 'anónimo';
+          this.lastUpdatedAt = now;
+          this.syncStatus = 'online';
+          this.syncLabel = 'Sincronizado';
+        } catch (e) {
+          console.error('Save to cloud failed:', e);
+          this.syncStatus = 'offline';
+          this.syncLabel = 'Error · solo local';
+        }
+      }, 800);
+    },
+
+    subscribeToChanges() {
+      if (!this._client) return;
+      this._channel = this._client
+        .channel('trips-changes-' + this.TRIP_ID)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'trips',
+          filter: `id=eq.${this.TRIP_ID}`
+        }, (payload) => {
+          // Ignore our own echoed update
+          if (payload.new.updated_by === this.identity && Math.abs(new Date(payload.new.updated_at) - new Date(this.lastUpdatedAt)) < 2000) {
+            return;
+          }
+          // Apply remote update without re-triggering save
+          this.applyingRemote = true;
+          this.data = payload.new.data;
+          this.lastUpdatedBy = payload.new.updated_by;
+          this.lastUpdatedAt = payload.new.updated_at;
+          this.$nextTick(() => { this.applyingRemote = false; });
+          if (payload.new.updated_by !== this.identity) {
+            this.notifyRemote(`${payload.new.updated_by} editó`);
+          }
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            this.syncStatus = 'online';
+            this.syncLabel = 'Sincronizado';
+          }
+        });
+    },
+
+    loadFromLocal() {
       try {
         const stored = localStorage.getItem('piemonte-ba-twt');
         if (stored) {
           const parsed = JSON.parse(stored);
-          // Merge with defaults to handle schema additions
+          this.applyingRemote = true;
           this.data = { ...DEFAULT_DATA, ...parsed };
+          this.$nextTick(() => { this.applyingRemote = false; });
         }
-      } catch (e) {
-        console.error('Load failed:', e);
-      }
+      } catch (e) { console.error('Load failed:', e); }
     },
 
     notify(msg) {
+      this.toastRemote = false;
       this.toastMessage = msg;
       this.showToast = true;
-      setTimeout(() => this.showToast = false, 2200);
+      setTimeout(() => this.showToast = false, 3000);
+    },
+
+    notifyRemote(msg) {
+      this.toastRemote = true;
+      this.toastMessage = msg;
+      this.showToast = true;
+      setTimeout(() => this.showToast = false, 3000);
+    },
+
+    relativeTime(iso) {
+      if (!iso) return '';
+      const now = this._now;
+      const then = new Date(iso).getTime();
+      const sec = Math.floor((now - then) / 1000);
+      if (sec < 5) return 'ahora';
+      if (sec < 60) return `hace ${sec}s`;
+      const min = Math.floor(sec / 60);
+      if (min < 60) return `hace ${min}m`;
+      const hrs = Math.floor(min / 60);
+      if (hrs < 24) return `hace ${hrs}h`;
+      const days = Math.floor(hrs / 24);
+      return `hace ${days}d`;
+    },
+
+    // Alias for retro-compat (old @blur="save()" handlers)
+    save() {
+      // Watcher on data already triggers save; this is a no-op explicit trigger
+      this.saveToCloud();
     },
 
     exportData() {
