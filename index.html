@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 <style>
@@ -1074,8 +1076,363 @@ from { transform: translateY(20px); opacity: 0; }
 to { transform: translateY(0); opacity: 1; }
 }
 
-/* === RESPONSIVE === */
+/* === HISTORIAL / EVENT LOG === */
+.event-row {
+display: grid;
+grid-template-columns: 36px 1fr auto;
+gap: 16px;
+padding: 14px 20px;
+background: var(–paper);
+border: 1px solid var(–rule);
+border-radius: 4px;
+margin-bottom: 6px;
+align-items: center;
+transition: all 0.15s;
+}
+.event-row:hover { box-shadow: var(–shadow-sm); }
+.event-avatar {
+width: 32px;
+height: 32px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-family: ‘Fraunces’, serif;
+font-size: 14px;
+font-weight: 500;
+color: var(–cream);
+}
+.event-avatar.brian { background: var(–terracotta); }
+.event-avatar.federico { background: var(–olive); }
+.event-avatar.sistema { background: var(–ink-mute); }
+.event-summary {
+font-size: 14px;
+line-height: 1.4;
+}
+.event-summary strong {
+font-family: ‘Fraunces’, serif;
+font-weight: 500;
+color: var(–ink);
+}
+.event-icon {
+font-size: 14px;
+margin-right: 4px;
+}
+.event-time {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 10px;
+letter-spacing: 0.1em;
+color: var(–ink-mute);
+text-transform: uppercase;
+white-space: nowrap;
+}
+.event-filter-chips {
+display: flex;
+gap: 6px;
+flex-wrap: wrap;
+margin-bottom: 20px;
+}
+
+/* === SNAPSHOTS === */
+.snapshot-item {
+display: grid;
+grid-template-columns: 1fr auto auto;
+gap: 12px;
+padding: 14px 18px;
+background: white;
+border: 1px solid var(–rule);
+border-radius: 4px;
+margin-bottom: 6px;
+align-items: center;
+}
+.snapshot-item strong {
+font-family: ‘Fraunces’, serif;
+font-size: 16px;
+display: block;
+}
+.snapshot-item small {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 10px;
+color: var(–ink-mute);
+letter-spacing: 0.08em;
+text-transform: uppercase;
+}
+
+/* === MENTIONS === */
+.mention {
+background: var(–gold-soft);
+color: var(–borgona-deep);
+padding: 1px 6px;
+border-radius: 100px;
+font-weight: 600;
+font-size: 0.93em;
+display: inline-block;
+margin: 0 1px;
+}
+.mention-banner {
+background: linear-gradient(90deg, var(–gold) 0%, var(–terracotta) 100%);
+color: var(–cream);
+padding: 12px 20px;
+border-radius: 4px;
+margin-bottom: 24px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 16px;
+box-shadow: var(–shadow);
+animation: slideIn 0.4s ease;
+}
+.mention-banner-text {
+font-family: ‘Cormorant Garamond’, serif;
+font-style: italic;
+font-size: 17px;
+}
+.mention-banner-text strong {
+font-family: ‘Fraunces’, serif;
+font-weight: 600;
+font-style: normal;
+font-size: 18px;
+}
+.mention-banner button {
+background: rgba(0,0,0,0.2);
+color: var(–cream);
+border: 1px solid rgba(240,230,210,0.4);
+padding: 6px 14px;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 11px;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+cursor: pointer;
+border-radius: 4px;
+}
+.mention-banner button:hover { background: rgba(0,0,0,0.35); }
+
+/* === MAP === */
+.map-wrap {
+border: 1px solid var(–rule);
+border-radius: 4px;
+overflow: hidden;
+box-shadow: var(–shadow);
+background: var(–paper);
+}
+#trip-map {
+width: 100%;
+height: 70vh;
+min-height: 480px;
+background: var(–paper-warm);
+}
+.map-legend {
+display: flex;
+flex-wrap: wrap;
+gap: 12px;
+padding: 16px 20px;
+background: var(–paper);
+border-top: 1px solid var(–rule);
+font-size: 12px;
+}
+.map-legend-item {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+cursor: pointer;
+padding: 4px 10px;
+border-radius: 100px;
+border: 1px solid var(–rule-strong);
+transition: all 0.15s;
+font-family: ‘Inter’, sans-serif;
+font-weight: 500;
+}
+.map-legend-item:hover { background: var(–paper-warm); }
+.map-legend-item.disabled { opacity: 0.35; }
+.map-legend-dot {
+width: 12px;
+height: 12px;
+border-radius: 50%;
+display: inline-block;
+border: 2px solid white;
+box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+}
+/* Custom Leaflet pin styles */
+.leaflet-pin {
+display: flex;
+align-items: center;
+justify-content: center;
+width: 28px;
+height: 28px;
+border-radius: 50% 50% 50% 0;
+transform: rotate(-45deg);
+border: 2px solid white;
+box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 11px;
+font-weight: 700;
+color: white;
+}
+.leaflet-pin span { transform: rotate(45deg); }
+.pin-villa { background: var(–borgona); width: 36px; height: 36px; font-size: 14px; }
+.pin-restaurant { background: #b8512e; }
+.pin-winery { background: #6e1a1f; }
+.pin-truffle { background: #8b6914; }
+.pin-activity { background: #3c6b3c; }
+.pin-transfer { background: #5a6378; }
+.pin-service { background: #3a5a8b; }
+.leaflet-popup-content {
+font-family: ‘Inter’, sans-serif;
+margin: 12px 16px;
+font-size: 13px;
+}
+.leaflet-popup-content strong {
+font-family: ‘Fraunces’, serif;
+font-size: 16px;
+font-weight: 500;
+display: block;
+margin-bottom: 4px;
+}
+.leaflet-popup-content .pop-type {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 9px;
+letter-spacing: 0.16em;
+text-transform: uppercase;
+color: var(–ink-mute);
+margin-bottom: 6px;
+}
+.leaflet-popup-content .pop-meta {
+font-size: 12px;
+color: var(–ink-soft);
+margin-top: 4px;
+}
+
+/* === COMMENTS === */
+.comments-toggle {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 11px;
+letter-spacing: 0.04em;
+padding: 3px 10px;
+background: var(–paper-warm);
+border: 1px solid var(–rule);
+border-radius: 100px;
+cursor: pointer;
+color: var(–ink-mute);
+transition: all 0.15s;
+}
+.comments-toggle:hover { color: var(–terracotta); border-color: var(–terracotta); background: white; }
+.comments-toggle.has-comments {
+background: var(–info-bg);
+border-color: rgba(58, 90, 139, 0.3);
+color: var(–info);
+}
+.comments-toggle .count {
+font-weight: 700;
+}
+.comments-panel {
+margin-top: 12px;
+padding: 16px;
+background: var(–paper-warm);
+border-left: 3px solid var(–info);
+border-radius: 0 4px 4px 0;
+}
+.comment {
+display: grid;
+grid-template-columns: 36px 1fr auto;
+gap: 12px;
+padding: 10px 0;
+border-bottom: 1px dashed var(–rule);
+align-items: start;
+}
+.comment:last-of-type { border-bottom: none; }
+.comment-avatar {
+width: 32px;
+height: 32px;
+border-radius: 50%;
+background: var(–ink);
+color: var(–cream);
+display: flex;
+align-items: center;
+justify-content: center;
+font-family: ‘Fraunces’, serif;
+font-size: 15px;
+font-weight: 500;
+}
+.comment-avatar.brian { background: var(–terracotta); }
+.comment-avatar.federico { background: var(–olive); }
+.comment-body { min-width: 0; }
+.comment-meta {
+display: flex;
+gap: 8px;
+align-items: baseline;
+margin-bottom: 4px;
+font-size: 11px;
+}
+.comment-author {
+font-family: ‘Fraunces’, serif;
+font-weight: 600;
+font-size: 14px;
+color: var(–ink);
+}
+.comment-time {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 10px;
+color: var(–ink-mute);
+letter-spacing: 0.06em;
+}
+.comment-text {
+font-size: 14px;
+line-height: 1.5;
+color: var(–ink-soft);
+word-wrap: break-word;
+}
+.comment-actions {
+display: flex;
+gap: 4px;
+}
+.comment-form {
+display: grid;
+grid-template-columns: 1fr auto;
+gap: 8px;
+margin-top: 12px;
+padding-top: 12px;
+border-top: 1px solid var(–rule);
+}
+.comment-input {
+background: white;
+border: 1px solid var(–rule-strong);
+border-radius: 4px;
+padding: 8px 12px;
+font-size: 14px;
+font-family: ‘Inter’, sans-serif;
+}
+.comment-input:focus { outline: none; border-color: var(–terracotta); box-shadow: 0 0 0 3px rgba(184,81,46,0.1); }
+
+/* === MOBILE IMPROVEMENTS === */
 @media (max-width: 880px) {
+/* Bigger touch targets */
+.btn { padding: 10px 18px; font-size: 13px; min-height: 40px; }
+.btn-sm { padding: 8px 14px; font-size: 12px; }
+.btn-icon { padding: 8px 12px; font-size: 16px; }
+.tab { padding: 14px 0; min-height: 44px; }
+.chip { padding: 8px 14px; font-size: 13px; min-height: 36px; }
+.status-pill, .res-status, .priority-tag { padding: 6px 12px; min-height: 28px; }
+.checkbox { width: 26px; height: 26px; }
+.checkbox.checked::after { font-size: 16px; }
+input, select, textarea { font-size: 16px !important; /* evita zoom iOS */ padding: 10px 12px; }
+.slot-time-input, .day-title-input { font-size: 16px !important; }
+/* Más espacio entre elementos */
+.day-card { margin-bottom: 16px; }
+.slot { padding: 16px; }
+.provider-card { padding: 18px; }
+.action-item { padding: 16px; }
+/* Map full-screen on mobile */
+#trip-map { height: 60vh; min-height: 380px; }
+/* Comments mobile */
+.comment { grid-template-columns: 32px 1fr; }
+.comment-actions { grid-column: 2; justify-self: end; }
+.comment-form { grid-template-columns: 1fr; }
+/* Tabs scrolling indicator */
+.tabs { padding-bottom: 0; -webkit-overflow-scrolling: touch; }
+}
 .header-top { padding: 12px 20px; }
 .tabs { padding: 0 20px; }
 main { padding: 24px 20px 48px; }
@@ -1139,9 +1496,16 @@ main { padding: 20px; max-width: none; }
         <span>Proveedores</span>
         <span class="tab-badge" x-text="data.providers.length"></span>
       </button>
+      <button class="tab" :class="{ active: tab === 'map' }" @click="tab = 'map'; $nextTick(() => initMap())">
+        <span>Mapa</span>
+      </button>
       <button class="tab" :class="{ active: tab === 'actions' }" @click="tab = 'actions'">
         <span>Reservas</span>
         <span class="tab-badge" x-text="data.actions.filter(a => !a.done).length"></span>
+      </button>
+      <button class="tab" :class="{ active: tab === 'history' }" @click="tab = 'history'; markHistorySeen()">
+        <span>Historial</span>
+        <span class="tab-badge" x-show="unseenChanges > 0" x-text="unseenChanges"></span>
       </button>
       <button class="tab" :class="{ active: tab === 'backup' }" @click="tab = 'backup'">
         <span>Backup</span>
@@ -1152,6 +1516,15 @@ main { padding: 20px; max-width: none; }
   <main>
 
 ```
+<!-- ====== MENTION BANNER ====== -->
+<div class="mention-banner" x-show="unreadMentions.length > 0" x-cloak>
+  <div class="mention-banner-text">
+    <strong x-text="mentionBannerTitle"></strong>
+    <span x-text="mentionBannerPreview"></span>
+  </div>
+  <button @click="markMentionsRead()">Marcar leídas</button>
+</div>
+
 <!-- ====== DASHBOARD ====== -->
 <section x-show="tab === 'dashboard'">
   <div class="section-header">
@@ -1255,14 +1628,41 @@ main { padding: 20px; max-width: none; }
             <div class="slot-content">
               <input type="text" class="slot-title-input" x-model="slot.title" @blur="save()" placeholder="Actividad / lugar...">
               <textarea class="slot-desc-input" x-model="slot.description" @blur="save()" placeholder="Descripción, contacto, precio, notas..." rows="2"></textarea>
-              <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+              <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px; flex-wrap: wrap;">
                 <select class="status-pill" :class="'status-' + slot.status" x-model="slot.status" @change="save()" style="flex: 0 0 auto;">
                   <option value="ok">OK</option>
                   <option value="warn">A revisar</option>
                   <option value="critical">Problema</option>
                   <option value="info">Info</option>
                 </select>
-                <input type="text" x-model="slot.verdict" @blur="save()" placeholder="Veredicto / acción..." style="font-size: 11px; font-family: 'JetBrains Mono', monospace; flex: 1;">
+                <input type="text" x-model="slot.verdict" @blur="save()" placeholder="Veredicto / acción..." style="font-size: 11px; font-family: 'JetBrains Mono', monospace; flex: 1; min-width: 140px;">
+                <span class="comments-toggle" :class="{ 'has-comments': commentCount('slot', slot.id) > 0 }" @click="toggleComments('slot', slot.id)">
+                  💬 <span class="count" x-text="commentCount('slot', slot.id) || '+'"></span>
+                </span>
+              </div>
+              <div class="comments-panel" x-show="openComments === 'slot:' + slot.id" x-cloak>
+                <template x-for="c in commentsFor('slot', slot.id)" :key="c.id">
+                  <div class="comment">
+                    <div class="comment-avatar" :class="(c.author || '').toLowerCase()" x-text="(c.author || '?').substring(0,1)"></div>
+                    <div class="comment-body">
+                      <div class="comment-meta">
+                        <span class="comment-author" x-text="c.author"></span>
+                        <span class="comment-time" x-text="relativeTime(c.created_at)"></span>
+                      </div>
+                      <div class="comment-text" x-html="formatCommentText(c.text)"></div>
+                    </div>
+                    <div class="comment-actions">
+                      <button class="btn-icon" x-show="c.author === identity" @click="deleteComment(c.id)" title="Borrar">✕</button>
+                    </div>
+                  </div>
+                </template>
+                <div x-show="commentsFor('slot', slot.id).length === 0" style="font-size: 13px; font-style: italic; color: var(--ink-mute); padding: 8px 0;">
+                  Sin comentarios aún. Iniciá el thread.
+                </div>
+                <form class="comment-form" @submit.prevent="addComment('slot', slot.id, $event)">
+                  <input type="text" class="comment-input" name="text" placeholder="Comentario..." maxlength="500">
+                  <button type="submit" class="btn btn-sm">Enviar</button>
+                </form>
               </div>
             </div>
             <div class="slot-actions">
@@ -1453,6 +1853,33 @@ main { padding: 20px; max-width: none; }
             </template>
           </select>
         </div>
+        <span class="comments-toggle" :class="{ 'has-comments': commentCount('provider', provider.id) > 0 }" @click="toggleComments('provider', provider.id)" style="align-self: flex-start; margin-top: 8px;">
+          💬 <span class="count" x-text="commentCount('provider', provider.id) || '+'"></span> comentarios
+        </span>
+        <div class="comments-panel" x-show="openComments === 'provider:' + provider.id" x-cloak>
+          <template x-for="c in commentsFor('provider', provider.id)" :key="c.id">
+            <div class="comment">
+              <div class="comment-avatar" :class="(c.author || '').toLowerCase()" x-text="(c.author || '?').substring(0,1)"></div>
+              <div class="comment-body">
+                <div class="comment-meta">
+                  <span class="comment-author" x-text="c.author"></span>
+                  <span class="comment-time" x-text="relativeTime(c.created_at)"></span>
+                </div>
+                <div class="comment-text" x-html="formatCommentText(c.text)"></div>
+              </div>
+              <div class="comment-actions">
+                <button class="btn-icon" x-show="c.author === identity" @click="deleteComment(c.id)" title="Borrar">✕</button>
+              </div>
+            </div>
+          </template>
+          <div x-show="commentsFor('provider', provider.id).length === 0" style="font-size: 13px; font-style: italic; color: var(--ink-mute); padding: 8px 0;">
+            Sin comentarios aún.
+          </div>
+          <form class="comment-form" @submit.prevent="addComment('provider', provider.id, $event)">
+            <input type="text" class="comment-input" name="text" placeholder="Comentario..." maxlength="500">
+            <button type="submit" class="btn btn-sm">Enviar</button>
+          </form>
+        </div>
       </div>
     </template>
   </div>
@@ -1460,6 +1887,50 @@ main { padding: 20px; max-width: none; }
   <template x-if="filteredProviders.length === 0">
     <div class="empty-state">Sin resultados. Cambiá filtros o <button class="btn btn-sm" @click="addProvider()" style="margin-left: 8px;">+ agregá un proveedor</button></div>
   </template>
+</section>
+
+<!-- ====== MAPA ====== -->
+<section x-show="tab === 'map'">
+  <div class="section-header">
+    <div>
+      <h1>Mapa del <em>viaje</em></h1>
+      <p class="lead">Villa, proveedores y lugares del itinerario. Click en cada pin para ver detalles.</p>
+    </div>
+  </div>
+
+  <div class="map-wrap">
+    <div id="trip-map"></div>
+    <div class="map-legend">
+      <span class="map-legend-item" @click="toggleMapLayer('villa')" :class="{ disabled: !mapLayers.villa }">
+        <span class="map-legend-dot" style="background: #6e1a1f;"></span> Villa
+      </span>
+      <span class="map-legend-item" @click="toggleMapLayer('restaurant')" :class="{ disabled: !mapLayers.restaurant }">
+        <span class="map-legend-dot" style="background: #b8512e;"></span> Restaurantes
+      </span>
+      <span class="map-legend-item" @click="toggleMapLayer('winery')" :class="{ disabled: !mapLayers.winery }">
+        <span class="map-legend-dot" style="background: #6e1a1f;"></span> Bodegas
+      </span>
+      <span class="map-legend-item" @click="toggleMapLayer('truffle')" :class="{ disabled: !mapLayers.truffle }">
+        <span class="map-legend-dot" style="background: #8b6914;"></span> Truffle hunt
+      </span>
+      <span class="map-legend-item" @click="toggleMapLayer('activity')" :class="{ disabled: !mapLayers.activity }">
+        <span class="map-legend-dot" style="background: #3c6b3c;"></span> Experiencias
+      </span>
+      <span class="map-legend-item" @click="toggleMapLayer('transfer')" :class="{ disabled: !mapLayers.transfer }">
+        <span class="map-legend-dot" style="background: #5a6378;"></span> Transfers
+      </span>
+      <span class="map-legend-item" @click="toggleMapLayer('service')" :class="{ disabled: !mapLayers.service }">
+        <span class="map-legend-dot" style="background: #3a5a8b;"></span> Servicios
+      </span>
+      <span class="map-legend-item" @click="toggleDayRoutes()" :class="{ disabled: !showDayRoutes }" style="border-color: var(--terracotta); color: var(--terracotta);">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">— — —</span> Rutas por día
+      </span>
+    </div>
+  </div>
+
+  <p style="margin-top: 16px; font-size: 12px; color: var(--ink-mute); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase;">
+    <span x-text="mappedProvidersCount"></span> proveedores ubicados · datos OpenStreetMap
+  </p>
 </section>
 
 <!-- ====== RESERVAS / ACTIONS ====== -->
@@ -1482,21 +1953,88 @@ main { padding: 20px; max-width: none; }
   </div>
 
   <template x-for="action in filteredActions" :key="action.id">
-    <div class="action-item" :class="{ done: action.done }">
-      <div class="checkbox" :class="{ checked: action.done }" @click="action.done = !action.done; save()"></div>
-      <select class="priority-tag" :class="action.priority" x-model="action.priority" @change="save()" style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; appearance: none; background-image: none; padding: 4px 8px;">
-        <option value="P1">P1</option>
-        <option value="P2">P2</option>
-        <option value="P3">P3</option>
-      </select>
-      <div>
-        <input type="text" class="action-title" x-model="action.task" @blur="save()" style="width:100%;">
-        <input type="text" x-model="action.description" @blur="save()" class="action-desc" style="border:none; background:transparent; padding:0; width:100%;" placeholder="Detalles...">
+    <div>
+      <div class="action-item" :class="{ done: action.done }">
+        <div class="checkbox" :class="{ checked: action.done }" @click="action.done = !action.done; save()"></div>
+        <select class="priority-tag" :class="action.priority" x-model="action.priority" @change="save()" style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; appearance: none; background-image: none; padding: 4px 8px;">
+          <option value="P1">P1</option>
+          <option value="P2">P2</option>
+          <option value="P3">P3</option>
+        </select>
+        <div>
+          <input type="text" class="action-title" x-model="action.task" @blur="save()" style="width:100%;">
+          <input type="text" x-model="action.description" @blur="save()" class="action-desc" style="border:none; background:transparent; padding:0; width:100%;" placeholder="Detalles...">
+        </div>
+        <div class="action-contact">
+          <input type="text" x-model="action.contact" @blur="save()" placeholder="Contacto / web..." style="font-size: 11px;">
+        </div>
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <span class="comments-toggle" :class="{ 'has-comments': commentCount('action', action.id) > 0 }" @click="toggleComments('action', action.id)" title="Comentarios">
+            💬 <span class="count" x-text="commentCount('action', action.id) || '+'"></span>
+          </span>
+          <button class="btn-icon" @click="data.actions = data.actions.filter(a => a.id !== action.id); save()" title="Eliminar">✕</button>
+        </div>
       </div>
-      <div class="action-contact">
-        <input type="text" x-model="action.contact" @blur="save()" placeholder="Contacto / web..." style="font-size: 11px;">
+      <div class="comments-panel" x-show="openComments === 'action:' + action.id" x-cloak style="margin-bottom: 12px;">
+        <template x-for="c in commentsFor('action', action.id)" :key="c.id">
+          <div class="comment">
+            <div class="comment-avatar" :class="(c.author || '').toLowerCase()" x-text="(c.author || '?').substring(0,1)"></div>
+            <div class="comment-body">
+              <div class="comment-meta">
+                <span class="comment-author" x-text="c.author"></span>
+                <span class="comment-time" x-text="relativeTime(c.created_at)"></span>
+              </div>
+              <div class="comment-text" x-html="formatCommentText(c.text)"></div>
+            </div>
+            <div class="comment-actions">
+              <button class="btn-icon" x-show="c.author === identity" @click="deleteComment(c.id)" title="Borrar">✕</button>
+            </div>
+          </div>
+        </template>
+        <div x-show="commentsFor('action', action.id).length === 0" style="font-size: 13px; font-style: italic; color: var(--ink-mute); padding: 8px 0;">
+          Sin comentarios aún.
+        </div>
+        <form class="comment-form" @submit.prevent="addComment('action', action.id, $event)">
+          <input type="text" class="comment-input" name="text" placeholder="Comentario..." maxlength="500">
+          <button type="submit" class="btn btn-sm">Enviar</button>
+        </form>
       </div>
-      <button class="btn-icon" @click="data.actions = data.actions.filter(a => a.id !== action.id); save()" title="Eliminar">✕</button>
+    </div>
+  </template>
+</section>
+
+<!-- ====== HISTORIAL ====== -->
+<section x-show="tab === 'history'">
+  <div class="section-header">
+    <div>
+      <h1>Historial <em>de cambios</em></h1>
+      <p class="lead">Bitácora de todas las acciones: quién hizo qué y cuándo. Útil para auditar y volver atrás.</p>
+    </div>
+  </div>
+
+  <div class="event-filter-chips">
+    <button class="chip" :class="{ active: historyFilter === 'all' }" @click="historyFilter = 'all'">Todo (<span x-text="changes.length"></span>)</button>
+    <button class="chip" :class="{ active: historyFilter === 'Brian' }" @click="historyFilter = 'Brian'">Brian (<span x-text="changes.filter(c => c.author === 'Brian').length"></span>)</button>
+    <button class="chip" :class="{ active: historyFilter === 'Federico' }" @click="historyFilter = 'Federico'">Federico (<span x-text="changes.filter(c => c.author === 'Federico').length"></span>)</button>
+    <button class="chip" :class="{ active: historyFilter === 'comments' }" @click="historyFilter = 'comments'">Comentarios</button>
+    <button class="chip" :class="{ active: historyFilter === 'edits' }" @click="historyFilter = 'edits'">Ediciones</button>
+  </div>
+
+  <template x-for="c in filteredChanges" :key="c.id">
+    <div class="event-row">
+      <div class="event-avatar" :class="(c.author || '').toLowerCase()" x-text="(c.author || '?').substring(0,1)"></div>
+      <div class="event-summary">
+        <span class="event-icon" x-text="eventIcon(c.event_type)"></span>
+        <strong x-text="c.author"></strong> <span x-text="c.summary"></span>
+      </div>
+      <div class="event-time" x-text="relativeTime(c.created_at)"></div>
+    </div>
+  </template>
+
+  <template x-if="filteredChanges.length === 0">
+    <div class="empty-state">
+      <span x-show="changes.length === 0">Aún no hay eventos registrados.<br>Las acciones futuras (agregar/eliminar/cambiar estado, comentarios, snapshots) van a aparecer acá.</span>
+      <span x-show="changes.length > 0">Sin resultados con este filtro.</span>
     </div>
   </template>
 </section>
@@ -1530,6 +2068,34 @@ main { padding: 20px; max-width: none; }
       <h3>Imprimir / PDF</h3>
       <p>Generá una versión imprimible del itinerario completo. Cmd/Ctrl + P → Guardar como PDF.</p>
       <button class="btn btn-ghost" @click="window.print()">⎙ Imprimir</button>
+    </div>
+
+    <div class="backup-card">
+      <h3>Exportar a calendario</h3>
+      <p>Descargá el itinerario como archivo <code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--ink); color: var(--cream); padding: 2px 6px; border-radius: 2px;">.ics</code> e importalo en Google Calendar, Apple Calendar u Outlook. Cada slot se convierte en un evento con horario y descripción.</p>
+      <button class="btn btn-ghost" @click="exportICal()">📅 Descargar .ics</button>
+    </div>
+
+    <div class="backup-card" style="grid-column: 1 / -1;">
+      <h3>Versiones / snapshots</h3>
+      <p>Guardá un snapshot nombrado del estado actual antes de cambios grandes. Podés restaurarlo después si te arrepentís. Snapshots compartidos entre Brian y Federico.</p>
+      <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+        <input type="text" x-model="newSnapshotName" placeholder="Nombre (ej: 'antes de mover día 3')" style="flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid var(--rule-strong); border-radius: 4px;">
+        <button class="btn" @click="saveSnapshot()" :disabled="!newSnapshotName.trim()">💾 Guardar versión</button>
+      </div>
+      <template x-for="s in snapshots" :key="s.id">
+        <div class="snapshot-item">
+          <div>
+            <strong x-text="s.name"></strong>
+            <small><span x-text="s.author"></span> · <span x-text="relativeTime(s.created_at)"></span> · <span x-text="formatFullDate(s.created_at)"></span></small>
+          </div>
+          <button class="btn btn-sm btn-ghost" @click="restoreSnapshot(s)">↺ Restaurar</button>
+          <button class="btn-icon" @click="deleteSnapshot(s.id)" title="Eliminar">✕</button>
+        </div>
+      </template>
+      <template x-if="snapshots.length === 0">
+        <div style="font-style: italic; color: var(--ink-mute); font-size: 14px; padding: 12px 0;">No hay snapshots aún. Guardá uno antes de hacer cambios grandes.</div>
+      </template>
     </div>
 
     <div class="backup-card danger">
@@ -1570,6 +2136,44 @@ main { padding: 20px; max-width: none; }
 </div>
 
 <script>
+const LOCATION_COORDS = {
+  "Villa Castiglione Tinella": { lat: 44.7337, lon: 8.1922 },
+  "Castiglione Tinella": { lat: 44.7337, lon: 8.1922 },
+  "Treiso": { lat: 44.6840, lon: 8.0872 },
+  "Santo Stefano Belbo": { lat: 44.7026, lon: 8.2180 },
+  "Guarene": { lat: 44.7353, lon: 8.0366 },
+  "Grinzane Cavour": { lat: 44.6608, lon: 7.9949 },
+  "Alba": { lat: 44.6866, lon: 8.0311 },
+  "Alba centro": { lat: 44.6866, lon: 8.0311 },
+  "Alba (Piazza Risorgimento)": { lat: 44.6866, lon: 8.0311 },
+  "Alba (Monsordo Bernardina)": { lat: 44.6750, lon: 8.0250 },
+  "Alba (Ceretto)": { lat: 44.6750, lon: 8.0250 },
+  "Barolo": { lat: 44.6147, lon: 7.9394 },
+  "La Morra": { lat: 44.6520, lon: 7.9361 },
+  "Castiglione Falletto": { lat: 44.6326, lon: 7.9737 },
+  "Barbaresco": { lat: 44.7193, lon: 8.0769 },
+  "Barbaresco (Tre Stelle)": { lat: 44.6840, lon: 8.0872 },
+  "Diano d'Alba": { lat: 44.6516, lon: 8.0265 },
+  "Canale": { lat: 44.8021, lon: 8.0100 },
+  "Canale (Roero)": { lat: 44.8021, lon: 8.0100 },
+  "Serralunga d'Alba": { lat: 44.6180, lon: 7.9974 },
+  "Monforte d'Alba": { lat: 44.5904, lon: 7.9739 },
+  "Costigliole d'Asti": { lat: 44.7881, lon: 8.1797 },
+  "Roddi": { lat: 44.6758, lon: 7.9688 },
+  "Neive": { lat: 44.7261, lon: 8.1152 },
+  "Neive/Trezzo Tinella": { lat: 44.7261, lon: 8.1152 },
+  "Madonna di Como, Alba": { lat: 44.6663, lon: 8.0610 },
+  // Airports + transfer hubs
+  "TRN/MXP/LIN/BGY": { lat: 45.6306, lon: 8.7281 }, // MXP
+  "MXP": { lat: 45.6306, lon: 8.7281 },
+  "MXP/LIN/BGY": { lat: 45.6306, lon: 8.7281 },
+  "Turín/Langhe": { lat: 45.0703, lon: 7.6869 },
+  // Italy (genérico, para Cesarine.com)
+  "Italia (cocineras locales)": { lat: 44.6866, lon: 8.0311 },
+  "Italia (marketplace)": { lat: 44.6866, lon: 8.0311 },
+  "Langhe/Monferrato": { lat: 44.6866, lon: 8.0311 }
+};
+
 const DEFAULT_DATA = {
   meta: {
     tripName: "Piemonte / Le Langhe — Oct 2026",
@@ -1795,6 +2399,11 @@ function app() {
 
       // Load identity from localStorage
       this.identity = localStorage.getItem('piemonte-identity');
+      // Load "seen" timestamps for reactive computeds
+      this._historySeenAt = parseInt(localStorage.getItem('piemonte-history-seen') || '0', 10);
+      if (this.identity) {
+        this._mentionsSeenAt = parseInt(localStorage.getItem('piemonte-mentions-seen-' + this.identity) || '0', 10);
+      }
 
       // Tick relative time every 30s
       setInterval(() => { this._now = Date.now(); }, 30000);
@@ -1820,6 +2429,14 @@ function app() {
       // Subscribe to real-time changes ONLY if load succeeded (table exists)
       if (loadOk) {
         this.subscribeToChanges();
+        // Comments: load + subscribe
+        await this.loadComments();
+        this.subscribeToComments();
+        // Snapshots + Changes log
+        await this.loadSnapshots();
+        this.subscribeToSnapshots();
+        await this.loadChanges();
+        this.subscribeToChangesLog();
       }
 
       // Watch for local changes -> save to cloud
@@ -1833,6 +2450,7 @@ function app() {
     setIdentity(name) {
       this.identity = name;
       localStorage.setItem('piemonte-identity', name);
+      this._mentionsSeenAt = parseInt(localStorage.getItem('piemonte-mentions-seen-' + name) || '0', 10);
     },
     switchIdentity() {
       if (confirm('¿Cambiar de identidad? Vas a tener que elegir de nuevo.')) {
@@ -2066,35 +2684,46 @@ function app() {
         slots: []
       };
       this.data.itinerary.push(newDay);
+      this.logEvent('itinerary.day_added', `agregó un día al itinerario`, { day_id: newDay.id });
     },
     deleteDay(idx) {
       if (confirm(`¿Eliminar día ${idx + 1} y todos sus slots?`)) {
+        const day = this.data.itinerary[idx];
         this.data.itinerary.splice(idx, 1);
+        this.logEvent('itinerary.day_deleted', `eliminó el día "${day.title}"`, { day_id: day.id, title: day.title });
       }
     },
     addSlot(dayIdx) {
-      this.data.itinerary[dayIdx].slots.push({
+      const slot = {
         id: 's' + Date.now(),
         time: '00:00',
         title: 'Nueva actividad',
         description: '',
         status: 'info',
         verdict: ''
-      });
+      };
+      this.data.itinerary[dayIdx].slots.push(slot);
+      const day = this.data.itinerary[dayIdx];
+      this.logEvent('itinerary.slot_added', `agregó un slot en "${day.title}"`, { day_id: day.id, slot_id: slot.id });
     },
     deleteSlot(dayIdx, slotIdx) {
+      const slot = this.data.itinerary[dayIdx].slots[slotIdx];
+      const day = this.data.itinerary[dayIdx];
       this.data.itinerary[dayIdx].slots.splice(slotIdx, 1);
+      this.logEvent('itinerary.slot_deleted', `eliminó el slot "${slot.title}" de "${day.title}"`, { day_id: day.id, slot_id: slot.id, title: slot.title });
     },
 
     // === BUDGET ===
     addBudgetItem() {
-      this.data.budget.push({
+      const item = {
         id: 'b' + Date.now(),
         category: 'Nueva categoría',
         amount: 0,
         notes: '',
         status: 'pending'
-      });
+      };
+      this.data.budget.push(item);
+      this.logEvent('budget.item_added', `agregó una línea de presupuesto`, { item_id: item.id });
     },
     get budgetTotal() {
       return this.data.budget.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
@@ -2118,7 +2747,7 @@ function app() {
 
     // === PROVIDERS ===
     addProvider() {
-      this.data.providers.unshift({
+      const p = {
         id: 'p' + Date.now(),
         name: 'Nuevo proveedor',
         type: 'restaurant',
@@ -2131,11 +2760,15 @@ function app() {
         closingDays: '',
         notes: '',
         reservationStatus: 'pending'
-      });
+      };
+      this.data.providers.unshift(p);
+      this.logEvent('provider.added', `agregó un proveedor`, { provider_id: p.id });
     },
     deleteProvider(id) {
       if (confirm('¿Eliminar este proveedor?')) {
+        const p = this.data.providers.find(x => x.id === id);
         this.data.providers = this.data.providers.filter(p => p.id !== id);
+        this.logEvent('provider.deleted', `eliminó "${p?.name || 'proveedor'}"`, { provider_id: id, name: p?.name });
       }
     },
     get filteredProviders() {
@@ -2155,14 +2788,16 @@ function app() {
 
     // === ACTIONS ===
     addAction() {
-      this.data.actions.unshift({
+      const a = {
         id: 'ac' + Date.now(),
         priority: 'P2',
         task: 'Nueva tarea',
         description: '',
         contact: '',
         done: false
-      });
+      };
+      this.data.actions.unshift(a);
+      this.logEvent('action.added', `agregó una tarea pendiente`, { action_id: a.id });
     },
     get filteredActions() {
       const f = this.actionFilter;
@@ -2170,6 +2805,556 @@ function app() {
       if (f === 'pending') return this.data.actions.filter(a => !a.done);
       if (f === 'done') return this.data.actions.filter(a => a.done);
       return this.data.actions.filter(a => a.priority === f);
+    },
+
+    // === MAP ===
+    _mapInstance: null,
+    _mapLayers: {},
+    mapLayers: { villa: true, restaurant: true, winery: true, truffle: true, activity: true, transfer: true, service: true },
+
+    initMap() {
+      if (this._mapInstance) {
+        // Map exists; just resize after tab show
+        setTimeout(() => this._mapInstance.invalidateSize(), 100);
+        return;
+      }
+      if (!window.L) return; // Leaflet not loaded yet
+      const villaCoords = LOCATION_COORDS['Villa Castiglione Tinella'];
+      this._mapInstance = L.map('trip-map', {
+        center: [villaCoords.lat, villaCoords.lon],
+        zoom: 11,
+        scrollWheelZoom: false
+      });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19
+      }).addTo(this._mapInstance);
+      // Enable scroll only when focused (click-to-engage)
+      this._mapInstance.on('click', () => this._mapInstance.scrollWheelZoom.enable());
+      this._mapInstance.on('mouseout', () => this._mapInstance.scrollWheelZoom.disable());
+
+      // Render all markers
+      this.renderMapMarkers();
+      // Render polylines del itinerario por día
+      this.renderDayRoutes();
+    },
+
+    renderMapMarkers() {
+      if (!this._mapInstance) return;
+      // Clear existing
+      Object.values(this._mapLayers).forEach(group => group.clearLayers());
+      this._mapLayers = {
+        villa: L.layerGroup(),
+        restaurant: L.layerGroup(),
+        winery: L.layerGroup(),
+        truffle: L.layerGroup(),
+        activity: L.layerGroup(),
+        transfer: L.layerGroup(),
+        service: L.layerGroup()
+      };
+
+      // Villa pin
+      const villaCoords = LOCATION_COORDS['Villa Castiglione Tinella'];
+      if (villaCoords) {
+        const villaIcon = L.divIcon({
+          className: '',
+          html: '<div class="leaflet-pin pin-villa"><span>★</span></div>',
+          iconSize: [36, 36],
+          iconAnchor: [18, 36],
+          popupAnchor: [0, -32]
+        });
+        L.marker([villaCoords.lat, villaCoords.lon], { icon: villaIcon })
+          .bindPopup(`<div class="pop-type">VILLA · BASE</div><strong>${this.data.meta.villa.name}</strong><div class="pop-meta">${this.data.meta.villa.address}</div><div class="pop-meta">€${this.data.meta.villa.cost.toLocaleString('es')} · ${this.data.meta.nights} noches</div>`)
+          .addTo(this._mapLayers.villa);
+      }
+
+      // Provider pins
+      this.data.providers.forEach((p, i) => {
+        const coords = this.providerCoords(p);
+        if (!coords) return;
+        const initial = (this.providerTypes.find(t => t.key === p.type) || {label: p.type}).label.charAt(0);
+        const icon = L.divIcon({
+          className: '',
+          html: `<div class="leaflet-pin pin-${p.type}"><span>${initial}</span></div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 28],
+          popupAnchor: [0, -24]
+        });
+        // Jitter to avoid overlap (small offset per provider in same location)
+        const jitterLat = coords.lat + (Math.random() - 0.5) * 0.004;
+        const jitterLon = coords.lon + (Math.random() - 0.5) * 0.004;
+        const stars = p.michelin > 0 ? ' ' + '★'.repeat(p.michelin) : '';
+        const typeLabel = (this.providerTypes.find(t => t.key === p.type) || {label: p.type}).label;
+        const popup = `
+          <div class="pop-type">${typeLabel}</div>
+          <strong>${p.name}${stars}</strong>
+          <div class="pop-meta">${p.location || ''}</div>
+          ${p.phone ? `<div class="pop-meta">📞 ${p.phone}</div>` : ''}
+          ${p.priceRange ? `<div class="pop-meta">${p.priceRange}</div>` : ''}
+          ${p.closingDays ? `<div class="pop-meta" style="color:var(--bad);">Cierra: ${p.closingDays}</div>` : ''}
+          <div class="pop-meta" style="margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.12em;">Estado: ${p.reservationStatus}</div>
+        `;
+        L.marker([jitterLat, jitterLon], { icon })
+          .bindPopup(popup)
+          .addTo(this._mapLayers[p.type] || this._mapLayers.service);
+      });
+
+      // Add all to map respecting current layer toggles
+      Object.keys(this.mapLayers).forEach(key => {
+        if (this.mapLayers[key]) this._mapLayers[key].addTo(this._mapInstance);
+      });
+    },
+
+    providerCoords(p) {
+      // Manual override (if provider has explicit lat/lng)
+      if (p.latitude && p.longitude) return { lat: p.latitude, lon: p.longitude };
+      // Lookup by location string — try exact, then partial
+      const loc = (p.location || '').trim();
+      if (!loc) return null;
+      if (LOCATION_COORDS[loc]) return LOCATION_COORDS[loc];
+      // Partial: find a key that loc contains
+      for (const key of Object.keys(LOCATION_COORDS)) {
+        if (loc.includes(key) || key.includes(loc.split(/[,(]/)[0].trim())) return LOCATION_COORDS[key];
+      }
+      return null;
+    },
+
+    toggleMapLayer(key) {
+      this.mapLayers[key] = !this.mapLayers[key];
+      if (!this._mapInstance) return;
+      if (this.mapLayers[key]) {
+        this._mapLayers[key].addTo(this._mapInstance);
+      } else {
+        this._mapLayers[key].removeFrom(this._mapInstance);
+      }
+    },
+
+    get mappedProvidersCount() {
+      return this.data.providers.filter(p => this.providerCoords(p)).length;
+    },
+
+    // === COMMENTS ===
+    comments: [],
+    openComments: null, // 'type:id' format, e.g. 'slot:s1-1'
+
+    async loadComments() {
+      if (!this._client) return;
+      try {
+        const { data: rows, error } = await this._client
+          .from('comments')
+          .select('*')
+          .eq('trip_id', this.TRIP_ID)
+          .order('created_at', { ascending: true });
+        if (error) throw error;
+        this.comments = rows || [];
+      } catch (e) {
+        console.error('Load comments failed:', e);
+      }
+    },
+
+    subscribeToComments() {
+      if (!this._client) return;
+      this._client
+        .channel('comments-' + this.TRIP_ID)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments', filter: `trip_id=eq.${this.TRIP_ID}` }, (payload) => {
+          if (!this.comments.some(c => c.id === payload.new.id)) {
+            this.comments = [...this.comments, payload.new];
+            if (payload.new.author !== this.identity) {
+              this.notifyRemote(`${payload.new.author} comentó`);
+            }
+          }
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comments', filter: `trip_id=eq.${this.TRIP_ID}` }, (payload) => {
+          this.comments = this.comments.filter(c => c.id !== payload.old.id);
+        })
+        .subscribe();
+    },
+
+    commentsFor(type, id) {
+      return this.comments.filter(c => c.item_type === type && c.item_id === id);
+    },
+
+    commentCount(type, id) {
+      return this.commentsFor(type, id).length;
+    },
+
+    toggleComments(type, id) {
+      const key = type + ':' + id;
+      this.openComments = (this.openComments === key) ? null : key;
+    },
+
+    async addComment(type, id, event) {
+      const input = event.target.querySelector('input[name="text"]');
+      const text = (input.value || '').trim();
+      if (!text || !this.identity) return;
+      const newComment = {
+        trip_id: this.TRIP_ID,
+        item_type: type,
+        item_id: id,
+        author: this.identity,
+        text: text
+      };
+      input.value = '';
+      try {
+        const { data: row, error } = await this._client.from('comments').insert(newComment).select().single();
+        if (error) throw error;
+        if (row && !this.comments.some(c => c.id === row.id)) {
+          this.comments = [...this.comments, row];
+        }
+        // Log event with item context for the historial
+        const itemRef = (type === 'slot') ? this.findSlotTitle(id) : (type === 'provider') ? this.findProviderName(id) : this.findActionTitle(id);
+        this.logEvent('comment.added', `comentó en "${itemRef || type}"`, { item_type: type, item_id: id, text: text.substring(0, 120) });
+      } catch (e) {
+        console.error('Add comment failed:', e);
+        this.notify('Error al enviar comentario');
+      }
+    },
+
+    findSlotTitle(slotId) {
+      for (const d of this.data.itinerary) {
+        const s = d.slots.find(x => x.id === slotId);
+        if (s) return s.title;
+      }
+      return null;
+    },
+    findProviderName(id) {
+      const p = this.data.providers.find(x => x.id === id);
+      return p?.name;
+    },
+    findActionTitle(id) {
+      const a = this.data.actions.find(x => x.id === id);
+      return a?.task;
+    },
+
+    async deleteComment(id) {
+      if (!confirm('¿Borrar este comentario?')) return;
+      try {
+        const { error } = await this._client.from('comments').delete().eq('id', id);
+        if (error) throw error;
+        this.comments = this.comments.filter(c => c.id !== id);
+      } catch (e) {
+        console.error('Delete comment failed:', e);
+      }
+    },
+
+    // === iCAL EXPORT ===
+    exportICal() {
+      const pad = n => String(n).padStart(2, '0');
+      const fmtDT = (date, time) => {
+        // date: "2026-10-19", time: "20:00" or "varios"
+        const t = /^\d{1,2}:\d{2}$/.test(time) ? time : '09:00';
+        const [y, m, d] = date.split('-');
+        const [h, mi] = t.split(':');
+        return `${y}${m}${d}T${pad(h)}${pad(mi)}00`;
+      };
+      const escape = s => (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+      const lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//BA x TWT//Piemonte//ES',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:Piemonte BA x TWT Oct 2026',
+        'X-WR-TIMEZONE:Europe/Rome'
+      ];
+      this.data.itinerary.forEach(day => {
+        if (!day.date) return;
+        day.slots.forEach(slot => {
+          const start = fmtDT(day.date, slot.time);
+          // Add 1 hour for end (basic heuristic)
+          const startDate = new Date(`${day.date}T${(/^\d{1,2}:\d{2}$/.test(slot.time) ? slot.time : '09:00')}:00`);
+          const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+          const endStr = `${endDate.getFullYear()}${pad(endDate.getMonth()+1)}${pad(endDate.getDate())}T${pad(endDate.getHours())}${pad(endDate.getMinutes())}00`;
+          lines.push('BEGIN:VEVENT');
+          lines.push(`UID:${slot.id}@piemonte-ba-twt-2026`);
+          lines.push(`DTSTAMP:${start}Z`);
+          lines.push(`DTSTART;TZID=Europe/Rome:${start}`);
+          lines.push(`DTEND;TZID=Europe/Rome:${endStr}`);
+          lines.push(`SUMMARY:${escape(slot.title)}`);
+          if (slot.description) lines.push(`DESCRIPTION:${escape(slot.description + (slot.verdict ? '\n\n' + slot.verdict : ''))}`);
+          lines.push('END:VEVENT');
+        });
+      });
+      lines.push('END:VCALENDAR');
+      const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'piemonte-ba-twt-2026.ics';
+      a.click();
+      URL.revokeObjectURL(url);
+      this.notify('Calendario descargado');
+    },
+
+    // === SNAPSHOTS ===
+    snapshots: [],
+    newSnapshotName: '',
+
+    async loadSnapshots() {
+      if (!this._client) return;
+      try {
+        const { data: rows, error } = await this._client
+          .from('snapshots')
+          .select('*')
+          .eq('trip_id', this.TRIP_ID)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        this.snapshots = rows || [];
+      } catch (e) { console.error('Load snapshots failed:', e); }
+    },
+
+    subscribeToSnapshots() {
+      if (!this._client) return;
+      this._client.channel('snapshots-' + this.TRIP_ID)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'snapshots', filter: `trip_id=eq.${this.TRIP_ID}` }, (p) => {
+          if (!this.snapshots.some(s => s.id === p.new.id)) {
+            this.snapshots = [p.new, ...this.snapshots];
+          }
+        })
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'snapshots', filter: `trip_id=eq.${this.TRIP_ID}` }, (p) => {
+          this.snapshots = this.snapshots.filter(s => s.id !== p.old.id);
+        })
+        .subscribe();
+    },
+
+    async saveSnapshot() {
+      const name = this.newSnapshotName.trim();
+      if (!name || !this.identity) return;
+      try {
+        const { data: row, error } = await this._client.from('snapshots').insert({
+          trip_id: this.TRIP_ID,
+          name: name,
+          data: this.data,
+          author: this.identity
+        }).select().single();
+        if (error) throw error;
+        if (row && !this.snapshots.some(s => s.id === row.id)) {
+          this.snapshots = [row, ...this.snapshots];
+        }
+        this.newSnapshotName = '';
+        this.notify(`Snapshot "${name}" guardado`);
+        await this.logEvent('snapshot.saved', `guardó snapshot "${name}"`, { snapshot_id: row?.id, name });
+      } catch (e) {
+        console.error('Save snapshot failed:', e);
+        this.notify('Error al guardar snapshot');
+      }
+    },
+
+    async restoreSnapshot(s) {
+      if (!confirm(`¿Restaurar el snapshot "${s.name}"? Reemplaza el estado actual del viaje.`)) return;
+      this.applyingRemote = true;
+      this.data = JSON.parse(JSON.stringify(s.data));
+      this.$nextTick(() => { this.applyingRemote = false; this.saveToCloud(); });
+      this.notify(`Restaurado "${s.name}"`);
+      await this.logEvent('snapshot.restored', `restauró snapshot "${s.name}"`, { snapshot_id: s.id, name: s.name });
+    },
+
+    async deleteSnapshot(id) {
+      if (!confirm('¿Eliminar este snapshot?')) return;
+      try {
+        const { error } = await this._client.from('snapshots').delete().eq('id', id);
+        if (error) throw error;
+        this.snapshots = this.snapshots.filter(s => s.id !== id);
+      } catch (e) { console.error('Delete snapshot failed:', e); }
+    },
+
+    // === CHANGES / EVENT LOG ===
+    changes: [],
+    historyFilter: 'all',
+    lastHistorySeen: 0,
+
+    async loadChanges() {
+      if (!this._client) return;
+      try {
+        const { data: rows, error } = await this._client
+          .from('changes')
+          .select('*')
+          .eq('trip_id', this.TRIP_ID)
+          .order('created_at', { ascending: false })
+          .limit(200);
+        if (error) throw error;
+        this.changes = rows || [];
+      } catch (e) { console.error('Load changes failed:', e); }
+    },
+
+    subscribeToChangesLog() {
+      if (!this._client) return;
+      this._client.channel('changes-log-' + this.TRIP_ID)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'changes', filter: `trip_id=eq.${this.TRIP_ID}` }, (p) => {
+          if (!this.changes.some(c => c.id === p.new.id)) {
+            this.changes = [p.new, ...this.changes];
+          }
+        })
+        .subscribe();
+    },
+
+    async logEvent(eventType, summary, payload) {
+      if (!this._client || !this.identity) return;
+      try {
+        // Don't await — fire and forget. The realtime subscription will add to local state.
+        this._client.from('changes').insert({
+          trip_id: this.TRIP_ID,
+          author: this.identity,
+          event_type: eventType,
+          summary: summary,
+          payload: payload || null
+        }).then(({ error }) => {
+          if (error) console.warn('logEvent failed:', error);
+        });
+      } catch (e) { console.warn('logEvent error:', e); }
+    },
+
+    eventIcon(eventType) {
+      const icons = {
+        'itinerary.day_added': '➕',
+        'itinerary.day_deleted': '🗑',
+        'itinerary.slot_added': '➕',
+        'itinerary.slot_deleted': '🗑',
+        'budget.item_added': '💰',
+        'budget.item_deleted': '🗑',
+        'provider.added': '🏨',
+        'provider.deleted': '🗑',
+        'provider.status_changed': '🔄',
+        'action.added': '✓',
+        'action.deleted': '🗑',
+        'action.toggled': '☑',
+        'comment.added': '💬',
+        'comment.deleted': '🗑',
+        'snapshot.saved': '📸',
+        'snapshot.restored': '↺'
+      };
+      return icons[eventType] || '·';
+    },
+
+    get filteredChanges() {
+      const f = this.historyFilter;
+      if (f === 'all') return this.changes;
+      if (f === 'Brian' || f === 'Federico') return this.changes.filter(c => c.author === f);
+      if (f === 'comments') return this.changes.filter(c => c.event_type.startsWith('comment.'));
+      if (f === 'edits') return this.changes.filter(c => !c.event_type.startsWith('comment.') && !c.event_type.startsWith('snapshot.'));
+      return this.changes;
+    },
+
+    get unseenChanges() {
+      return this.changes.filter(c => new Date(c.created_at).getTime() > this._historySeenAt && c.author !== this.identity).length;
+    },
+
+    markHistorySeen() {
+      const now = Date.now();
+      localStorage.setItem('piemonte-history-seen', String(now));
+      this._historySeenAt = now;
+    },
+
+    // === MAP ROUTES BY DAY ===
+    _routeLayers: [],
+    dayColors: ['#b8512e', '#6e1a1f', '#3c6b3c', '#3a5a8b', '#b8893a', '#5a6378', '#8b6914'],
+
+    renderDayRoutes() {
+      if (!this._mapInstance) return;
+      // Clear existing routes
+      this._routeLayers.forEach(l => l.removeFrom(this._mapInstance));
+      this._routeLayers = [];
+
+      this.data.itinerary.forEach((day, dayIdx) => {
+        const coords = [];
+        day.slots.forEach((slot, slotIdx) => {
+          const loc = this.slotLocation(slot);
+          if (loc) coords.push({ ll: [loc.lat, loc.lon], slot, slotIdx });
+        });
+        if (coords.length < 2) return;
+
+        const color = this.dayColors[dayIdx % this.dayColors.length];
+        const polyline = L.polyline(coords.map(c => c.ll), {
+          color: color,
+          weight: 3,
+          opacity: 0.65,
+          dashArray: '6, 8'
+        }).bindPopup(`<strong>Día ${dayIdx + 1} · ${day.weekday}</strong><div class="pop-meta">${day.title}</div>`);
+        polyline.addTo(this._mapInstance);
+        this._routeLayers.push(polyline);
+
+        // Numbered start marker per day
+        const startIcon = L.divIcon({
+          className: '',
+          html: `<div style="background:${color}; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.3);">${dayIdx + 1}</div>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12]
+        });
+        // Slight offset to not overlap pins
+        const startMarker = L.marker([coords[0].ll[0] + 0.002, coords[0].ll[1] + 0.002], { icon: startIcon })
+          .bindPopup(`<strong>Día ${dayIdx + 1} arranca acá</strong><div class="pop-meta">${day.title}</div>`);
+        startMarker.addTo(this._mapInstance);
+        this._routeLayers.push(startMarker);
+      });
+    },
+
+    slotLocation(slot) {
+      // Detect location by scanning slot title/description for known location keys
+      const text = ((slot.title || '') + ' ' + (slot.description || '')).toLowerCase();
+      const keys = Object.keys(LOCATION_COORDS).sort((a, b) => b.length - a.length); // longer keys first
+      for (const key of keys) {
+        if (text.includes(key.toLowerCase())) return LOCATION_COORDS[key];
+      }
+      return null;
+    },
+
+    showDayRoutes: true,
+    toggleDayRoutes() {
+      this.showDayRoutes = !this.showDayRoutes;
+      if (this.showDayRoutes) {
+        this.renderDayRoutes();
+      } else {
+        this._routeLayers.forEach(l => l.removeFrom(this._mapInstance));
+        this._routeLayers = [];
+      }
+    },
+
+    // === MENTIONS ===
+    _mentionsSeenAt: 0,
+    _historySeenAt: 0,
+
+    formatCommentText(text) {
+      if (!text) return '';
+      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return escaped.replace(/@(brian|federico)\b/gi, (match, name) => {
+        const cap = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+        return `<span class="mention">@${cap}</span>`;
+      });
+    },
+
+    get unreadMentions() {
+      if (!this.identity) return [];
+      const pattern = new RegExp('@' + this.identity, 'i');
+      return this.comments.filter(c =>
+        c.author !== this.identity &&
+        pattern.test(c.text) &&
+        new Date(c.created_at).getTime() > this._mentionsSeenAt
+      ).slice(0, 10);
+    },
+
+    get mentionBannerTitle() {
+      const n = this.unreadMentions.length;
+      return n === 0 ? '' : `Tenés ${n} ${n === 1 ? 'mención' : 'menciones'} sin leer`;
+    },
+
+    get mentionBannerPreview() {
+      const m = this.unreadMentions[0];
+      if (!m) return '';
+      const txt = m.text.length > 70 ? m.text.substring(0, 70) + '…' : m.text;
+      return `· ${m.author}: "${txt}"`;
+    },
+
+    markMentionsRead() {
+      if (!this.identity) return;
+      const now = Date.now();
+      localStorage.setItem('piemonte-mentions-seen-' + this.identity, String(now));
+      this._mentionsSeenAt = now; // Reactivo
+    },
+
+    formatFullDate(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     },
 
     // === DASHBOARD ===
