@@ -4083,6 +4083,147 @@ textarea:focus-visible {
   display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.v5c-res-meta-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+}
+.v5c-meta-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  border: 1px solid var(--line);
+}
+.v5c-meta-chip.type-reservation { background: var(--tint-accent); color: var(--accent-deep); border-color: color-mix(in oklab, var(--accent) 30%, transparent); }
+.v5c-meta-chip.type-purchase    { background: var(--tint-warn); color: var(--warn); border-color: color-mix(in oklab, var(--warn) 30%, transparent); }
+.v5c-meta-chip.type-contact     { background: var(--tint-info); color: var(--info); border-color: color-mix(in oklab, var(--info) 30%, transparent); }
+.v5c-meta-chip.type-research    { background: var(--tint-ok); color: var(--olive-deep); border-color: color-mix(in oklab, var(--olive-deep) 30%, transparent); }
+.v5c-meta-chip.type-logistics, .v5c-meta-chip.type-other { background: var(--surface-2); color: var(--text-2); }
+.v5c-meta-chip.due { color: var(--text-1); font-weight: 500; }
+.v5c-meta-chip.link { color: var(--text-2); font-style: italic; text-transform: none; letter-spacing: 0; }
+
+/* Provider completeness indicator — 5 pip dots filling left-to-right */
+.v5-completeness {
+  display: inline-flex; align-items: center; gap: 3px;
+}
+.v5-completeness-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--line);
+  transition: background 0.2s ease;
+}
+.v5-completeness-dot.filled { background: var(--accent); }
+.v5-completeness-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--text-3); margin-left: 6px;
+}
+.v5-completeness.complete .v5-completeness-dot.filled { background: var(--olive-deep); }
+.v5-completeness.complete .v5-completeness-label { color: var(--olive-deep); }
+.v5-completeness.poor .v5-completeness-dot.filled { background: var(--warn); }
+.v5-completeness.poor .v5-completeness-label { color: var(--warn); }
+
+/* Currency selector in Presupuesto */
+.v5c-currency-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+}
+.v5c-currency-bar > .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-3);
+}
+.v5c-currency-segmented {
+  display: flex; gap: 4px;
+  background: var(--surface-2);
+  padding: 3px;
+  border-radius: var(--radius);
+}
+.v5c-currency-segmented button {
+  padding: 6px 14px;
+  border: none; background: transparent;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  cursor: pointer;
+  border-radius: calc(var(--radius) - 4px);
+  transition: all 0.15s ease;
+}
+.v5c-currency-segmented button.active {
+  background: var(--surface-1);
+  color: var(--accent-deep);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.v5c-fx-rates {
+  display: flex; align-items: center; gap: 12px;
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.v5c-fx-rates input {
+  width: 70px; padding: 4px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--text-1);
+  text-align: right;
+}
+
+/* Provider bitácora — communication log */
+.v5b-bitacora { display: flex; flex-direction: column; gap: 8px; }
+.v5b-bita-event {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  align-items: start;
+}
+.v5b-bita-event.type-email_received { background: color-mix(in oklab, var(--info) 6%, var(--surface-2)); border-color: color-mix(in oklab, var(--info) 25%, var(--line)); }
+.v5b-bita-event.type-call,
+.v5b-bita-event.type-whatsapp { background: color-mix(in oklab, var(--accent) 5%, var(--surface-2)); border-color: color-mix(in oklab, var(--accent) 20%, var(--line)); }
+.v5b-bita-event.type-meeting { background: color-mix(in oklab, var(--olive-deep) 5%, var(--surface-2)); border-color: color-mix(in oklab, var(--olive-deep) 20%, var(--line)); }
+.v5b-bita-icon { font-size: 18px; line-height: 1; }
+.v5b-bita-body { min-width: 0; }
+.v5b-bita-meta {
+  display: flex; gap: 10px; align-items: baseline;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.v5b-bita-type { color: var(--text-2); font-weight: 600; }
+.v5b-bita-author { color: var(--accent-deep); }
+.v5b-bita-text { font-size: 13px; line-height: 1.4; color: var(--text-1); word-break: break-word; }
+.v5b-bita-form {
+  display: grid; grid-template-columns: 160px 1fr auto; gap: 8px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+.v5b-bita-form select, .v5b-bita-form input[type="text"] {
+  padding: 8px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-1);
+  color: var(--text-1);
+}
+@media (max-width: 540px) {
+  .v5b-bita-form { grid-template-columns: 1fr; }
+}
 .v5c-res-end {
   display: flex; align-items: center; gap: 10px;
 }
@@ -4345,7 +4486,7 @@ textarea:focus-visible {
       </button>
       <button class="v5-nav-item" :class="{active: tab === 'actions'}" @click="tab = 'actions'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
-        <span>Reservas</span>
+        <span>To-Do</span>
         <span class="v5-nav-count" x-text="data.actions.filter(a => !a.done).length"></span>
       </button>
 
@@ -4391,7 +4532,7 @@ textarea:focus-visible {
         <span>Mapa</span>
       </button>
       <button class="tab" :class="{ active: tab === 'actions' }" @click="tab = 'actions'">
-        <span>Reservas</span>
+        <span>To-Do</span>
         <span class="tab-badge" x-text="data.actions.filter(a => !a.done).length"></span>
       </button>
       <button class="tab" :class="{ active: tab === 'history' }" @click="tab = 'history'; markHistorySeen()">
@@ -4455,7 +4596,7 @@ textarea:focus-visible {
     <div class="v5-next-action" x-show="!nextAction" style="background: var(--tint-ok); border-color: rgba(60,107,60,0.3);">
       <div class="v5-next-action-meta" style="color: var(--olive-deep);">
         <span class="v5-prio" style="background: var(--olive-deep);">✓</span>
-        <span>Reservas al día</span>
+        <span>To-Do al día</span>
       </div>
       <h3>Sin pendientes P1.</h3>
       <div class="v5-next-action-desc">Todas las reservas críticas están en marcha. Buen momento para revisar el detalle por día en el itinerario.</div>
@@ -4478,7 +4619,7 @@ textarea:focus-visible {
         <div class="v5-kpi-statement">de €<span x-text="(revenueEUR/1000).toFixed(1)"></span>k ingreso · €<span x-text="Math.round(budgetTotal/data.meta.pax).toLocaleString('es')"></span>/pax</div>
       </div>
       <div class="v5-kpi">
-        <div class="v5-kpi-label">Reservas P1</div>
+        <div class="v5-kpi-label">To-Do P1</div>
         <div class="v5-kpi-value"><span x-text="data.actions.filter(a => a.priority === 'P1' && a.done).length"></span>/<span x-text="data.actions.filter(a => a.priority === 'P1').length"></span></div>
         <div class="v5-kpi-statement" x-show="data.actions.filter(a => a.priority === 'P1' && !a.done).length > 0">
           quedan <span x-text="data.actions.filter(a => a.priority === 'P1' && !a.done).length"></span> críticas sin confirmar
@@ -4537,7 +4678,7 @@ textarea:focus-visible {
   <div class="v5-hoy-row-2">
     <div class="v5-progress-card">
       <div class="v5-progress-head">
-        <h3>Reservas hechas</h3>
+        <h3>Tareas completas</h3>
         <div class="v5-progress-ratio">
           <span x-text="data.actions.filter(a => a.done).length"></span><small>/<span x-text="data.actions.length"></span></small>
         </div>
@@ -4737,27 +4878,42 @@ textarea:focus-visible {
     </div>
   </div>
 
+  <!-- Currency selector + FX rates -->
+  <div class="v5c-currency-bar">
+    <span class="lbl">Ver en</span>
+    <div class="v5c-currency-segmented">
+      <button :class="{active: data.meta.viewCurrency === 'EUR'}" @click="data.meta.viewCurrency = 'EUR'; save()">EUR</button>
+      <button :class="{active: data.meta.viewCurrency === 'USD'}" @click="data.meta.viewCurrency = 'USD'; save()">USD</button>
+      <button :class="{active: data.meta.viewCurrency === 'ARS'}" @click="data.meta.viewCurrency = 'ARS'; save()">ARS</button>
+    </div>
+    <div class="v5c-fx-rates">
+      <span>1 EUR =</span>
+      <span>USD</span><input type="number" step="0.01" x-model.number="data.meta.fx.USD" @blur="save()">
+      <span>ARS</span><input type="number" step="1" x-model.number="data.meta.fx.ARS" @blur="save()">
+    </div>
+  </div>
+
   <!-- Hero KPIs as statements -->
   <div class="v5c-budget-hero">
     <div class="v5c-bhero">
       <div class="v5c-bhero-label">Costo total</div>
-      <div class="v5c-bhero-value"><span class="cur">€</span><span x-text="budgetTotal.toLocaleString('es')"></span></div>
+      <div class="v5c-bhero-value" x-text="formatMoney(budgetTotalInView, data.meta.viewCurrency)"></div>
       <div class="v5c-bhero-statement">de <strong x-text="data.budget.length"></strong> líneas operativas</div>
     </div>
     <div class="v5c-bhero">
       <div class="v5c-bhero-label">Costo por pax</div>
-      <div class="v5c-bhero-value"><span class="cur">€</span><span x-text="Math.round(budgetTotal / data.meta.pax).toLocaleString('es')"></span></div>
+      <div class="v5c-bhero-value" x-text="formatMoney(budgetTotalInView / data.meta.pax, data.meta.viewCurrency)"></div>
       <div class="v5c-bhero-statement">sobre <strong><span x-text="data.meta.pax"></span> pasajeros</strong> totales</div>
     </div>
     <div class="v5c-bhero">
       <div class="v5c-bhero-label">Ingreso bruto</div>
-      <div class="v5c-bhero-value"><span class="cur">$</span><span x-text="(data.meta.ticketUSD * data.meta.payingPax).toLocaleString('es')"></span></div>
-      <div class="v5c-bhero-statement"><strong x-text="data.meta.payingPax"></strong> pagantes × <strong>$<span x-text="data.meta.ticketUSD.toLocaleString('es')"></span></strong></div>
+      <div class="v5c-bhero-value" x-text="formatMoney(convertAmount(data.meta.ticketUSD * data.meta.payingPax, 'USD', data.meta.viewCurrency), data.meta.viewCurrency)"></div>
+      <div class="v5c-bhero-statement"><strong x-text="data.meta.payingPax"></strong> pagantes × <strong>US$<span x-text="data.meta.ticketUSD.toLocaleString('es')"></span></strong></div>
     </div>
     <div class="v5c-bhero margin">
       <div class="v5c-bhero-label">Margen bruto</div>
       <div class="v5c-bhero-value"><span x-text="marginPercent"></span><span class="cur" style="font-size: 0.45em;">%</span></div>
-      <div class="v5c-bhero-statement">€<strong x-text="marginEUR.toLocaleString('es')"></strong> · objetivo 60–70%</div>
+      <div class="v5c-bhero-statement"><span x-text="formatMoney(convertAmount(marginEUR, 'EUR', data.meta.viewCurrency), data.meta.viewCurrency)"></span> · objetivo 60–70%</div>
     </div>
   </div>
 
@@ -4774,12 +4930,19 @@ textarea:focus-visible {
           <div class="cat">
             <input type="text" x-model="item.category" @blur="save()" placeholder="Categoría">
             <input type="text" class="notes" x-model="item.notes" @blur="save()" placeholder="Notas…">
-            <select x-model="item.dayRef" @change="save()" style="margin-top: 4px; font-size: 11px; padding: 4px 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: var(--text-2); background: var(--surface-1); border: 1px solid var(--line); border-radius: 4px;">
-              <option value="">Día · general</option>
-              <template x-for="(d, di) in data.itinerary" :key="d.id">
-                <option :value="d.id" x-text="'Día ' + (di+1) + ' · ' + (d.weekday || '').slice(0,3) + ' ' + (d.date||'').slice(8)"></option>
-              </template>
-            </select>
+            <div style="display: flex; gap: 4px; margin-top: 4px;">
+              <select x-model="item.dayRef" @change="save()" style="flex: 1; font-size: 11px; padding: 4px 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: var(--text-2); background: var(--surface-1); border: 1px solid var(--line); border-radius: 4px;">
+                <option value="">Día · general</option>
+                <template x-for="(d, di) in data.itinerary" :key="d.id">
+                  <option :value="d.id" x-text="'Día ' + (di+1) + ' · ' + (d.weekday || '').slice(0,3) + ' ' + (d.date||'').slice(8)"></option>
+                </template>
+              </select>
+              <select x-model="item.currency" @change="save()" style="width: 70px; font-size: 11px; padding: 4px 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: var(--text-2); background: var(--surface-1); border: 1px solid var(--line); border-radius: 4px;">
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+                <option value="ARS">ARS</option>
+              </select>
+            </div>
           </div>
           <input type="number" class="amt" x-model.number="item.amount" @blur="save()" placeholder="0">
           <button class="status" :class="item.status" @click="cycleBudgetStatus(item)" :title="'Click para cambiar · ' + item.status" x-text="budgetStatusLabel(item.status)"></button>
@@ -4788,7 +4951,7 @@ textarea:focus-visible {
       </template>
       <div class="v5c-btable-foot">
         <span class="label">Total · <span x-text="data.budget.length"></span> líneas</span>
-        <span class="total">€<span x-text="budgetTotal.toLocaleString('es')"></span></span>
+        <span class="total" x-text="formatMoney(budgetTotalInView, data.meta.viewCurrency)"></span>
       </div>
     </div>
 
@@ -4799,10 +4962,10 @@ textarea:focus-visible {
           <div class="v5c-bar-row" x-show="item.amount > 0">
             <div class="v5c-bar-label">
               <span x-text="item.category"></span>
-              <span class="pct"><span x-text="item.amount.toLocaleString('es')"></span>€ · <span x-text="budgetTotal > 0 ? (item.amount / budgetTotal * 100).toFixed(0) : 0"></span>%</span>
+              <span class="pct"><span x-text="formatMoney(budgetItemInView(item), data.meta.viewCurrency)"></span> · <span x-text="budgetTotalInView > 0 ? (budgetItemInView(item) / budgetTotalInView * 100).toFixed(0) : 0"></span>%</span>
             </div>
             <div class="v5c-bar-track" style="grid-column: 1 / -1;">
-              <div class="v5c-bar-fill" :class="['lg','gd','ol','mu'][idx % 4]" :style="`width: ${budgetTotal > 0 ? (item.amount / budgetTotal * 100).toFixed(1) : 0}%`"></div>
+              <div class="v5c-bar-fill" :class="['lg','gd','ol','mu'][idx % 4]" :style="`width: ${budgetTotalInView > 0 ? (budgetItemInView(item) / budgetTotalInView * 100).toFixed(1) : 0}%`"></div>
             </div>
           </div>
         </template>
@@ -4908,7 +5071,12 @@ textarea:focus-visible {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 <span x-text="commentCount('provider', provider.id) || 'Comentar'"></span>
               </span>
-              <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3);">Abrir →</span>
+              <span class="v5-completeness" :class="{complete: providerCompleteness(provider) >= 85, poor: providerCompleteness(provider) < 35}" :title="'Completitud de datos: ' + providerCompleteness(provider) + '%'">
+                <template x-for="i in 5" :key="i">
+                  <span class="v5-completeness-dot" :class="{filled: providerCompleteness(provider) >= i * 20 - 10}"></span>
+                </template>
+              </span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-left: auto;">Abrir →</span>
             </div>
           </article>
         </template>
@@ -5004,8 +5172,8 @@ textarea:focus-visible {
 <section x-show="tab === 'actions'">
   <div class="section-header">
     <div>
-      <h1>Reservas <em>pendientes</em></h1>
-      <p class="lead">Checklist priorizado. Tap en el círculo marca como hecha. Tap en la fila abre el detalle.</p>
+      <h1>To-Do <em>list</em></h1>
+      <p class="lead">Reservas, llamadas, compras y follow-ups. Filtrá por prioridad o tipo. Tap en la fila abre el detalle; tap en el círculo marca como hecha.</p>
     </div>
     <button class="btn" @click="addAction()">+ Agregar tarea</button>
   </div>
@@ -5016,7 +5184,7 @@ textarea:focus-visible {
       <span x-text="data.actions.filter(a => a.done).length"></span><span class="of">/</span><span class="total" x-text="data.actions.length"></span>
     </div>
     <div class="v5c-res-hero-info">
-      <div class="v5c-res-hero-label">Reservas confirmadas</div>
+      <div class="v5c-res-hero-label">Tareas completas</div>
       <div class="v5c-res-hero-statement" x-show="actionsAllDone"><em>Todas las reservas cerradas.</em> Hora de respirar.</div>
       <div class="v5c-res-hero-statement" x-show="!actionsAllDone && actionsP1Pending > 0">
         Quedan <strong x-text="actionsP1Pending"></strong> <em>críticas (P1)</em> sin confirmar.
@@ -5053,6 +5221,15 @@ textarea:focus-visible {
       <button :class="{active: actionFilter === 'pending'}" @click="actionFilter = 'pending'">Pendientes · <span x-text="data.actions.filter(a => !a.done).length"></span></button>
       <button :class="{active: actionFilter === 'done'}" @click="actionFilter = 'done'">Hechas · <span x-text="data.actions.filter(a => a.done).length"></span></button>
     </div>
+    <select x-model="actionTypeFilter" style="margin-left: auto; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text-2);">
+      <option value="">Todos los tipos</option>
+      <option value="reservation">Reservas</option>
+      <option value="purchase">Compras</option>
+      <option value="contact">Llamadas · emails</option>
+      <option value="research">Research</option>
+      <option value="logistics">Logística</option>
+      <option value="other">Otros</option>
+    </select>
   </div>
 
   <!-- Grouped by priority -->
@@ -5072,6 +5249,11 @@ textarea:focus-visible {
             <div class="v5c-res-body">
               <h3 class="v5c-res-title" x-text="action.task || 'Sin título'"></h3>
               <div class="v5c-res-desc" x-show="action.description" x-text="action.description"></div>
+              <div class="v5c-res-meta-chips" x-show="action.type || action.dueDate || actionLinkLabel(action)">
+                <span class="v5c-meta-chip" :class="'type-' + (action.type||'other')" x-show="action.type" x-text="actionTypeLabel(action.type)"></span>
+                <span class="v5c-meta-chip due" x-show="action.dueDate" x-text="'⏰ ' + formatDueDate(action.dueDate)"></span>
+                <span class="v5c-meta-chip link" x-show="actionLinkLabel(action)" x-text="'→ ' + actionLinkLabel(action)"></span>
+              </div>
               <div class="v5c-res-contact" x-show="action.contact" x-text="action.contact"></div>
             </div>
             <div class="v5c-res-end">
@@ -5319,7 +5501,7 @@ textarea:focus-visible {
           <div class="v5-more-grid">
             <button class="v5-more-tile" :class="{active: tab === 'actions'}" @click="tab = 'actions'; moreDrawerOpen = false">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
-              <span class="v5-more-label">Reservas</span>
+              <span class="v5-more-label">To-Do</span>
               <span class="v5-more-meta" x-text="data.actions.filter(a => !a.done).length + '/' + data.actions.length + ' pendientes'"></span>
             </button>
             <button class="v5-more-tile" :class="{active: tab === 'budget'}" @click="tab = 'budget'; moreDrawerOpen = false">
@@ -5446,6 +5628,18 @@ textarea:focus-visible {
           <div class="v5b-detail-section">
             <h4>Acciones</h4>
             <div class="v5b-detail-actions">
+              <button class="v5b-action-btn" @click="duplicateSlot(drawerSlot.id)" :title="'Duplicar este slot en el mismo día'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Duplicar slot
+              </button>
+              <div class="v5b-action-btn" style="padding: 0; overflow: hidden; cursor: default;" title="Duplicar este slot en otro día">
+                <select @change="if($event.target.value) { duplicateSlot(drawerSlot.id, $event.target.value); $event.target.value=''; }" style="width: 100%; padding: 10px 14px; border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: inherit; color: inherit;">
+                  <option value="">Duplicar a otro día…</option>
+                  <template x-for="(d, di) in data.itinerary" :key="d.id">
+                    <option :value="d.id" :disabled="d.id === drawerSlotDay?.id" x-text="'Día ' + (di+1) + ' · ' + (d.weekday || '') + ' ' + (d.date||'').slice(8)"></option>
+                  </template>
+                </select>
+              </div>
               <button class="v5b-action-btn" @click="tab = 'map'; closeSlotDrawer(); $nextTick(() => initMap())">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z"/></svg>
                 Ver en mapa
@@ -5577,6 +5771,41 @@ textarea:focus-visible {
           </div>
 
           <div class="v5b-detail-section">
+            <h4>Bitácora · <span x-text="(drawerProvider.communications || []).length || 'sin entradas aún'"></span></h4>
+            <div class="v5b-bitacora">
+              <template x-for="ev in (drawerProvider.communications || []).slice().reverse()" :key="ev.id">
+                <div class="v5b-bita-event" :class="'type-' + (ev.type || 'note')">
+                  <div class="v5b-bita-icon" x-text="bitaTypeIcon(ev.type)"></div>
+                  <div class="v5b-bita-body">
+                    <div class="v5b-bita-meta">
+                      <span class="v5b-bita-type" x-text="bitaTypeLabel(ev.type)"></span>
+                      <span class="v5b-bita-author" x-text="ev.author"></span>
+                      <span class="v5b-bita-time" x-text="relativeTime(ev.date)"></span>
+                    </div>
+                    <div class="v5b-bita-text" x-text="ev.text"></div>
+                  </div>
+                  <button class="btn-icon" x-show="ev.author === identity" @click="removeProviderEvent(drawerProvider.id, ev.id)" title="Borrar entrada">✕</button>
+                </div>
+              </template>
+              <div class="v5b-empty-tiny" x-show="!(drawerProvider.communications || []).length">
+                Sin registros. Anotá emails, llamadas, WhatsApp, follow-ups.
+              </div>
+              <form class="v5b-bita-form" @submit.prevent="addProviderEvent(drawerProvider.id, $event)">
+                <select name="type" required>
+                  <option value="email_sent">📤 Email enviado</option>
+                  <option value="email_received">📥 Email recibido</option>
+                  <option value="call">📞 Llamada</option>
+                  <option value="whatsapp">💬 WhatsApp · SMS</option>
+                  <option value="meeting">🤝 Reunión</option>
+                  <option value="note">📝 Nota</option>
+                </select>
+                <input type="text" name="text" placeholder="Pedí cotización para 10 pax · respondieron pidiendo X · etc." maxlength="500" required>
+                <button type="submit" class="btn btn-sm">Registrar</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="v5b-detail-section">
             <h4>Comentarios · <span x-text="commentCount('provider', drawerProvider.id) || 'sin hilo aún'"></span></h4>
             <div class="v5b-comments-block">
               <template x-for="c in commentsFor('provider', drawerProvider.id)" :key="c.id">
@@ -5645,6 +5874,73 @@ textarea:focus-visible {
               <div class="v5b-field">
                 <span class="lbl">Contacto · web</span>
                 <input type="text" x-model="drawerAction.contact" @blur="save()" placeholder="tel · email · web">
+              </div>
+            </div>
+          </div>
+
+          <div class="v5b-detail-section">
+            <h4>Clasificación</h4>
+            <div class="v5b-detail-grid">
+              <div class="v5b-field">
+                <span class="lbl">Tipo</span>
+                <select x-model="drawerAction.type" @change="save()">
+                  <option value="reservation">Reserva</option>
+                  <option value="purchase">Compra · tickets</option>
+                  <option value="contact">Llamada · email</option>
+                  <option value="research">Research · verificar</option>
+                  <option value="logistics">Logística</option>
+                  <option value="other">Otro</option>
+                </select>
+              </div>
+              <div class="v5b-field">
+                <span class="lbl">Deadline</span>
+                <input type="date" x-model="drawerAction.dueDate" @blur="save()">
+              </div>
+            </div>
+          </div>
+
+          <div class="v5b-detail-section">
+            <h4>Vinculado a (opcional)</h4>
+            <div class="v5b-detail-grid">
+              <div class="v5b-field">
+                <span class="lbl">Tipo de vínculo</span>
+                <select x-model="drawerAction.linkType" @change="drawerAction.linkId = ''; save()">
+                  <option value="">Sin vínculo</option>
+                  <option value="provider">Proveedor</option>
+                  <option value="slot">Slot del itinerario</option>
+                  <option value="day">Día</option>
+                </select>
+              </div>
+              <div class="v5b-field" x-show="drawerAction.linkType === 'provider'">
+                <span class="lbl">Proveedor</span>
+                <select x-model="drawerAction.linkId" @change="save()">
+                  <option value="">— elegir —</option>
+                  <template x-for="p in data.providers" :key="p.id">
+                    <option :value="p.id" x-text="p.name"></option>
+                  </template>
+                </select>
+              </div>
+              <div class="v5b-field" x-show="drawerAction.linkType === 'slot'">
+                <span class="lbl">Slot</span>
+                <select x-model="drawerAction.linkId" @change="save()">
+                  <option value="">— elegir —</option>
+                  <template x-for="day in data.itinerary" :key="day.id">
+                    <optgroup :label="(day.weekday||'') + ' ' + (day.date||'').slice(8)">
+                      <template x-for="s in day.slots" :key="s.id">
+                        <option :value="s.id" x-text="(s.timeStart || s.time || '—') + ' · ' + (s.title || 'sin título')"></option>
+                      </template>
+                    </optgroup>
+                  </template>
+                </select>
+              </div>
+              <div class="v5b-field" x-show="drawerAction.linkType === 'day'">
+                <span class="lbl">Día</span>
+                <select x-model="drawerAction.linkId" @change="save()">
+                  <option value="">— elegir —</option>
+                  <template x-for="(d, di) in data.itinerary" :key="d.id">
+                    <option :value="d.id" x-text="'Día ' + (di+1) + ' · ' + (d.weekday || '') + ' ' + (d.date||'').slice(8) + ' — ' + (d.title || '')"></option>
+                  </template>
+                </select>
               </div>
             </div>
           </div>
@@ -5802,6 +6098,8 @@ const DEFAULT_DATA = {
     paxComposition: "4 parejas + 2 hosts",
     ticketUSD: 9000,
     eurUsdRate: 1.09,
+    fx: { EUR: 1, USD: 1.09, ARS: 1180 },
+    viewCurrency: 'EUR',
     villa: {
       name: "Villa Castiglione Tinella",
       address: "Str. Marini 7, 12053 Castiglione Tinella CN",
@@ -5993,6 +6291,7 @@ function app() {
     providerFilter: 'all',
     providerStatusFilter: 'all',
     actionFilter: 'all',
+    actionTypeFilter: '',
     // V5b
     slotDrawerId: null,
     providerDrawerId: null,
@@ -6650,10 +6949,15 @@ function app() {
         task: 'Nueva tarea',
         description: '',
         contact: '',
+        type: 'reservation',
+        dueDate: '',
+        linkType: '',
+        linkId: '',
         done: false
       };
       this.data.actions.unshift(a);
       this.logEvent('action.added', `agregó una tarea pendiente`, { action_id: a.id });
+      this.openActionDrawer(a.id);
     },
     get filteredActions() {
       const f = this.actionFilter;
@@ -6979,12 +7283,175 @@ function app() {
       return out;
     },
 
-    // === BUDGET HELPERS (fix #9) ===
+    // === BUDGET HELPERS (currency-aware) ===
+    // Returns budget item amount converted to view currency
+    convertAmount(amount, fromCurrency, toCurrency) {
+      const n = Number(amount) || 0;
+      const fx = this.data.meta?.fx || { EUR: 1, USD: 1.09, ARS: 1180 };
+      const from = fromCurrency || 'EUR';
+      const to = toCurrency || this.data.meta?.viewCurrency || 'EUR';
+      if (from === to) return n;
+      // fx[X] = how many X equal 1 EUR. So to convert n FROM → TO:
+      // n_in_eur = n / fx[from];  n_in_to = n_in_eur * fx[to]
+      const inEur = n / (fx[from] || 1);
+      return inEur * (fx[to] || 1);
+    },
+    formatMoney(amount, currency) {
+      const cur = currency || this.data.meta?.viewCurrency || 'EUR';
+      const n = Math.round(Number(amount) || 0);
+      const symbol = { EUR: '€', USD: 'US$', ARS: 'AR$' }[cur] || cur + ' ';
+      return symbol + n.toLocaleString('es');
+    },
+    budgetItemInView(item) {
+      // Amount of one budget item in the currently selected view currency
+      const view = this.data.meta?.viewCurrency || 'EUR';
+      return this.convertAmount(item.amount, item.currency || 'EUR', view);
+    },
+    get budgetTotalInView() {
+      return (this.data.budget || [])
+        .reduce((sum, b) => sum + this.budgetItemInView(b), 0);
+    },
     dayBudgetEstimate(dayId) {
+      // Sums in the currently selected view currency
       if (!dayId) return 0;
       return (this.data.budget || [])
         .filter(b => b.dayRef === dayId)
-        .reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+        .reduce((sum, b) => sum + this.budgetItemInView(b), 0);
+    },
+
+    // === PROVIDER COMPLETENESS ===
+    // Returns 0-100 based on how many useful fields are filled.
+    // Weighted by importance: contact (phone/email) > location > closingDays > web/mapUrl > price > notes
+    providerCompleteness(p) {
+      if (!p) return 0;
+      const checks = [
+        { weight: 2, ok: !!(p.phone || p.email) },           // can reach them
+        { weight: 2, ok: !!p.location },                       // know where it is
+        { weight: 2, ok: !!(p.closingDays || p.type === 'truffle' || p.type === 'service') }, // know if open
+        { weight: 1, ok: !!(p.web || p.mapUrl) },              // can route / verify
+        { weight: 1, ok: !!p.priceRange },                     // know cost ballpark
+        { weight: 1, ok: !!(p.notes && p.notes.length > 20) }, // has context
+        { weight: 1, ok: p.reservationStatus !== 'pending' || !!(p.notes && /reserva|confirm|email|tel/i.test(p.notes)) }  // status tracked
+      ];
+      const total = checks.reduce((s, c) => s + c.weight, 0);
+      const got = checks.reduce((s, c) => s + (c.ok ? c.weight : 0), 0);
+      return Math.round((got / total) * 100);
+    },
+    completenessLabel(pct) {
+      if (pct >= 85) return 'completo';
+      if (pct >= 60) return 'bueno';
+      if (pct >= 35) return 'parcial';
+      return 'incompleto';
+    },
+
+    // === PROVIDER BITÁCORA ===
+    bitaTypeLabel(type) {
+      return ({
+        email_sent: 'Email enviado',
+        email_received: 'Email recibido',
+        call: 'Llamada',
+        whatsapp: 'WhatsApp · SMS',
+        meeting: 'Reunión',
+        note: 'Nota'
+      })[type] || 'Nota';
+    },
+    bitaTypeIcon(type) {
+      return ({
+        email_sent: '📤',
+        email_received: '📥',
+        call: '📞',
+        whatsapp: '💬',
+        meeting: '🤝',
+        note: '📝'
+      })[type] || '📝';
+    },
+    addProviderEvent(providerId, event) {
+      const provider = this.data.providers.find(p => p.id === providerId);
+      if (!provider) return;
+      const fd = new FormData(event.target);
+      const type = fd.get('type');
+      const text = (fd.get('text') || '').toString().trim();
+      if (!text) return;
+      if (!Array.isArray(provider.communications)) provider.communications = [];
+      const ev = {
+        id: 'cm' + Date.now(),
+        type,
+        text,
+        date: new Date().toISOString(),
+        author: this.identity || 'Anon'
+      };
+      provider.communications.push(ev);
+      this.logEvent('provider.bita_event_added',
+        `agregó ${this.bitaTypeLabel(type).toLowerCase()} en bitácora de "${provider.name}"`,
+        { provider_id: providerId, event_type: type });
+      this.save();
+      event.target.reset();
+    },
+    removeProviderEvent(providerId, eventId) {
+      const provider = this.data.providers.find(p => p.id === providerId);
+      if (!provider || !Array.isArray(provider.communications)) return;
+      provider.communications = provider.communications.filter(e => e.id !== eventId);
+      this.save();
+    },
+
+    // === DUPLICATE SLOT ===
+    duplicateSlot(slotId, targetDayId) {
+      // Find source slot
+      let sourceDay = null, sourceSlot = null;
+      for (const day of this.data.itinerary) {
+        const s = day.slots.find(x => x.id === slotId);
+        if (s) { sourceDay = day; sourceSlot = s; break; }
+      }
+      if (!sourceSlot) return;
+      const destDay = targetDayId
+        ? this.data.itinerary.find(d => d.id === targetDayId)
+        : sourceDay;
+      if (!destDay) return;
+      // Deep clone, new ID, prefixed title, same time fields kept
+      const copy = JSON.parse(JSON.stringify(sourceSlot));
+      copy.id = 's' + Date.now();
+      copy.title = '(copia) ' + (copy.title || 'Sin título');
+      destDay.slots.push(copy);
+      // Re-impose chronological order
+      this._sortSlotsByTime(destDay.slots);
+      this.logEvent('itinerary.slot_duplicated',
+        `duplicó "${sourceSlot.title || 'sin título'}" en ${destDay.weekday || destDay.title}`,
+        { source_slot_id: slotId, new_slot_id: copy.id, day_id: destDay.id });
+      this.save();
+      // Open the new slot for immediate editing
+      this.closeSlotDrawer();
+      this.$nextTick(() => {
+        this.openSlotDrawer(copy.id);
+        // Highlight where it landed
+        setTimeout(() => {
+          const el = document.querySelector(`[data-slot-id="${copy.id}"]`);
+          if (el) {
+            el.classList.add('just-moved');
+            setTimeout(() => el.classList.remove('just-moved'), 1500);
+          }
+        }, 50);
+      });
+    },
+
+    // === ACTION HELPERS — link resolvers ===
+    actionLinkLabel(action) {
+      if (!action || !action.linkType || !action.linkId) return '';
+      if (action.linkType === 'provider') {
+        const p = this.data.providers.find(x => x.id === action.linkId);
+        return p ? `${p.name}` : '';
+      }
+      if (action.linkType === 'slot') {
+        for (const day of this.data.itinerary) {
+          const s = day.slots.find(x => x.id === action.linkId);
+          if (s) return `${day.weekday || day.title} · ${s.title || 'slot'}`;
+        }
+        return '';
+      }
+      if (action.linkType === 'day') {
+        const d = this.data.itinerary.find(x => x.id === action.linkId);
+        return d ? `${d.weekday || ''} ${(d.date||'').slice(8)}` : '';
+      }
+      return '';
     },
 
     // === DATA MIGRATION (fix #7 backward compat) ===
@@ -7004,13 +7471,41 @@ function app() {
           });
         });
       }
-      // Budget: ensure dayRef exists
+      // Budget: ensure dayRef + currency exist
       if (Array.isArray(d.budget)) {
-        d.budget.forEach(b => { if (b.dayRef === undefined) b.dayRef = ''; });
+        d.budget.forEach(b => {
+          if (b.dayRef === undefined) b.dayRef = '';
+          if (b.currency === undefined) b.currency = 'EUR';
+        });
       }
-      // Providers: ensure mapUrl exists
+      // Providers: ensure mapUrl + communications exist
       if (Array.isArray(d.providers)) {
-        d.providers.forEach(p => { if (p.mapUrl === undefined) p.mapUrl = ''; });
+        d.providers.forEach(p => {
+          if (p.mapUrl === undefined) p.mapUrl = '';
+          if (!Array.isArray(p.communications)) p.communications = [];
+        });
+      }
+      // Actions: extend with type, dueDate, link fields
+      if (Array.isArray(d.actions)) {
+        d.actions.forEach(a => {
+          if (a.type === undefined) a.type = 'reservation';
+          if (a.dueDate === undefined) a.dueDate = '';
+          if (a.linkType === undefined) a.linkType = '';   // 'provider' | 'slot' | 'day' | ''
+          if (a.linkId === undefined) a.linkId = '';
+        });
+      }
+      // Meta: FX table + view currency (keeps eurUsdRate for backward compat)
+      if (d.meta) {
+        if (!d.meta.fx) {
+          d.meta.fx = {
+            EUR: 1,
+            USD: d.meta.eurUsdRate || 1.09,
+            ARS: 1180
+          };
+        }
+        // Ensure all known currencies are present even if fx was partial
+        ['EUR','USD','ARS'].forEach(c => { if (!(c in d.meta.fx)) d.meta.fx[c] = (c==='EUR'?1:(c==='USD'?1.09:1180)); });
+        if (!d.meta.viewCurrency) d.meta.viewCurrency = 'EUR';
       }
       return d;
     },
@@ -7726,10 +8221,13 @@ function app() {
     },
     get actionsGrouped() {
       const filter = this.actionFilter;
+      const typeFilter = this.actionTypeFilter;
       const matches = (a) => {
-        if (filter === 'all') return true;
-        if (filter === 'pending') return !a.done;
-        if (filter === 'done') return a.done;
+        // Status filter
+        if (filter === 'pending' && a.done) return false;
+        if (filter === 'done' && !a.done) return false;
+        // Type filter
+        if (typeFilter && a.type !== typeFilter) return false;
         return true;
       };
       const meta = {
@@ -7741,6 +8239,30 @@ function app() {
         ...meta[k],
         items: this.data.actions.filter(a => a.priority === k && matches(a))
       })).filter(g => g.items.length > 0 || filter === 'all');
+    },
+    actionTypeLabel(type) {
+      return ({
+        reservation: 'Reserva',
+        purchase: 'Compra',
+        contact: 'Contactar',
+        research: 'Verificar',
+        logistics: 'Logística',
+        other: 'Otro'
+      })[type] || 'Reserva';
+    },
+    formatDueDate(iso) {
+      if (!iso) return '';
+      // Show relative: today, X days, X weeks, etc, plus the date
+      const today = new Date(); today.setHours(0,0,0,0);
+      const due = new Date(iso + 'T00:00:00');
+      const days = Math.round((due - today) / (1000*60*60*24));
+      const ddmm = (iso || '').slice(5).replace('-','/');
+      if (days === 0) return 'Hoy · ' + ddmm;
+      if (days === 1) return 'Mañana · ' + ddmm;
+      if (days === -1) return 'Ayer · ' + ddmm;
+      if (days > 0 && days <= 14) return `${days}d · ${ddmm}`;
+      if (days < 0) return `vencida hace ${Math.abs(days)}d · ${ddmm}`;
+      return ddmm;
     },
     toggleAction(action) {
       const wasDone = action.done;
