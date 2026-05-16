@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f5efe5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1a1310" media="(prefers-color-scheme: dark)">
-<title>BA × TWT   ·   Piemonte Oct 2026 · Operaciones</title>
+<title>BA × TWT · Piemonte Oct 2026 · Operaciones</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -26,6 +26,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 <style>
 :root {
@@ -2866,10 +2867,10 @@ color: var(--text-1);
 /* Slot row · clean editorial */
 .v5b-slot {
   display: grid;
-  grid-template-columns: 120px 36px 1fr auto;
+  grid-template-columns: 22px 120px 36px 1fr auto;
   gap: 14px;
   align-items: center;
-  padding: 14px 22px;
+  padding: 14px 22px 14px 14px;
   cursor: pointer;
   position: relative;
   transition: background 0.15s ease;
@@ -2877,6 +2878,41 @@ color: var(--text-1);
   border-bottom: 1px solid transparent;
 }
 .v5b-slot.has-conflict { background: color-mix(in oklab, var(--bad) 6%, transparent); }
+
+/* Drag handle (fix: drag-and-drop) */
+.v5b-slot-handle {
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 28px;
+  cursor: grab;
+  color: var(--text-3);
+  opacity: 0.35;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  user-select: none;
+  touch-action: none;
+  font-size: 16px;
+  line-height: 1;
+}
+.v5b-slot:hover .v5b-slot-handle { opacity: 0.8; color: var(--accent); }
+.v5b-slot-handle:active { cursor: grabbing; }
+.v5b-slot-handle svg { width: 14px; height: 14px; }
+
+/* Sortable.js states */
+.v5b-day-slots.sortable-active { background: color-mix(in oklab, var(--accent) 4%, transparent); border-radius: var(--radius); }
+.v5b-slot.sortable-ghost {
+  opacity: 0.4;
+  background: var(--tint-accent);
+  border-top: 1px dashed var(--accent);
+  border-bottom: 1px dashed var(--accent);
+}
+.v5b-slot.sortable-chosen { background: var(--surface-2); }
+.v5b-slot.sortable-drag {
+  cursor: grabbing;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.18), 0 0 0 1px var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface-1);
+  opacity: 0.95;
+}
+
 .v5b-slot-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .v5b-slot-badge {
   display: inline-flex; align-items: center; gap: 4px;
@@ -4395,7 +4431,7 @@ textarea:focus-visible {
         <div class="v5-kpi-label">Margen bruto</div>
         <div class="v5-kpi-value"><span x-text="marginPercent"></span>%<small>€<span x-text="(marginEUR/1000).toFixed(1)"></span>k</small></div>
         <div class="v5-kpi-statement">
-          <template x-if="Number(marginPercent) >= 60"><span><span class="v5-kpi-trend up">↑</span> dentro del objetivo (30–40%)</span></template>
+          <template x-if="Number(marginPercent) >= 60"><span><span class="v5-kpi-trend up">↑</span> dentro del objetivo (60–70%)</span></template>
           <template x-if="Number(marginPercent) < 60 && Number(marginPercent) >= 50"><span><span class="v5-kpi-trend down">↓</span> bajo el objetivo · revisar costos</span></template>
           <template x-if="Number(marginPercent) < 50"><span><span class="v5-kpi-trend down">↓</span> margen ajustado · alerta</span></template>
         </div>
@@ -4601,40 +4637,45 @@ textarea:focus-visible {
           </button>
         </header>
         <div class="v5b-day-body">
-          <template x-for="slot in day.slots" :key="slot.id">
-            <div class="v5b-slot" :class="{'is-untimed': !slotStart(slot), 'has-conflict': slotIssues(day, slot).conflict}" @click="openSlotDrawer(slot.id)">
-              <div class="v5b-slot-time" x-text="slotDisplayTime(slot) || '—'"></div>
-              <div class="v5b-slot-glyph" :class="slotKind(slot)" x-html="slotKindIcon(slotKind(slot))"></div>
-              <div class="v5b-slot-body">
-                <div class="v5b-slot-title" :class="{empty: !slot.title}" x-text="slot.title || 'Sin título'"></div>
-                <div class="v5b-slot-sub" x-show="slot.description" x-text="slot.description"></div>
-                <div class="v5b-slot-verdict" x-show="slot.verdict" x-text="slot.verdict"></div>
-                <template x-if="slotIssues(day, slot).hasAny">
-                  <div class="v5b-slot-badges">
-                    <template x-for="(c, ci) in slotIssues(day, slot).conflicts" :key="'cf'+ci">
-                      <span class="v5b-slot-badge conflict" x-text="'⚠ choca con ' + c"></span>
-                    </template>
-                    <template x-if="slotIssues(day, slot).rushed">
-                      <span class="v5b-slot-badge rushed">⏱ apurado</span>
-                    </template>
-                    <template x-if="slotIssues(day, slot).freeHours">
-                      <span class="v5b-slot-badge free" x-text="slotIssues(day, slot).freeHours + 'h libres'"></span>
-                    </template>
-                  </div>
-                </template>
-              </div>
-              <div class="v5b-slot-end">
-                <span class="v5b-status-dot" :class="slot.status" :title="statusLabel(slot.status)"></span>
-                <span class="v5b-comment-pill" :class="{has: commentCount('slot', slot.id) > 0}">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  <span x-text="commentCount('slot', slot.id) || ''"></span>
+          <div class="v5b-day-slots" x-init="initSortable($el, day.id)" :data-day-id="day.id">
+            <template x-for="slot in day.slots" :key="slot.id">
+              <div class="v5b-slot" :data-slot-id="slot.id" :class="{'is-untimed': !slotStart(slot), 'has-conflict': slotIssues(day, slot).conflict}" @click="openSlotDrawer(slot.id)">
+                <span class="v5b-slot-handle" @click.stop @mousedown.stop @touchstart.stop title="Arrastrar para mover este slot a otro día o reordenarlo">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>
                 </span>
-                <span class="v5b-slot-arrow">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                </span>
+                <div class="v5b-slot-time" x-text="slotDisplayTime(slot) || '—'"></div>
+                <div class="v5b-slot-glyph" :class="slotKind(slot)" x-html="slotKindIcon(slotKind(slot))"></div>
+                <div class="v5b-slot-body">
+                  <div class="v5b-slot-title" :class="{empty: !slot.title}" x-text="slot.title || 'Sin título'"></div>
+                  <div class="v5b-slot-sub" x-show="slot.description" x-text="slot.description"></div>
+                  <div class="v5b-slot-verdict" x-show="slot.verdict" x-text="slot.verdict"></div>
+                  <template x-if="slotIssues(day, slot).hasAny">
+                    <div class="v5b-slot-badges">
+                      <template x-for="(c, ci) in slotIssues(day, slot).conflicts" :key="'cf'+ci">
+                        <span class="v5b-slot-badge conflict" x-text="'⚠ choca con ' + c"></span>
+                      </template>
+                      <template x-if="slotIssues(day, slot).rushed">
+                        <span class="v5b-slot-badge rushed">⏱ apurado</span>
+                      </template>
+                      <template x-if="slotIssues(day, slot).freeHours">
+                        <span class="v5b-slot-badge free" x-text="slotIssues(day, slot).freeHours + 'h libres'"></span>
+                      </template>
+                    </div>
+                  </template>
+                </div>
+                <div class="v5b-slot-end">
+                  <span class="v5b-status-dot" :class="slot.status" :title="statusLabel(slot.status)"></span>
+                  <span class="v5b-comment-pill" :class="{has: commentCount('slot', slot.id) > 0}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span x-text="commentCount('slot', slot.id) || ''"></span>
+                  </span>
+                  <span class="v5b-slot-arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </span>
+                </div>
               </div>
-            </div>
-          </template>
+            </template>
+          </div>
           <div class="v5b-day-budget" x-show="dayBudgetEstimate(day.id) > 0">
             <span>Estimado del día</span>
             <strong>€<span x-text="dayBudgetEstimate(day.id).toLocaleString('es')"></span></strong>
@@ -4680,7 +4721,7 @@ textarea:focus-visible {
     <div class="v5c-bhero margin">
       <div class="v5c-bhero-label">Margen bruto</div>
       <div class="v5c-bhero-value"><span x-text="marginPercent"></span><span class="cur" style="font-size: 0.45em;">%</span></div>
-      <div class="v5c-bhero-statement">€<strong x-text="marginEUR.toLocaleString('es')"></strong> · objetivo 30–40%</div>
+      <div class="v5c-bhero-statement">€<strong x-text="marginEUR.toLocaleString('es')"></strong> · objetivo 60–70%</div>
     </div>
   </div>
 
@@ -6788,6 +6829,63 @@ function app() {
       });
       this.save();
     },
+
+    // === DRAG-AND-DROP (SortableJS) ===
+    initSortable(el, dayId) {
+      if (!el || !window.Sortable) return;
+      if (el._sortableInited) return;
+      el._sortableInited = true;
+      const self = this;
+      Sortable.create(el, {
+        group: 'itinerary-slots',           // shared group → cross-day drag
+        handle: '.v5b-slot-handle',         // only the grip starts drag
+        animation: 180,
+        delay: 100,
+        delayOnTouchOnly: true,             // mobile: brief long-press before drag
+        touchStartThreshold: 4,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        dragClass: 'sortable-drag',
+        onStart() { el.classList.add('sortable-active'); },
+        onEnd(evt) {
+          el.classList.remove('sortable-active');
+          // Revert Sortable's DOM mutation so Alpine drives the visual update
+          if (evt.from !== evt.to || evt.oldIndex !== evt.newIndex) {
+            const ref = evt.from.children[evt.oldIndex] || null;
+            evt.from.insertBefore(evt.item, ref);
+          }
+          const fromDayId = evt.from.dataset.dayId;
+          const toDayId   = evt.to.dataset.dayId;
+          self.moveSlot(fromDayId, evt.oldIndex, toDayId, evt.newIndex);
+        }
+      });
+    },
+    moveSlot(fromDayId, oldIdx, toDayId, newIdx) {
+      if (!fromDayId || !toDayId) return;
+      if (fromDayId === toDayId && oldIdx === newIdx) return;
+      const fromDay = this.data.itinerary.find(d => d.id === fromDayId);
+      const toDay   = this.data.itinerary.find(d => d.id === toDayId);
+      if (!fromDay || !toDay) return;
+      const slot = fromDay.slots[oldIdx];
+      if (!slot) return;
+      // Remove from origin, then insert at destination
+      // SortableJS's newIndex is the post-drop visual position in evt.to,
+      // which already accounts for the removal — no adjustment needed.
+      fromDay.slots.splice(oldIdx, 1);
+      toDay.slots.splice(newIdx, 0, slot);
+      // Log + save
+      if (fromDay.id === toDay.id) {
+        this.logEvent('itinerary.slot_reordered',
+          `reordenó "${slot.title || 'sin título'}" en ${toDay.title || toDay.weekday}`,
+          { day_id: toDay.id, slot_id: slot.id });
+      } else {
+        this.logEvent('itinerary.slot_moved',
+          `movió "${slot.title || 'sin título'}" de ${fromDay.weekday || fromDay.title} a ${toDay.weekday || toDay.title}`,
+          { from_day_id: fromDay.id, to_day_id: toDay.id, slot_id: slot.id });
+      }
+      this.save();
+    },
+
     slotIssues(day, slot) {
       const out = { conflict: false, conflicts: [], rushed: false, freeHours: null, hasAny: false };
       if (!day || !slot) return out;
