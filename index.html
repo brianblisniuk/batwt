@@ -10,7 +10,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 <script>
   // Apply persisted theme ASAP to avoid flash
   (function(){
@@ -23,12 +27,6 @@
     } catch(e){}
   })();
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-<script type="module" src="https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 <style>
 :root {
   --bg: #f5efe5;
@@ -3771,6 +3769,57 @@ textarea:focus-visible {
 .v5c-params .v5b-field input:focus { background: var(--surface-1); }
 
 /* ---- MAPA ---- */
+/* Day selector tabs above the map */
+.v5c-map-day-tabs {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 6px;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+.v5c-mdt {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-2);
+  min-width: 64px;
+}
+.v5c-mdt:hover { background: var(--surface-2); color: var(--text-1); }
+.v5c-mdt .rom {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+  color: inherit;
+}
+.v5c-mdt .wd {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--text-3);
+  display: flex; gap: 5px; align-items: baseline;
+}
+.v5c-mdt .wd .cnt {
+  color: var(--text-3); opacity: 0.7;
+  font-size: 9px;
+}
+.v5c-mdt.active {
+  background: var(--c, var(--accent));
+  border-color: var(--c, var(--accent));
+  color: white;
+}
+.v5c-mdt.active .rom, .v5c-mdt.active .wd, .v5c-mdt.active .wd .cnt {
+  color: white;
+}
+@media (max-width: 540px) {
+  .v5c-map-day-tabs { gap: 4px; padding: 4px; }
+  .v5c-mdt { min-width: 52px; padding: 6px 8px; }
+}
+
 .v5c-map-wrap {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -3787,6 +3836,170 @@ textarea:focus-visible {
   position: relative;
 }
 .v5c-map-frame #trip-map { width: 100%; height: 100%; min-height: 620px; }
+
+/* Floating travel time chip on polyline midpoint */
+.gm-travel-chip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: var(--surface-1);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-1);
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  pointer-events: none;
+  z-index: 5;
+}
+.gm-travel-chip.good { color: var(--olive-deep); border-color: color-mix(in oklab, var(--olive-deep) 30%, var(--line)); }
+.gm-travel-chip.warn { color: var(--gold-v5); border-color: color-mix(in oklab, var(--gold-v5) 30%, var(--line)); }
+.gm-travel-chip.bad  { color: var(--bad); border-color: color-mix(in oklab, var(--bad) 30%, var(--line)); }
+
+/* Bottom sheet card overlay on the map (slot click) */
+.v5c-map-bsh {
+  position: absolute;
+  left: 20px; right: 20px; bottom: 20px;
+  background: var(--surface-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px 16px;
+  box-shadow: var(--shadow-3);
+  z-index: 10;
+  max-width: 540px;
+  margin: 0 auto;
+  animation: v5-fadeIn 0.2s ease, v5c-slideUp 0.25s cubic-bezier(0.22,1,0.36,1);
+}
+@keyframes v5c-slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+.v5c-bsh-close {
+  position: absolute; top: 12px; right: 12px;
+  background: transparent; border: none;
+  width: 28px; height: 28px; padding: 6px;
+  border-radius: 50%;
+  color: var(--text-3);
+  cursor: pointer;
+}
+.v5c-bsh-close:hover { background: var(--surface-2); color: var(--text-1); }
+.v5c-bsh-close svg { width: 100%; height: 100%; }
+.v5c-bsh-eyebrow {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.08em;
+  color: var(--text-3); text-transform: uppercase;
+}
+.v5c-bsh-eyebrow .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 24px; height: 24px;
+  border-radius: 50%; color: white;
+  font-weight: 700; font-size: 12px;
+  padding: 0 7px;
+}
+.v5c-bsh-eyebrow .time { color: var(--text-1); font-weight: 600; }
+.v5c-bsh-eyebrow .day { font-style: normal; }
+.v5c-bsh-title {
+  font-family: 'Fraunces', serif;
+  font-size: 20px; font-weight: 400;
+  letter-spacing: -0.015em;
+  color: var(--text-1);
+  margin-bottom: 6px; padding-right: 30px;
+}
+.v5c-bsh-desc {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px; line-height: 1.45;
+  color: var(--text-2);
+  margin-bottom: 10px;
+}
+.v5c-bsh-prov {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+.v5c-bsh-prov .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-3);
+  display: block; margin-bottom: 2px;
+}
+.v5c-bsh-prov strong { font-family: 'Fraunces', serif; font-weight: 500; color: var(--text-1); }
+.v5c-bsh-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Day timeline in the side panel */
+.v5c-mp-timeline {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.v5c-mpt-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.v5c-mpt-row::before {
+  content: '';
+  position: absolute;
+  left: 25px; top: -4px; bottom: -4px;
+  width: 2px;
+  background: var(--line);
+  z-index: 0;
+}
+.v5c-mpt-row:first-child::before { top: 50%; }
+.v5c-mpt-row:last-child::before { bottom: 50%; }
+.v5c-mpt-row:only-child::before { display: none; }
+.v5c-mpt-row:hover {
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+.v5c-mpt-row.active {
+  background: color-mix(in oklab, var(--accent) 6%, var(--surface-1));
+  border-color: color-mix(in oklab, var(--accent) 30%, var(--line));
+}
+.v5c-mpt-row.dim { opacity: 0.55; }
+.v5c-mpt-row .num {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 700;
+  z-index: 1;
+}
+.v5c-mpt-row .body { min-width: 0; }
+.v5c-mpt-row .head {
+  display: flex; gap: 8px; align-items: baseline;
+  margin-bottom: 2px;
+}
+.v5c-mpt-row .head .time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+.v5c-mpt-row .head .warn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--bad);
+}
+.v5c-mpt-row .title {
+  font-family: 'Fraunces', serif;
+  font-size: 13px;
+  color: var(--text-1);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .v5c-map-panel {
   background: var(--surface-1);
   border: 1px solid var(--line);
@@ -5514,76 +5727,140 @@ textarea:focus-visible {
   <div class="section-header">
     <div>
       <h1>Mapa del <em>viaje</em></h1>
-      <p class="lead">Villa, proveedores y rutas día por día. Tap en cada pin abre el proveedor.</p>
+      <p class="lead">Elegí un día para ver paradas numeradas, ruta y tiempos entre cada lugar. <em>TODO</em> muestra todos los proveedores ubicados.</p>
     </div>
+  </div>
+
+  <!-- Day selector tabs -->
+  <div class="v5c-map-day-tabs" role="tablist">
+    <button class="v5c-mdt" :class="{active: mapMode === 'overview'}"
+            @click="setMapMode('overview')">
+      <span class="rom">TODO</span>
+      <span class="wd" x-text="data.providers.filter(p => providerCoords(p)).length + ' lugares'"></span>
+    </button>
+    <template x-for="(d, idx) in data.itinerary" :key="d.id">
+      <button class="v5c-mdt"
+              :class="{active: mapMode === 'day' && mapSelectedDay === idx}"
+              :style="mapMode === 'day' && mapSelectedDay === idx ? '--c: ' + dayRouteColor(idx) : ''"
+              @click="setMapMode('day', idx)">
+        <span class="rom" x-text="toRoman(idx + 1)"></span>
+        <span class="wd">
+          <span x-text="d.weekday?.slice(0,3) || ('D' + (idx+1))"></span>
+          <span class="cnt" x-text="d.slots.filter(s => slotCoords(s)).length + '·' + d.slots.length"></span>
+        </span>
+      </button>
+    </template>
   </div>
 
   <div class="v5c-map-wrap">
     <div class="v5c-map-frame">
       <div id="trip-map"></div>
+      <!-- Floating slot card on click (bottom sheet) -->
+      <template x-if="mapBottomSheet">
+        <div class="v5c-map-bsh" @click.outside="mapBottomSheet = null">
+          <button class="v5c-bsh-close" @click="mapBottomSheet = null" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <div class="v5c-bsh-eyebrow">
+            <span class="num" :style="`background: ${mapBottomSheet.color}`" x-text="mapBottomSheet.num"></span>
+            <span class="time" x-text="mapBottomSheet.time || '—'"></span>
+            <span class="day" x-text="mapBottomSheet.day"></span>
+          </div>
+          <h3 class="v5c-bsh-title" x-text="mapBottomSheet.title"></h3>
+          <p class="v5c-bsh-desc" x-show="mapBottomSheet.desc" x-text="mapBottomSheet.desc"></p>
+          <div class="v5c-bsh-prov" x-show="mapBottomSheet.providerName">
+            <span class="lbl">Proveedor</span>
+            <strong x-text="mapBottomSheet.providerName"></strong>
+          </div>
+          <div class="v5c-bsh-actions">
+            <button class="btn btn-sm" @click="openSlotDrawer(mapBottomSheet.slotId); mapBottomSheet = null">Abrir slot →</button>
+            <a class="btn btn-sm btn-ghost" :href="mapBottomSheet.gmapsUrl" target="_blank" rel="noopener">Ver en Google Maps</a>
+          </div>
+        </div>
+      </template>
     </div>
 
-    <aside class="v5c-map-panel" aria-label="Capas y rutas del mapa">
-      <header class="v5c-mp-head">
-        <h3>Capas <em>y rutas</em></h3>
-        <div class="sub"><span x-text="mappedProvidersCount"></span> · de <span x-text="data.providers.length"></span> proveedores ubicados</div>
-      </header>
-      <div class="v5c-mp-body">
-        <div class="v5c-mp-section">
-          <h4>
-            <span>Por tipo</span>
-            <button class="all" @click="toggleAllLayers()">
-              <span x-text="allLayersOn ? 'Ninguno' : 'Todos'"></span>
-            </button>
-          </h4>
-          <div class="v5c-mp-layer" :class="{off: !mapLayers.villa}" @click="toggleMapLayer('villa')">
-            <span class="sw" style="background: #6e1a1f;"></span>
-            <span class="lb">Villa</span>
-            <span class="cnt">1</span>
-          </div>
-          <template x-for="type in providerTypes" :key="type.key">
-            <div class="v5c-mp-layer" :class="{off: !mapLayers[type.key]}" @click="toggleMapLayer(type.key)">
-              <span class="sw" :style="`background: ${layerColor(type.key)}`"></span>
-              <span class="lb" x-text="type.label"></span>
-              <span class="cnt" x-text="data.providers.filter(p => p.type === type.key).length"></span>
+    <aside class="v5c-map-panel" aria-label="Panel del mapa">
+      <!-- DAY MODE: timeline -->
+      <template x-if="mapMode === 'day'">
+        <div>
+          <header class="v5c-mp-head" :style="`border-left: 3px solid ${dayRouteColor(mapSelectedDay)};`">
+            <h3 x-text="data.itinerary[mapSelectedDay]?.title || ('Día ' + (mapSelectedDay+1))"></h3>
+            <div class="sub">
+              <span x-text="data.itinerary[mapSelectedDay]?.weekday"></span>
+              <span x-show="data.itinerary[mapSelectedDay]?.date"> · </span>
+              <span x-text="data.itinerary[mapSelectedDay]?.date"></span>
             </div>
-          </template>
-        </div>
-
-        <div class="v5c-mp-section">
-          <h4>
-            <span>Rutas por día</span>
-            <button class="all" @click="toggleDayRoutes()">
-              <span x-text="showDayRoutes ? 'Ocultar' : 'Mostrar'"></span>
-            </button>
-          </h4>
-          <template x-for="(day, idx) in data.itinerary" :key="day.id">
-            <div class="v5c-mp-day" :class="{off: !showDayRoutes}" @click="showDayRoutes = true; renderDayRoutes()" :style="`color: ${dayRouteColor(idx)}`">
-              <span class="dash"></span>
-              <span class="num" x-text="toRoman(idx + 1)"></span>
-              <span class="lb" style="color: var(--text-1);" x-text="day.title || day.weekday"></span>
-              <span class="cnt" x-text="day.slots.length"></span>
-            </div>
-          </template>
-        </div>
-
-        <div class="v5c-mp-section">
-          <h4>
-            <span>Pins ubicados</span>
-          </h4>
-          <div class="v5c-mp-pins">
-            <template x-for="provider in mappedProviders" :key="provider.id">
-              <div class="v5c-mp-pin" @click="openProviderDrawer(provider.id)">
-                <span class="dot" :style="`background: ${layerColor(provider.type)}`"></span>
-                <span class="name" x-text="provider.name"></span>
-                <span class="ml" x-show="provider.michelin > 0" x-text="'★'.repeat(provider.michelin)"></span>
-                <span class="loc" x-text="provider.location"></span>
+          </header>
+          <div class="v5c-mp-body">
+            <div class="v5c-mp-timeline">
+              <template x-for="(slot, sIdx) in (data.itinerary[mapSelectedDay]?.slots || [])" :key="slot.id">
+                <div class="v5c-mpt-row"
+                     :class="{ active: mapBottomSheet?.slotId === slot.id, dim: !slotCoords(slot) }"
+                     @click="flyToSlot(slot.id)">
+                  <span class="num" :style="`background: ${slotCoords(slot) ? dayRouteColor(mapSelectedDay) : 'var(--text-3)'}`" x-text="sIdx + 1"></span>
+                  <div class="body">
+                    <div class="head">
+                      <span class="time" x-text="slot.timeStart || '—'"></span>
+                      <span x-show="!slotCoords(slot)" class="warn">sin mapa</span>
+                    </div>
+                    <div class="title" x-text="slot.title || 'Sin título'"></div>
+                  </div>
+                </div>
+              </template>
+              <div x-show="!data.itinerary[mapSelectedDay]?.slots?.length" class="v5b-empty-tiny">
+                Día sin slots todavía.
               </div>
-            </template>
-            <div x-show="mappedProviders.length === 0" class="v5b-empty-tiny">Sin proveedores ubicados todavía.</div>
+            </div>
           </div>
         </div>
-      </div>
+      </template>
+
+      <!-- OVERVIEW MODE: type filters + provider list -->
+      <template x-if="mapMode === 'overview'">
+        <div>
+          <header class="v5c-mp-head">
+            <h3>Capas <em>y filtros</em></h3>
+            <div class="sub"><span x-text="mappedProvidersCount"></span> · de <span x-text="data.providers.length"></span> proveedores ubicados</div>
+          </header>
+          <div class="v5c-mp-body">
+            <div class="v5c-mp-section">
+              <h4>
+                <span>Por tipo</span>
+                <button class="all" @click="toggleAllLayers()">
+                  <span x-text="allLayersOn ? 'Ninguno' : 'Todos'"></span>
+                </button>
+              </h4>
+              <div class="v5c-mp-layer" :class="{off: !mapLayers.villa}" @click="toggleMapLayer('villa')">
+                <span class="sw" style="background: #6e1a1f;"></span>
+                <span class="lb">Villa</span>
+                <span class="cnt">1</span>
+              </div>
+              <template x-for="type in providerTypes" :key="type.key">
+                <div class="v5c-mp-layer" :class="{off: !mapLayers[type.key]}" @click="toggleMapLayer(type.key)">
+                  <span class="sw" :style="`background: ${layerColor(type.key)}`"></span>
+                  <span class="lb" x-text="type.label"></span>
+                  <span class="cnt" x-text="data.providers.filter(p => p.type === type.key).length"></span>
+                </div>
+              </template>
+            </div>
+            <div class="v5c-mp-section">
+              <h4><span>Pins ubicados</span></h4>
+              <div class="v5c-mp-pins">
+                <template x-for="provider in mappedProviders" :key="provider.id">
+                  <div class="v5c-mp-pin" @click="openProviderDrawer(provider.id)">
+                    <span class="dot" :style="`background: ${layerColor(provider.type)}`"></span>
+                    <span class="name" x-text="provider.name"></span>
+                    <span class="ml" x-show="provider.michelin > 0" x-text="'★'.repeat(provider.michelin)"></span>
+                    <span class="loc" x-text="provider.location"></span>
+                  </div>
+                </template>
+                <div x-show="mappedProviders.length === 0" class="v5b-empty-tiny">Sin proveedores ubicados todavía.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
     </aside>
   </div>
 </section>
@@ -6866,6 +7143,44 @@ const DEFAULT_DATA = {
   ]
 };
 
+// Custom Google Maps OverlayView for floating travel-time chips
+// at polyline segment midpoints. Renders as absolutely-positioned HTML
+// over the map; repositions on every draw() so it tracks pan/zoom.
+let TravelChipOverlay;
+function ensureTravelChipClass() {
+  if (TravelChipOverlay || typeof google === 'undefined' || !google.maps?.OverlayView) return;
+  TravelChipOverlay = class extends google.maps.OverlayView {
+    constructor(latLng, label, klass) {
+      super();
+      this._latLng = latLng;
+      this._label = label;
+      this._klass = klass || '';
+      this._div = null;
+    }
+    onAdd() {
+      const div = document.createElement('div');
+      div.className = 'gm-travel-chip ' + this._klass;
+      div.textContent = this._label;
+      this._div = div;
+      const panes = this.getPanes();
+      panes.floatPane.appendChild(div);
+    }
+    draw() {
+      if (!this._div) return;
+      const proj = this.getProjection();
+      if (!proj) return;
+      const px = proj.fromLatLngToDivPixel(new google.maps.LatLng(this._latLng.lat, this._latLng.lng));
+      if (!px) return;
+      this._div.style.left = px.x + 'px';
+      this._div.style.top = px.y + 'px';
+    }
+    onRemove() {
+      this._div?.parentNode?.removeChild(this._div);
+      this._div = null;
+    }
+  };
+}
+
 function app() {
   return {
     // === CONFIG ===
@@ -7596,98 +7911,267 @@ function app() {
     _mapInstance: null,
     _mapLayers: {},
     mapLayers: { villa: true, restaurant: true, winery: true, truffle: true, activity: true, transfer: true, service: true },
+    // New Google-Maps-based map state (Etapa final)
+    mapMode: 'day',          // 'overview' | 'day'
+    mapSelectedDay: 0,       // index into data.itinerary
+    mapBottomSheet: null,    // populated on marker click
+    _gmap: null,             // google.maps.Map instance
+    _gmapMarkers: [],        // google.maps.Marker[]
+    _gmapPolylines: [],      // google.maps.Polyline[]
+    _gmapChips: [],          // OverlayView[] for travel time chips
+    _routeLayers: [],        // legacy (kept to avoid breakage; unused)
 
+    // initMap is the public entry — called from nav buttons via $nextTick
+    // Internally it delegates to the async _initGoogleMap.
     initMap() {
-      if (this._mapInstance) {
-        // Map exists; just resize after tab show
-        setTimeout(() => this._mapInstance.invalidateSize(), 100);
+      if (this._gmap) {
+        // Already initialized — re-render for current mode (handles tab re-enter)
+        setTimeout(() => {
+          google.maps.event.trigger(this._gmap, 'resize');
+          this._renderMapForCurrentMode();
+        }, 100);
         return;
       }
-      if (!window.L) return; // Leaflet not loaded yet
-      const villaCoords = LOCATION_COORDS['Villa Castiglione Tinella'];
-      this._mapInstance = L.map('trip-map', {
-        center: [villaCoords.lat, villaCoords.lon],
-        zoom: 11,
-        scrollWheelZoom: false
-      });
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 19
-      }).addTo(this._mapInstance);
-      // Enable scroll only when focused (click-to-engage)
-      this._mapInstance.on('click', () => this._mapInstance.scrollWheelZoom.enable());
-      this._mapInstance.on('mouseout', () => this._mapInstance.scrollWheelZoom.disable());
-
-      // Render all markers
-      this.renderMapMarkers();
-      // Render polylines del itinerario por día
-      this.renderDayRoutes();
+      this._initGoogleMap();
     },
 
-    renderMapMarkers() {
-      if (!this._mapInstance) return;
-      // Clear existing
-      Object.values(this._mapLayers).forEach(group => group.clearLayers());
-      this._mapLayers = {
-        villa: L.layerGroup(),
-        restaurant: L.layerGroup(),
-        winery: L.layerGroup(),
-        truffle: L.layerGroup(),
-        activity: L.layerGroup(),
-        transfer: L.layerGroup(),
-        service: L.layerGroup()
-      };
-
-      // Villa pin
-      const villaCoords = LOCATION_COORDS['Villa Castiglione Tinella'];
-      if (villaCoords) {
-        const villaIcon = L.divIcon({
-          className: '',
-          html: '<div class="leaflet-pin pin-villa"><span>★</span></div>',
-          iconSize: [48, 48],
-          iconAnchor: [24, 24],
-          popupAnchor: [0, -28]
+    async _initGoogleMap() {
+      try {
+        const { Map } = await google.maps.importLibrary('maps');
+        ensureTravelChipClass();
+        const el = document.getElementById('trip-map');
+        if (!el) return;
+        // Centro inicial: villa o primer slot resolvible del primer día
+        const villa = this.data.providers.find(p => /villa/i.test(p.name || '') && p.latitude && p.longitude);
+        let center = { lat: 44.66, lng: 8.0 };
+        if (villa) center = { lat: villa.latitude, lng: villa.longitude };
+        this._gmap = new Map(el, {
+          center,
+          zoom: 11,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: true,
+          zoomControl: true,
+          gestureHandling: 'cooperative',
+          styles: this._mapStyles()
         });
-        L.marker([villaCoords.lat, villaCoords.lon], { icon: villaIcon })
-          .bindPopup(`<div class="pop-type">VILLA · BASE</div><strong>${this.data.meta.villa.name}</strong><div class="pop-meta">${this.data.meta.villa.address}</div><div class="pop-meta">€${this.data.meta.villa.cost.toLocaleString('es')} · ${this.data.meta.nights} noches</div>`)
-          .addTo(this._mapLayers.villa);
+        // Default mode = day 0 (the first day of the trip)
+        this.mapSelectedDay = 0;
+        this.mapMode = 'day';
+        this._renderMapForCurrentMode();
+      } catch (e) {
+        console.warn('Google Maps init failed:', e);
+        const el = document.getElementById('trip-map');
+        if (el) el.innerHTML = '<div style="padding:32px; text-align:center; color: var(--text-3); font-family: Lora, serif; font-style: italic;">El mapa no pudo cargar. Verificá conexión y la API key restringida.</div>';
       }
+    },
 
-      // Provider pins
-      this.data.providers.forEach((p, i) => {
-        const coords = this.providerCoords(p);
-        if (!coords) return;
-        const initial = (this.providerTypes.find(t => t.key === p.type) || {label: p.type}).label.charAt(0);
-        const icon = L.divIcon({
-          className: '',
-          html: `<div class="leaflet-pin pin-${p.type}"><span>${initial}</span></div>`,
-          iconSize: [28, 28],
-          iconAnchor: [14, 28],
-          popupAnchor: [0, -24]
+    // Style JSON to match the warm/cream palette
+    _mapStyles() {
+      return [
+        { elementType: 'geometry', stylers: [{ color: '#efe9dd' }] },
+        { elementType: 'labels.text.stroke', stylers: [{ color: '#efe9dd' }] },
+        { elementType: 'labels.text.fill', stylers: [{ color: '#6b6258' }] },
+        { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#cfd9e6' }] },
+        { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#5a78a8' }] },
+        { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+        { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#e8d8c4' }] },
+        { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#f5e9d8' }] },
+        { featureType: 'landscape.natural', elementType: 'geometry', stylers: [{ color: '#e3dfd4' }] },
+        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+        { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+        { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#3a3a3a' }] }
+      ];
+    },
+
+    setMapMode(mode, dayIdx) {
+      this.mapMode = mode;
+      if (mode === 'day' && Number.isFinite(dayIdx)) this.mapSelectedDay = dayIdx;
+      this.mapBottomSheet = null;
+      if (this._gmap) this._renderMapForCurrentMode();
+    },
+
+    _clearGoogleMapOverlays() {
+      this._gmapMarkers.forEach(m => m.setMap(null));
+      this._gmapPolylines.forEach(p => p.setMap(null));
+      this._gmapChips.forEach(c => c.setMap(null));
+      this._gmapMarkers = [];
+      this._gmapPolylines = [];
+      this._gmapChips = [];
+    },
+
+    _renderMapForCurrentMode() {
+      if (!this._gmap) return;
+      this._clearGoogleMapOverlays();
+      if (this.mapMode === 'day') {
+        this._renderMapForDay(this.mapSelectedDay);
+      } else {
+        this._renderMapOverview();
+      }
+    },
+
+    // === DAY MODE: numbered markers for slots, polyline, time chips ===
+    _renderMapForDay(dayIdx) {
+      const day = this.data.itinerary[dayIdx];
+      if (!day) return;
+      const color = this.dayRouteColor(dayIdx);
+      // Build positioned slots in order, skipping those without coords
+      const positioned = [];
+      day.slots.forEach((slot, sIdx) => {
+        const c = this.slotCoords(slot);
+        if (!c) return;
+        positioned.push({ slot, sIdx, lat: c.lat, lng: c.lon });
+      });
+      if (positioned.length === 0) {
+        // No coords for any slot — pan to villa fallback
+        const villa = this.data.providers.find(p => /villa/i.test(p.name || '') && p.latitude && p.longitude);
+        if (villa) this._gmap.setCenter({ lat: villa.latitude, lng: villa.longitude });
+        return;
+      }
+      // Markers
+      const bounds = new google.maps.LatLngBounds();
+      positioned.forEach((pos, n) => {
+        const marker = new google.maps.Marker({
+          position: { lat: pos.lat, lng: pos.lng },
+          map: this._gmap,
+          icon: {
+            url: this._svgNumberedPin(n + 1, color),
+            scaledSize: new google.maps.Size(40, 52),
+            anchor: new google.maps.Point(20, 50)
+          },
+          title: pos.slot.title || ('Parada ' + (n + 1)),
+          zIndex: 100 + n
         });
-        // Jitter to avoid overlap (small offset per provider in same location)
-        const jitterLat = coords.lat + (Math.random() - 0.5) * 0.004;
-        const jitterLon = coords.lon + (Math.random() - 0.5) * 0.004;
-        const stars = p.michelin > 0 ? ' ' + '★'.repeat(p.michelin) : '';
-        const typeLabel = (this.providerTypes.find(t => t.key === p.type) || {label: p.type}).label;
-        const popup = `
-          <div class="pop-type">${typeLabel}</div>
-          <strong>${p.name}${stars}</strong>
-          <div class="pop-meta">${p.location || ''}</div>
-          ${p.phone ? `<div class="pop-meta">📞 ${p.phone}</div>` : ''}
-          ${p.priceRange ? `<div class="pop-meta">${p.priceRange}</div>` : ''}
-          ${p.closingDays ? `<div class="pop-meta" style="color:var(--bad);">Cierra: ${p.closingDays}</div>` : ''}
-          <div class="pop-meta" style="margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.12em;">Estado: ${p.reservationStatus}</div>
-        `;
-        L.marker([jitterLat, jitterLon], { icon })
-          .bindPopup(popup)
-          .addTo(this._mapLayers[p.type] || this._mapLayers.service);
+        marker.addListener('click', () => this._showSlotBottomSheet(pos.slot, n + 1, dayIdx, color));
+        this._gmapMarkers.push(marker);
+        bounds.extend({ lat: pos.lat, lng: pos.lng });
       });
+      // Polyline connecting them in order
+      if (positioned.length >= 2) {
+        const path = positioned.map(p => ({ lat: p.lat, lng: p.lng }));
+        const polyline = new google.maps.Polyline({
+          path, map: this._gmap, geodesic: false,
+          strokeColor: color, strokeOpacity: 0.85, strokeWeight: 4,
+          icons: [{
+            icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 3, strokeColor: color, fillColor: color, fillOpacity: 1 },
+            offset: '50%'
+          }]
+        });
+        this._gmapPolylines.push(polyline);
+        // Travel time chip at each segment midpoint
+        for (let i = 0; i < positioned.length - 1; i++) {
+          const a = positioned[i], b = positioned[i + 1];
+          const t = this.travelBetween(a.slot, b.slot);
+          if (!t) continue;
+          const midLat = (a.lat + b.lat) / 2;
+          const midLng = (a.lng + b.lng) / 2;
+          const label = t.same_location ? '🚶 mismo lugar' : `≈ ${t.duration_min}′ · ${t.distance_km}km`;
+          const klass = this.travelChipClass(t.duration_min);
+          const chip = new TravelChipOverlay({ lat: midLat, lng: midLng }, label, klass);
+          chip.setMap(this._gmap);
+          this._gmapChips.push(chip);
+        }
+      }
+      // Fit bounds with padding so markers are visible
+      if (positioned.length === 1) {
+        this._gmap.setCenter({ lat: positioned[0].lat, lng: positioned[0].lng });
+        this._gmap.setZoom(13);
+      } else {
+        this._gmap.fitBounds(bounds, { top: 60, right: 60, bottom: 80, left: 60 });
+      }
+    },
 
-      // Add all to map respecting current layer toggles
-      Object.keys(this.mapLayers).forEach(key => {
-        if (this.mapLayers[key]) this._mapLayers[key].addTo(this._mapInstance);
+    // === OVERVIEW MODE: all providers as type-colored pins ===
+    _renderMapOverview() {
+      // Villa first (uses provider with type villa or name match)
+      const bounds = new google.maps.LatLngBounds();
+      const villa = this.data.providers.find(p =>
+        (p.type === 'villa' || /villa/i.test(p.name || '')) && p.latitude && p.longitude
+      );
+      if (villa) {
+        const marker = new google.maps.Marker({
+          position: { lat: villa.latitude, lng: villa.longitude },
+          map: this._gmap,
+          icon: { url: this._svgStarPin('#6e1a1f'), scaledSize: new google.maps.Size(44, 56), anchor: new google.maps.Point(22, 54) },
+          title: villa.name,
+          zIndex: 200
+        });
+        marker.addListener('click', () => this.openProviderDrawer(villa.id));
+        this._gmapMarkers.push(marker);
+        bounds.extend({ lat: villa.latitude, lng: villa.longitude });
+      }
+      // Other providers respecting layer toggles
+      this.data.providers.forEach(p => {
+        if (p === villa) return;
+        const c = this.providerCoords(p);
+        if (!c) return;
+        if (this.mapLayers[p.type] === false) return;
+        const color = this.layerColor(p.type);
+        const letter = (this.providerTypes.find(t => t.key === p.type) || { label: p.type }).label.charAt(0);
+        const marker = new google.maps.Marker({
+          position: { lat: c.lat, lng: c.lon },
+          map: this._gmap,
+          icon: { url: this._svgLetterPin(letter, color), scaledSize: new google.maps.Size(34, 44), anchor: new google.maps.Point(17, 42) },
+          title: p.name
+        });
+        marker.addListener('click', () => this.openProviderDrawer(p.id));
+        this._gmapMarkers.push(marker);
+        bounds.extend({ lat: c.lat, lng: c.lon });
       });
+      if (!bounds.isEmpty()) this._gmap.fitBounds(bounds, { top: 60, right: 60, bottom: 60, left: 60 });
+    },
+
+    _svgNumberedPin(num, color) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="52" viewBox="0 0 40 52"><path d="M20 0C9 0 0 9 0 20c0 14 20 32 20 32s20-18 20-32C40 9 31 0 20 0z" fill="${color}" stroke="#fff" stroke-width="2.5"/><text x="20" y="26" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="700" fill="#fff">${num}</text></svg>`;
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    },
+    _svgLetterPin(letter, color) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44"><path d="M17 0C7.6 0 0 7.6 0 17c0 12 17 27 17 27s17-15 17-27C34 7.6 26.4 0 17 0z" fill="${color}" stroke="#fff" stroke-width="2"/><text x="17" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#fff">${letter}</text></svg>`;
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    },
+    _svgStarPin(color) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="56" viewBox="0 0 44 56"><path d="M22 0C9.8 0 0 9.8 0 22c0 15 22 34 22 34s22-19 22-34C44 9.8 34.2 0 22 0z" fill="${color}" stroke="#fff" stroke-width="3"/><text x="22" y="29" text-anchor="middle" font-family="Arial" font-size="20" fill="#fff">★</text></svg>`;
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    },
+
+    // Bottom sheet for a slot when its marker is clicked
+    _showSlotBottomSheet(slot, num, dayIdx, color) {
+      const day = this.data.itinerary[dayIdx];
+      const provider = slot.providerId ? this.data.providers.find(p => p.id === slot.providerId) : null;
+      const c = this.slotCoords(slot);
+      const gmapsUrl = c ? `https://www.google.com/maps?q=${c.lat},${c.lon}` : '#';
+      this.mapBottomSheet = {
+        slotId: slot.id,
+        num,
+        time: slot.timeStart || '',
+        day: (day?.weekday || '') + ' · ' + (day?.date || ''),
+        title: slot.title || 'Sin título',
+        desc: (slot.description || '').slice(0, 200),
+        providerName: provider?.name || '',
+        color,
+        gmapsUrl
+      };
+    },
+
+    // Pan to a slot's marker (called from side panel timeline)
+    flyToSlot(slotId) {
+      if (!this._gmap) return;
+      const day = this.data.itinerary[this.mapSelectedDay];
+      if (!day) return;
+      let positionedIdx = 0;
+      let target = null;
+      for (let i = 0; i < day.slots.length; i++) {
+        const s = day.slots[i];
+        const c = this.slotCoords(s);
+        if (!c) continue;
+        positionedIdx++;
+        if (s.id === slotId) { target = { slot: s, coords: c, num: positionedIdx }; break; }
+      }
+      if (!target) return;
+      this._gmap.panTo({ lat: target.coords.lat, lng: target.coords.lon });
+      if (this._gmap.getZoom() < 13) this._gmap.setZoom(13);
+      const color = this.dayRouteColor(this.mapSelectedDay);
+      this._showSlotBottomSheet(target.slot, target.num, this.mapSelectedDay, color);
     },
 
     providerCoords(p) {
@@ -8742,12 +9226,8 @@ function app() {
 
     toggleMapLayer(key) {
       this.mapLayers[key] = !this.mapLayers[key];
-      if (!this._mapInstance) return;
-      if (this.mapLayers[key]) {
-        this._mapLayers[key].addTo(this._mapInstance);
-      } else {
-        this._mapLayers[key].removeFrom(this._mapInstance);
-      }
+      // Re-render overview map (only mode where type filters matter)
+      if (this._gmap && this.mapMode === 'overview') this._renderMapForCurrentMode();
     },
 
     get mappedProvidersCount() {
@@ -9342,8 +9822,7 @@ function app() {
     toggleAllLayers() {
       const target = !this.allLayersOn;
       Object.keys(this.mapLayers).forEach(k => { this.mapLayers[k] = target; });
-      // re-render markers
-      this.renderMapMarkers();
+      if (this._gmap && this.mapMode === 'overview') this._renderMapForCurrentMode();
     },
 
     // === V5C · BUDGET HELPERS ===
