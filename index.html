@@ -14,6 +14,7 @@
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js"></script>
+<script src="https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 <script>
   // Apply persisted theme ASAP to avoid flash
@@ -3852,8 +3853,14 @@ textarea:focus-visible {
   color: var(--text-1);
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  pointer-events: none;
+  cursor: pointer;
+  text-decoration: none;
   z-index: 5;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.gm-travel-chip:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.28);
 }
 .gm-travel-chip.good { color: var(--olive-deep); border-color: color-mix(in oklab, var(--olive-deep) 30%, var(--line)); }
 .gm-travel-chip.warn { color: var(--gold-v5); border-color: color-mix(in oklab, var(--gold-v5) 30%, var(--line)); }
@@ -3999,6 +4006,36 @@ textarea:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Multistop route button in day panel header */
+.v5c-mp-route-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 500;
+  text-decoration: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+.v5c-mp-route-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.18); }
+
+/* Cluster pin (fallback when AdvancedMarkerElement unavailable) — see _svgClusterPin SVG */
+.gm-cluster {
+  background: var(--accent);
+  color: white;
+  border-radius: 50%;
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
 }
 .v5c-map-panel {
   background: var(--surface-1);
@@ -4538,6 +4575,79 @@ textarea:focus-visible {
   border-radius: 4px;
   color: var(--text-1);
 }
+.v5b-places-manual {
+  margin-top: 10px;
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap;
+}
+.v5b-places-manual .hint {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* Manual pin modal */
+.v5-manualpin-overlay {
+  position: fixed; inset: 0;
+  background: rgba(18,12,8,0.7);
+  z-index: 1300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: v5-fadeIn 0.2s ease forwards;
+}
+.v5-manualpin {
+  background: var(--surface-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 1080px;
+  height: 90vh; max-height: 880px;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+  animation: v5-modalIn 0.25s cubic-bezier(0.22,1,0.36,1);
+}
+.v5-mp-head {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+}
+.v5-mp-head h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 22px; font-weight: 400; letter-spacing: -0.015em;
+  margin-bottom: 4px;
+}
+.v5-mp-head h2 em { font-style: italic; color: var(--accent); }
+.v5-mp-sub { font-family: 'Lora', serif; font-style: italic; font-size: 13px; color: var(--text-2); }
+.v5-mp-mapwrap { flex: 1; min-height: 0; background: #efe9dd; }
+#manual-pin-map { width: 100%; height: 100%; }
+.v5-mp-foot {
+  padding: 14px 24px;
+  border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: var(--surface-2);
+  flex-wrap: wrap;
+}
+.v5-mp-coords {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-1);
+  display: flex; align-items: center; gap: 6px;
+}
+.v5-mp-coords code {
+  background: var(--surface-1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  color: var(--accent-deep);
+  font-weight: 600;
+}
+.v5-mp-coords-empty em {
+  font-family: 'Lora', serif;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.v5-mp-actions { display: flex; gap: 8px; }
 
 /* Bulk Places scan banner */
 .v5c-places-scan-banner {
@@ -5791,6 +5901,11 @@ textarea:focus-visible {
               <span x-show="data.itinerary[mapSelectedDay]?.date"> · </span>
               <span x-text="data.itinerary[mapSelectedDay]?.date"></span>
             </div>
+            <template x-if="getDayRouteUrl(mapSelectedDay)">
+              <a class="v5c-mp-route-btn" :href="getDayRouteUrl(mapSelectedDay)" target="_blank" rel="noopener" title="Abrir ruta del día en Google Maps">
+                🗺 Ver ruta completa →
+              </a>
+            </template>
           </header>
           <div class="v5c-mp-body">
             <div class="v5c-mp-timeline">
@@ -6458,6 +6573,12 @@ textarea:focus-visible {
               <span>✓ Coordenadas cargadas:</span>
               <code x-text="drawerProvider.latitude?.toFixed(5) + ', ' + drawerProvider.longitude?.toFixed(5)"></code>
             </div>
+            <div class="v5b-places-manual">
+              <span class="hint">¿Google Maps no lo encuentra?</span>
+              <button class="btn btn-sm btn-ghost" @click="openManualPin(drawerProvider.id)">
+                📍 Marcar manualmente en el mapa
+              </button>
+            </div>
           </div>
 
           <div class="v5b-detail-section">
@@ -6899,6 +7020,38 @@ textarea:focus-visible {
     </div>
   </template>
 
+  <!-- ====== MANUAL PIN MODAL ====== -->
+  <template x-if="manualPin.open">
+    <div class="v5-manualpin-overlay">
+      <div class="v5-manualpin" role="dialog" aria-modal="true" aria-label="Marcar ubicación manualmente">
+        <header class="v5-mp-head">
+          <div>
+            <h2>Marcar en mapa · <em x-text="manualPin.providerName"></em></h2>
+            <p class="v5-mp-sub">Tocá en el mapa donde está el lugar. Podés mover el pin arrastrándolo para ajustar. Click derecho del mouse hace zoom out.</p>
+          </div>
+          <button class="v5-drawer-close" @click="closeManualPin()" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </header>
+        <div class="v5-mp-mapwrap">
+          <div id="manual-pin-map"></div>
+        </div>
+        <footer class="v5-mp-foot">
+          <div class="v5-mp-coords" x-show="manualPin.lat && manualPin.lon">
+            📍 <code x-text="manualPin.lat?.toFixed(5) + ', ' + manualPin.lon?.toFixed(5)"></code>
+          </div>
+          <div class="v5-mp-coords v5-mp-coords-empty" x-show="!manualPin.lat || !manualPin.lon">
+            <em>Tocá el mapa para marcar la ubicación…</em>
+          </div>
+          <div class="v5-mp-actions">
+            <button class="btn btn-ghost" @click="closeManualPin()">Cancelar</button>
+            <button class="btn" :class="{'btn-disabled': !manualPin.lat || !manualPin.lon}" :disabled="!manualPin.lat || !manualPin.lon" @click="confirmManualPin()">Confirmar ubicación →</button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </template>
+
   <!-- ====== V5 TOAST STACK ====== -->
   <div class="v5-toast-stack" aria-live="polite" aria-atomic="true">
     <template x-for="t in toasts" :key="t.id">
@@ -7150,17 +7303,27 @@ let TravelChipOverlay;
 function ensureTravelChipClass() {
   if (TravelChipOverlay || typeof google === 'undefined' || !google.maps?.OverlayView) return;
   TravelChipOverlay = class extends google.maps.OverlayView {
-    constructor(latLng, label, klass) {
+    constructor(latLng, label, klass, origin, dest) {
       super();
       this._latLng = latLng;
       this._label = label;
       this._klass = klass || '';
+      this._origin = origin;  // {lat, lon}
+      this._dest = dest;      // {lat, lon}
       this._div = null;
     }
     onAdd() {
-      const div = document.createElement('div');
+      const div = document.createElement('a');
       div.className = 'gm-travel-chip ' + this._klass;
       div.textContent = this._label;
+      div.title = 'Click · abrir ruta en Google Maps';
+      if (this._origin && this._dest) {
+        const o = `${this._origin.lat},${this._origin.lon}`;
+        const d = `${this._dest.lat},${this._dest.lon}`;
+        div.href = `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}&travelmode=driving`;
+        div.target = '_blank';
+        div.rel = 'noopener';
+      }
       this._div = div;
       const panes = this.getPanes();
       panes.floatPane.appendChild(div);
@@ -7214,6 +7377,16 @@ function app() {
       googleResults: [],
       searchingGoogle: false
     },
+    // Manual pin drop modal — for providers Google Places can't find
+    manualPin: {
+      open: false,
+      providerId: null,
+      providerName: '',
+      lat: null,
+      lon: null
+    },
+    _manualPinMap: null,
+    _manualPinMarker: null,
     // Places scan wizard
     placesScan: {
       open: false,
@@ -7955,9 +8128,20 @@ function app() {
           gestureHandling: 'cooperative',
           styles: this._mapStyles()
         });
-        // Default mode = day 0 (the first day of the trip)
-        this.mapSelectedDay = 0;
-        this.mapMode = 'day';
+        // Restore last viewed mode/day from localStorage (default: day I)
+        try {
+          const savedMode = localStorage.getItem('piemonte-map-mode');
+          const savedDay = parseInt(localStorage.getItem('piemonte-map-day') || '0', 10);
+          if (savedMode === 'overview') {
+            this.mapMode = 'overview';
+          } else {
+            this.mapMode = 'day';
+            this.mapSelectedDay = Number.isFinite(savedDay) && savedDay >= 0 && savedDay < this.data.itinerary.length ? savedDay : 0;
+          }
+        } catch(e) {
+          this.mapSelectedDay = 0;
+          this.mapMode = 'day';
+        }
         this._renderMapForCurrentMode();
       } catch (e) {
         console.warn('Google Maps init failed:', e);
@@ -7988,6 +8172,11 @@ function app() {
       this.mapMode = mode;
       if (mode === 'day' && Number.isFinite(dayIdx)) this.mapSelectedDay = dayIdx;
       this.mapBottomSheet = null;
+      // Persist so reopening the tab returns to the same day
+      try {
+        localStorage.setItem('piemonte-map-mode', mode);
+        if (mode === 'day') localStorage.setItem('piemonte-map-day', String(this.mapSelectedDay));
+      } catch(e) {}
       if (this._gmap) this._renderMapForCurrentMode();
     },
 
@@ -7995,6 +8184,10 @@ function app() {
       this._gmapMarkers.forEach(m => m.setMap(null));
       this._gmapPolylines.forEach(p => p.setMap(null));
       this._gmapChips.forEach(c => c.setMap(null));
+      if (this._gmapCluster) {
+        try { this._gmapCluster.clearMarkers(); } catch(e) {}
+        this._gmapCluster = null;
+      }
       this._gmapMarkers = [];
       this._gmapPolylines = [];
       this._gmapChips = [];
@@ -8031,11 +8224,14 @@ function app() {
       // Markers
       const bounds = new google.maps.LatLngBounds();
       positioned.forEach((pos, n) => {
+        // Derive provider type for the type-icon badge on the pin
+        const provider = pos.slot.providerId ? this.data.providers.find(p => p.id === pos.slot.providerId) : null;
+        const typeKey = provider?.type || null;
         const marker = new google.maps.Marker({
           position: { lat: pos.lat, lng: pos.lng },
           map: this._gmap,
           icon: {
-            url: this._svgNumberedPin(n + 1, color),
+            url: this._svgNumberedPin(n + 1, color, typeKey),
             scaledSize: new google.maps.Size(40, 52),
             anchor: new google.maps.Point(20, 50)
           },
@@ -8067,7 +8263,7 @@ function app() {
           const midLng = (a.lng + b.lng) / 2;
           const label = t.same_location ? '🚶 mismo lugar' : `≈ ${t.duration_min}′ · ${t.distance_km}km`;
           const klass = this.travelChipClass(t.duration_min);
-          const chip = new TravelChipOverlay({ lat: midLat, lng: midLng }, label, klass);
+          const chip = new TravelChipOverlay({ lat: midLat, lng: midLng }, label, klass, { lat: a.lat, lon: a.lng }, { lat: b.lat, lon: b.lng });
           chip.setMap(this._gmap);
           this._gmapChips.push(chip);
         }
@@ -8083,24 +8279,24 @@ function app() {
 
     // === OVERVIEW MODE: all providers as type-colored pins ===
     _renderMapOverview() {
-      // Villa first (uses provider with type villa or name match)
       const bounds = new google.maps.LatLngBounds();
       const villa = this.data.providers.find(p =>
         (p.type === 'villa' || /villa/i.test(p.name || '')) && p.latitude && p.longitude
       );
+      const overviewMarkers = [];  // for clusterer
       if (villa) {
         const marker = new google.maps.Marker({
           position: { lat: villa.latitude, lng: villa.longitude },
-          map: this._gmap,
           icon: { url: this._svgStarPin('#6e1a1f'), scaledSize: new google.maps.Size(44, 56), anchor: new google.maps.Point(22, 54) },
           title: villa.name,
           zIndex: 200
         });
         marker.addListener('click', () => this.openProviderDrawer(villa.id));
+        marker.setMap(this._gmap);
         this._gmapMarkers.push(marker);
         bounds.extend({ lat: villa.latitude, lng: villa.longitude });
       }
-      // Other providers respecting layer toggles
+      // Other providers respecting layer toggles — collected for the clusterer
       this.data.providers.forEach(p => {
         if (p === villa) return;
         const c = this.providerCoords(p);
@@ -8110,19 +8306,93 @@ function app() {
         const letter = (this.providerTypes.find(t => t.key === p.type) || { label: p.type }).label.charAt(0);
         const marker = new google.maps.Marker({
           position: { lat: c.lat, lng: c.lon },
-          map: this._gmap,
           icon: { url: this._svgLetterPin(letter, color), scaledSize: new google.maps.Size(34, 44), anchor: new google.maps.Point(17, 42) },
           title: p.name
         });
         marker.addListener('click', () => this.openProviderDrawer(p.id));
         this._gmapMarkers.push(marker);
+        overviewMarkers.push(marker);
         bounds.extend({ lat: c.lat, lng: c.lon });
+      });
+      // Clusterer for the non-villa markers (villa stays standalone)
+      if (overviewMarkers.length > 0 && window.markerClusterer?.MarkerClusterer) {
+        const clusterer = new markerClusterer.MarkerClusterer({
+          map: this._gmap,
+          markers: overviewMarkers,
+          renderer: {
+            render: ({ count, position }) => {
+              const div = document.createElement('div');
+              div.className = 'gm-cluster';
+              div.textContent = String(count);
+              return new google.maps.marker.AdvancedMarkerElement
+                ? new google.maps.marker.AdvancedMarkerElement({ position, content: div })
+                : new google.maps.Marker({
+                    position,
+                    icon: { url: this._svgClusterPin(count), scaledSize: new google.maps.Size(40, 40), anchor: new google.maps.Point(20, 20) },
+                    zIndex: 1000 + count
+                  });
+            }
+          }
+        });
+        this._gmapCluster = clusterer;
+      } else {
+        // Fallback: drop markers directly on map if clusterer isn't loaded yet
+        overviewMarkers.forEach(m => m.setMap(this._gmap));
+      }
+      // Polylines per day with day color (dashed)
+      this.data.itinerary.forEach((day, dayIdx) => {
+        const color = this.dayRouteColor(dayIdx);
+        const positioned = day.slots
+          .map(s => ({ s, c: this.slotCoords(s) }))
+          .filter(x => x.c)
+          .map(x => ({ lat: x.c.lat, lng: x.c.lon }));
+        if (positioned.length < 2) return;
+        // Dashed line via icons pattern
+        const lineSymbol = {
+          path: 'M 0,-1 0,1',
+          strokeOpacity: 1,
+          strokeWeight: 2.5,
+          scale: 3
+        };
+        const poly = new google.maps.Polyline({
+          path: positioned,
+          map: this._gmap,
+          strokeOpacity: 0,
+          strokeColor: color,
+          icons: [{ icon: lineSymbol, offset: '0', repeat: '14px' }]
+        });
+        this._gmapPolylines.push(poly);
       });
       if (!bounds.isEmpty()) this._gmap.fitBounds(bounds, { top: 60, right: 60, bottom: 60, left: 60 });
     },
 
-    _svgNumberedPin(num, color) {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="52" viewBox="0 0 40 52"><path d="M20 0C9 0 0 9 0 20c0 14 20 32 20 32s20-18 20-32C40 9 31 0 20 0z" fill="${color}" stroke="#fff" stroke-width="2.5"/><text x="20" y="26" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="700" fill="#fff">${num}</text></svg>`;
+    _svgClusterPin(count) {
+      // Circular cluster pin with count in the middle
+      const r = count > 20 ? 22 : count > 10 ? 20 : 18;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="${r}" fill="#3a5a8b" stroke="#fff" stroke-width="3" opacity="0.92"/><text x="20" y="25" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#fff">${count}</text></svg>`;
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    },
+
+    _svgNumberedPin(num, color, typeKey) {
+      // Map provider type → a single-char glyph that renders reliably in SVG
+      // (emojis don't render in SVG <text> in some browsers; using glyphs/letters)
+      const glyphs = {
+        winery: '◆',       // diamond → bottle
+        restaurant: '●',   // dot → plate
+        truffle: '▲',      // triangle → mound
+        activity: '✦',     // sparkle → experience
+        transfer: '→',     // arrow → motion
+        service: '◇',      // hollow diamond
+        villa: '★'
+      };
+      const glyph = glyphs[typeKey] || '';
+      const numText = String(num);
+      const fontSize = numText.length > 1 ? 13 : 16;
+      const numY = glyph ? 22 : 26;
+      const glyphSvg = glyph
+        ? `<text x="20" y="36" text-anchor="middle" font-family="Arial" font-size="11" fill="#fff" opacity="0.92">${glyph}</text>`
+        : '';
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="52" viewBox="0 0 40 52"><path d="M20 0C9 0 0 9 0 20c0 14 20 32 20 32s20-18 20-32C40 9 31 0 20 0z" fill="${color}" stroke="#fff" stroke-width="2.5"/><text x="20" y="${numY}" text-anchor="middle" font-family="Inter, sans-serif" font-size="${fontSize}" font-weight="700" fill="#fff">${numText}</text>${glyphSvg}</svg>`;
       return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     },
     _svgLetterPin(letter, color) {
@@ -8151,6 +8421,16 @@ function app() {
         color,
         gmapsUrl
       };
+      // Scroll the corresponding timeline row into view if it's off-screen
+      this.$nextTick(() => {
+        const rows = document.querySelectorAll('.v5c-mpt-row');
+        for (const row of rows) {
+          if (row.classList.contains('active')) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            break;
+          }
+        }
+      });
     },
 
     // Pan to a slot's marker (called from side panel timeline)
@@ -8172,6 +8452,128 @@ function app() {
       if (this._gmap.getZoom() < 13) this._gmap.setZoom(13);
       const color = this.dayRouteColor(this.mapSelectedDay);
       this._showSlotBottomSheet(target.slot, target.num, this.mapSelectedDay, color);
+    },
+
+    // Build a Google Maps directions URL with all the day's positioned slots
+    // as waypoints. First = origin, last = destination, middle = waypoints.
+    // Max 9 waypoints per Google's limit (10 total stops). Returns null if <2 stops.
+    getDayRouteUrl(dayIdx) {
+      const day = this.data.itinerary[dayIdx];
+      if (!day) return null;
+      const positioned = day.slots
+        .map(s => ({ s, c: this.slotCoords(s) }))
+        .filter(x => x.c);
+      if (positioned.length < 2) return null;
+      const stops = positioned.map(x => `${x.c.lat},${x.c.lon}`);
+      const origin = stops[0];
+      const destination = stops[stops.length - 1];
+      const waypoints = stops.slice(1, -1).slice(0, 9); // cap at 9
+      let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
+      if (waypoints.length) url += `&waypoints=${waypoints.join('|')}`;
+      return url;
+    },
+
+    // === MANUAL PIN DROP ===
+    // Opens a modal with an interactive map. User clicks anywhere to drop a pin.
+    // Used for providers Google Places can't find (chef freelance, private venues, etc.)
+    openManualPin(providerId) {
+      const provider = this.data.providers.find(p => p.id === providerId);
+      if (!provider) return;
+      // Seed with existing coords if any, else villa, else Piemonte center
+      let lat = provider.latitude || null;
+      let lon = provider.longitude || null;
+      if (!lat || !lon) {
+        const villa = this.data.providers.find(p => /villa/i.test(p.name || '') && p.latitude && p.longitude);
+        if (villa) { lat = villa.latitude; lon = villa.longitude; }
+        else { lat = 44.66; lon = 8.0; }
+      }
+      this.manualPin = {
+        open: true,
+        providerId,
+        providerName: provider.name || 'sin nombre',
+        lat: provider.latitude || null,  // null if user hasn't dropped yet
+        lon: provider.longitude || null
+      };
+      document.body.style.overflow = 'hidden';
+      // Initialize the modal map on next tick (DOM not ready yet)
+      this.$nextTick(() => this._initManualPinMap(lat, lon));
+    },
+    async _initManualPinMap(seedLat, seedLon) {
+      try {
+        const { Map } = await google.maps.importLibrary('maps');
+        const el = document.getElementById('manual-pin-map');
+        if (!el) return;
+        this._manualPinMap = new Map(el, {
+          center: { lat: seedLat, lng: seedLon },
+          zoom: 13,
+          mapTypeControl: true,
+          streetViewControl: false,
+          fullscreenControl: false,
+          gestureHandling: 'greedy',
+          styles: this._mapStyles()
+        });
+        // If existing coords, drop initial marker
+        if (this.manualPin.lat && this.manualPin.lon) {
+          this._placeManualPinMarker(this.manualPin.lat, this.manualPin.lon);
+        }
+        // Click anywhere on map → drop / move pin
+        this._manualPinMap.addListener('click', (e) => {
+          const lat = e.latLng.lat();
+          const lon = e.latLng.lng();
+          this.manualPin.lat = lat;
+          this.manualPin.lon = lon;
+          this._placeManualPinMarker(lat, lon);
+        });
+      } catch (e) {
+        console.warn('Manual pin map init failed:', e);
+      }
+    },
+    _placeManualPinMarker(lat, lon) {
+      if (!this._manualPinMap) return;
+      if (this._manualPinMarker) this._manualPinMarker.setMap(null);
+      this._manualPinMarker = new google.maps.Marker({
+        position: { lat, lng: lon },
+        map: this._manualPinMap,
+        draggable: true,
+        animation: google.maps.Animation.DROP,
+        icon: { url: this._svgNumberedPin('✓', '#3a5a8b', null), scaledSize: new google.maps.Size(40, 52), anchor: new google.maps.Point(20, 50) }
+      });
+      // Drag to refine
+      this._manualPinMarker.addListener('dragend', (e) => {
+        this.manualPin.lat = e.latLng.lat();
+        this.manualPin.lon = e.latLng.lng();
+      });
+    },
+    closeManualPin() {
+      this.manualPin = { open: false, providerId: null, providerName: '', lat: null, lon: null };
+      if (this._manualPinMarker) { this._manualPinMarker.setMap(null); this._manualPinMarker = null; }
+      this._manualPinMap = null;
+      document.body.style.overflow = '';
+    },
+    confirmManualPin() {
+      if (!this.manualPin.lat || !this.manualPin.lon) {
+        this.toast('Tocá el mapa para marcar la ubicación', 'info');
+        return;
+      }
+      const provider = this.data.providers.find(p => p.id === this.manualPin.providerId);
+      if (!provider) return;
+      const lat = this.manualPin.lat;
+      const lon = this.manualPin.lon;
+      provider.latitude = lat;
+      provider.longitude = lon;
+      // If provider has no mapUrl yet, set one based on the dropped coords
+      if (!provider.mapUrl) {
+        provider.mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+      }
+      this.save();
+      this.logEvent('provider.manual_pin',
+        `marcó "${provider.name}" manualmente en el mapa`,
+        { provider_id: provider.id, lat, lon });
+      this.toast(`✓ "${provider.name}" marcado en el mapa`, 'success');
+      this.refreshAllTravelTimes && this.refreshAllTravelTimes();
+      // Re-render the trip map if it's loaded
+      if (this._gmap) this._renderMapForCurrentMode();
+      this.closeManualPin();
     },
 
     providerCoords(p) {
