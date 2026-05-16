@@ -27,6 +27,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 <style>
 :root {
@@ -4274,6 +4275,232 @@ textarea:focus-visible {
 @media (max-width: 540px) {
   .v5b-bita-form { grid-template-columns: 1fr; }
 }
+
+/* Google Places picker — hero treatment at top of provider drawer */
+.v5b-places-section {
+  background: linear-gradient(135deg,
+    color-mix(in oklab, var(--accent) 5%, var(--surface-2)),
+    color-mix(in oklab, var(--accent) 2%, var(--surface-1)));
+  border: 1px solid color-mix(in oklab, var(--accent) 22%, var(--line));
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+.v5b-places-section h4 {
+  color: var(--accent-deep);
+  margin-bottom: 6px;
+}
+.v5b-places-hint {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+  margin-bottom: 14px;
+}
+.v5b-places-picker-wrap {
+  background: var(--surface-1);
+  border-radius: var(--radius);
+  padding: 4px;
+  border: 1px solid var(--line);
+}
+.v5b-places-picker-wrap gmpx-place-picker {
+  width: 100%;
+  --gmpx-color-surface: var(--surface-1);
+  --gmpx-color-on-surface: var(--text-1);
+  --gmpx-color-primary: var(--accent);
+  --gmpx-font-family-base: 'Inter', system-ui, sans-serif;
+  --gmpx-font-size-base: 14px;
+}
+.v5b-places-coords {
+  margin-top: 10px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--olive-deep);
+}
+.v5b-places-coords code {
+  background: var(--surface-2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--text-1);
+}
+
+/* Bulk Places scan banner */
+.v5c-places-scan-banner {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  background: linear-gradient(135deg,
+    color-mix(in oklab, var(--accent) 8%, var(--surface-1)),
+    color-mix(in oklab, var(--accent) 3%, var(--surface-1)));
+  border: 1px solid color-mix(in oklab, var(--accent) 28%, var(--line));
+  border-radius: var(--radius-lg);
+}
+.v5c-psb-icon { font-size: 26px; line-height: 1; }
+.v5c-psb-title { font-family: 'Fraunces', serif; font-size: 19px; line-height: 1.3; color: var(--text-1); margin-bottom: 4px; }
+.v5c-psb-title strong { color: var(--accent-deep); font-weight: 500; }
+.v5c-psb-meta { font-family: 'Lora', serif; font-style: italic; font-size: 13px; color: var(--text-2); line-height: 1.45; }
+
+/* Places scan modal */
+.v5-places-scan-overlay {
+  position: fixed; inset: 0;
+  background: rgba(18,12,8,0.66);
+  z-index: 1200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: v5-fadeIn 0.2s ease forwards;
+}
+.v5-places-scan {
+  background: var(--surface-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  max-width: 920px; width: 100%;
+  max-height: 90vh;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-3);
+  animation: v5-modalIn 0.25s cubic-bezier(0.22,1,0.36,1);
+  overflow: hidden;
+}
+.v5-ps-head {
+  padding: 22px 26px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+}
+.v5-ps-head h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 24px; font-weight: 400; letter-spacing: -0.015em;
+  margin-bottom: 4px;
+}
+.v5-ps-head h2 em { font-style: italic; color: var(--accent); }
+.v5-ps-sub { font-family: 'Lora', serif; font-style: italic; font-size: 14px; color: var(--text-2); }
+
+.v5-ps-progress { padding: 32px 26px; }
+.v5-ps-pbar { height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+.v5-ps-pbar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-deep));
+  transition: width 0.3s ease;
+}
+.v5-ps-pmeta {
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.06em;
+  color: var(--text-3);
+  text-align: right;
+}
+
+.v5-ps-body { flex: 1; overflow-y: auto; padding: 18px 26px; }
+.v5-ps-actions-top {
+  display: flex; gap: 8px; align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.v5-ps-count {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.v5-ps-count strong { color: var(--accent-deep); }
+
+.v5-ps-rows { display: flex; flex-direction: column; gap: 10px; }
+.v5-ps-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: all 0.15s ease;
+}
+.v5-ps-row.found.skip { opacity: 0.5; }
+.v5-ps-row.found:not(.skip) {
+  background: color-mix(in oklab, var(--accent) 4%, var(--surface-2));
+  border-color: color-mix(in oklab, var(--accent) 25%, var(--line));
+}
+.v5-ps-row.missing {
+  background: color-mix(in oklab, var(--bad) 5%, var(--surface-2));
+  border-color: color-mix(in oklab, var(--bad) 25%, var(--line));
+}
+.v5-ps-toggle { display: flex; align-items: flex-start; padding-top: 2px; }
+.v5-ps-toggle input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
+.v5-ps-row-head {
+  display: flex; align-items: baseline; gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.v5-ps-row-head strong { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 400; }
+.v5-ps-row-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--accent-deep);
+}
+.v5-ps-row-status.missing { color: var(--bad); }
+
+.v5-ps-row-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin-top: 8px;
+}
+.v5-ps-col {
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px; line-height: 1.4;
+}
+.v5-ps-col.current { background: var(--surface-1); border: 1px solid var(--line); }
+.v5-ps-col.found { background: color-mix(in oklab, var(--accent) 5%, var(--surface-1)); border: 1px solid color-mix(in oklab, var(--accent) 20%, var(--line)); }
+.v5-ps-col-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.v5-ps-col .muted { color: var(--text-3); font-size: 12px; margin-top: 2px; }
+.v5-ps-coords {
+  display: block; margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.v5-ps-coords:hover { text-decoration: underline; }
+.v5-ps-row-query {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-3);
+  margin-top: 8px;
+}
+.v5-ps-row-query code { background: var(--surface-1); padding: 2px 6px; border-radius: 3px; color: var(--text-2); }
+
+.v5-ps-done {
+  padding: 48px 26px;
+  text-align: center;
+}
+.v5-ps-done-icon {
+  font-size: 48px;
+  color: var(--olive-deep);
+  margin-bottom: 16px;
+}
+.v5-ps-done p { font-family: 'Lora', serif; font-size: 16px; color: var(--text-1); margin-bottom: 8px; }
+.v5-ps-done p strong { color: var(--accent-deep); }
+.v5-ps-done .muted { font-style: italic; color: var(--text-2); font-size: 14px; }
+
+.v5-ps-foot {
+  padding: 16px 26px;
+  border-top: 1px solid var(--line);
+  display: flex; justify-content: flex-end; gap: 8px;
+  background: var(--surface-2);
+}
+.btn-disabled, .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .v5-ps-row-grid { grid-template-columns: 1fr; }
+  .v5c-places-scan-banner { grid-template-columns: 1fr; text-align: center; }
+}
 .v5c-res-end {
   display: flex; align-items: center; gap: 10px;
 }
@@ -4463,6 +4690,9 @@ textarea:focus-visible {
 
 </head>
 <body>
+
+<!-- Google Maps Platform · Places + Maps. Key restringida a https://batwt.netlify.app/* -->
+<gmpx-api-loader key="AIzaSyCUeZyKs2jjtKLNIwHq9V7Caw2bW_ehEDE" solution-channel="GMP_GE_placepicker_v2"></gmpx-api-loader>
 
 <div class="app" x-data="app()" x-init="init()" x-cloak>
 
@@ -5087,6 +5317,20 @@ textarea:focus-visible {
       <p class="lead">Restaurantes, bodegas, truffle hunt, transfers, servicios. Tap en cualquier card para abrir.</p>
     </div>
     <button class="btn" @click="addProvider()">+ Agregar proveedor</button>
+  </div>
+
+  <!-- Bulk Places scan banner — only visible when there are providers without coords -->
+  <div class="v5c-places-scan-banner" x-show="providersNeedingScan.length > 0">
+    <div class="v5c-psb-icon">🔍</div>
+    <div class="v5c-psb-body">
+      <div class="v5c-psb-title">
+        <strong x-text="providersNeedingScan.length"></strong> proveedores sin coordenadas
+      </div>
+      <div class="v5c-psb-meta">
+        Buscar todos en Google Maps de una vez · auto-completa nombre, dirección, tel, web y coordenadas. Revisás los resultados antes de aplicar.
+      </div>
+    </div>
+    <button class="btn" @click="openPlacesScan()">Barrer ahora →</button>
   </div>
 
   <div class="v5b-toolbar">
@@ -5779,6 +6023,22 @@ textarea:focus-visible {
           </div>
         </header>
         <div class="v5-drawer-body">
+          <!-- Google Places auto-fill · top priority for new providers -->
+          <div class="v5b-detail-section v5b-places-section">
+            <h4>🔍 Buscar en Google Maps</h4>
+            <p class="v5b-places-hint">Tipeá el lugar y elegí de la lista. Se cargan solos nombre, dirección, teléfono, web, días de cierre y coordenadas para los tiempos de viaje. Los campos que ya tengan dato se respetan — solo se completan los vacíos.</p>
+            <div class="v5b-places-picker-wrap">
+              <gmpx-place-picker
+                placeholder="Ej: La Madernassa Guarene"
+                @gmpx-placechange="applyGooglePlace($event, drawerProvider)">
+              </gmpx-place-picker>
+            </div>
+            <div class="v5b-places-coords" x-show="drawerProvider.latitude && drawerProvider.longitude">
+              <span>✓ Coordenadas cargadas:</span>
+              <code x-text="drawerProvider.latitude?.toFixed(5) + ', ' + drawerProvider.longitude?.toFixed(5)"></code>
+            </div>
+          </div>
+
           <div class="v5b-detail-section">
             <h4>Contacto rápido</h4>
             <div class="v5b-detail-actions">
@@ -6126,6 +6386,98 @@ textarea:focus-visible {
     </div>
   </template>
 
+  <!-- ====== V5 PLACES SCAN MODAL ====== -->
+  <template x-if="placesScan.open">
+    <div class="v5-places-scan-overlay" @click.self="phase === 'review' && closePlacesScan()">
+      <div class="v5-places-scan" role="dialog" aria-modal="true" aria-label="Barrido de proveedores con Google Places">
+        <header class="v5-ps-head">
+          <div>
+            <h2>Barrer proveedores · <em>Google Places</em></h2>
+            <p class="v5-ps-sub" x-show="placesScan.phase === 'scanning'">Buscando <span x-text="placesScan.progress.done"></span> de <span x-text="placesScan.progress.total"></span> proveedores en Google Maps…</p>
+            <p class="v5-ps-sub" x-show="placesScan.phase === 'review'">Revisá los matches y desmarcá los que no estén bien.</p>
+            <p class="v5-ps-sub" x-show="placesScan.phase === 'applying'">Aplicando cambios…</p>
+            <p class="v5-ps-sub" x-show="placesScan.phase === 'done'">Listo. Los tiempos de viaje se están recalculando automáticamente.</p>
+          </div>
+          <button class="v5-drawer-close" @click="closePlacesScan()" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </header>
+
+        <!-- Scanning progress -->
+        <div class="v5-ps-progress" x-show="placesScan.phase === 'scanning'">
+          <div class="v5-ps-pbar">
+            <div class="v5-ps-pbar-fill" :style="'width:' + (placesScan.progress.total ? (placesScan.progress.done / placesScan.progress.total * 100) : 0) + '%'"></div>
+          </div>
+          <div class="v5-ps-pmeta">
+            <span x-text="placesScan.progress.done"></span> de <span x-text="placesScan.progress.total"></span>
+          </div>
+        </div>
+
+        <!-- Review table -->
+        <div class="v5-ps-body" x-show="placesScan.phase === 'review' || placesScan.phase === 'applying'">
+          <div class="v5-ps-actions-top">
+            <button class="btn btn-sm btn-ghost" @click="setAllPlacesScanApply(true)">✓ Aplicar todos</button>
+            <button class="btn btn-sm btn-ghost" @click="setAllPlacesScanApply(false)">✕ Desmarcar todos</button>
+            <span class="v5-ps-count"><strong x-text="placesScanApplyCount"></strong> seleccionados de <span x-text="placesScan.results.length"></span></span>
+          </div>
+          <div class="v5-ps-rows">
+            <template x-for="(r, idx) in placesScan.results" :key="r.providerId">
+              <div class="v5-ps-row" :class="{found: r.found && r.apply, skip: r.found && !r.apply, missing: r.notFound || r.error}">
+                <label class="v5-ps-toggle">
+                  <input type="checkbox" :checked="r.apply" :disabled="!r.found" @change="togglePlacesScanRow(idx)">
+                </label>
+                <div class="v5-ps-row-body">
+                  <div class="v5-ps-row-head">
+                    <strong x-text="r.current.name || 'sin nombre'"></strong>
+                    <span class="v5-ps-row-status" x-show="r.found">match encontrado</span>
+                    <span class="v5-ps-row-status missing" x-show="r.notFound">sin resultado</span>
+                    <span class="v5-ps-row-status missing" x-show="r.error" x-text="'error: ' + r.error"></span>
+                  </div>
+                  <div class="v5-ps-row-grid" x-show="r.found">
+                    <div class="v5-ps-col current">
+                      <div class="v5-ps-col-label">Tenés</div>
+                      <div x-text="r.current.location || '— sin dirección —'"></div>
+                      <div x-text="r.current.phone || '— sin teléfono —'" class="muted"></div>
+                    </div>
+                    <div class="v5-ps-col found">
+                      <div class="v5-ps-col-label">Google sugiere</div>
+                      <div x-text="r.found?.address || '—'"></div>
+                      <div x-text="r.found?.phone || '— sin tel —'" class="muted"></div>
+                      <a x-show="r.found?.lat && r.found?.lon" :href="`https://www.google.com/maps?q=${r.found.lat},${r.found.lon}`" target="_blank" rel="noopener" class="v5-ps-coords">
+                        📍 <span x-text="r.found?.lat?.toFixed(4) + ', ' + r.found?.lon?.toFixed(4)"></span> · ver →
+                      </a>
+                    </div>
+                  </div>
+                  <div class="v5-ps-row-query" x-show="r.notFound || r.error">
+                    Búsqueda usada: <code x-text="r.query"></code>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Done summary -->
+        <div class="v5-ps-done" x-show="placesScan.phase === 'done'">
+          <div class="v5-ps-done-icon">✓</div>
+          <p>Listo. <strong x-text="placesScan.results.filter(r => r.apply && r.found).length"></strong> proveedores actualizados con coordenadas y datos de Google Places.</p>
+          <p class="muted">Los chips de tiempo de viaje en el itinerario se están recalculando.</p>
+        </div>
+
+        <!-- Footer -->
+        <footer class="v5-ps-foot">
+          <button class="btn btn-ghost" @click="closePlacesScan()" x-show="placesScan.phase !== 'applying'">
+            <span x-show="placesScan.phase === 'done'">Cerrar</span>
+            <span x-show="placesScan.phase !== 'done'">Cancelar</span>
+          </button>
+          <button class="btn" :class="{'btn-disabled': placesScanApplyCount === 0}" :disabled="placesScanApplyCount === 0" @click="applyPlacesScanResults()" x-show="placesScan.phase === 'review'">
+            Aplicar <span x-text="placesScanApplyCount"></span> proveedores →
+          </button>
+        </footer>
+      </div>
+    </div>
+  </template>
+
   <!-- ====== V5 TOAST STACK ====== -->
   <div class="v5-toast-stack" aria-live="polite" aria-atomic="true">
     <template x-for="t in toasts" :key="t.id">
@@ -6395,6 +6747,13 @@ function app() {
     providerStatusFilter: 'all',
     actionFilter: 'all',
     actionTypeFilter: '',
+    // Places scan wizard
+    placesScan: {
+      open: false,
+      phase: 'idle',  // 'idle' | 'scanning' | 'review' | 'applying' | 'done'
+      progress: { done: 0, total: 0 },
+      results: []     // [{ providerId, current, found, apply, notFound, error }]
+    },
     // V5b
     slotDrawerId: null,
     providerDrawerId: null,
@@ -7574,6 +7933,272 @@ function app() {
       if (!provider || !Array.isArray(provider.communications)) return;
       provider.communications = provider.communications.filter(e => e.id !== eventId);
       this.save();
+    },
+
+    // === GOOGLE PLACES INTEGRATION ===
+    // Called when user selects a place from <gmpx-place-picker> in the provider drawer.
+    // Smart-merge: fills empty fields, always overwrites coords (Google is authoritative),
+    // shows a toast of what changed.
+    async applyGooglePlace(event, provider) {
+      if (!provider) return;
+      const picker = event.target;
+      const place = picker.value;
+      if (!place) return;
+      // Request the fields we want (most beyond basic require a fetch)
+      try {
+        if (typeof place.fetchFields === 'function') {
+          await place.fetchFields({
+            fields: [
+              'displayName', 'formattedAddress', 'location',
+              'internationalPhoneNumber', 'nationalPhoneNumber',
+              'websiteURI', 'googleMapsURI', 'regularOpeningHours', 'id'
+            ]
+          });
+        }
+      } catch (e) {
+        console.warn('Place.fetchFields failed (continuing with what we have):', e);
+      }
+      const filled = [];
+      const updated = [];
+      const tryFill = (key, value, label) => {
+        if (value == null || value === '') return;
+        if (!provider[key]) {
+          provider[key] = value;
+          filled.push(label || key);
+        } else if (provider[key] !== value) {
+          // Existed but is different — don't overwrite by default; user can edit manually
+          // (could be improved later with a "replace?" prompt per field)
+        }
+      };
+      // Pull display name (only if provider has no name yet)
+      const displayName = place.displayName || place.name || null;
+      tryFill('name', displayName, 'nombre');
+      // Address → use formattedAddress as the location string (more complete than what user usually types)
+      tryFill('location', place.formattedAddress, 'dirección');
+      // Phone — prefer international format
+      tryFill('phone', place.internationalPhoneNumber || place.nationalPhoneNumber, 'teléfono');
+      // Web — strip protocol for tidier display
+      const web = place.websiteURI ? String(place.websiteURI).replace(/^https?:\/\//, '').replace(/\/$/, '') : null;
+      tryFill('web', web, 'web');
+      // mapUrl — the canonical Google Maps URL
+      tryFill('mapUrl', place.googleMapsURI, 'mapUrl');
+      // Coords — ALWAYS update (Google is authoritative); supports both LatLng object and literal
+      if (place.location) {
+        const lat = typeof place.location.lat === 'function' ? place.location.lat() : place.location.lat;
+        const lon = typeof place.location.lng === 'function' ? place.location.lng() : place.location.lng;
+        if (Number.isFinite(lat) && Number.isFinite(lon)) {
+          provider.latitude = lat;
+          provider.longitude = lon;
+          updated.push('coordenadas');
+        }
+      }
+      // Closing days — parse weekday descriptions (e.g. "Monday: Closed")
+      if (!provider.closingDays && place.regularOpeningHours?.weekdayDescriptions) {
+        const closed = place.regularOpeningHours.weekdayDescriptions
+          .filter(d => /(?:closed|cerrado|chiuso|fermé)/i.test(d))
+          .map(d => {
+            const day = d.split(':')[0].trim();
+            // Map English/Italian day names → short Spanish
+            const map = {
+              Monday: 'Lun', Lunedì: 'Lun', Tuesday: 'Mar', Martedì: 'Mar',
+              Wednesday: 'Mié', Mercoledì: 'Mié', Thursday: 'Jue', Giovedì: 'Jue',
+              Friday: 'Vie', Venerdì: 'Vie', Saturday: 'Sáb', Sabato: 'Sáb',
+              Sunday: 'Dom', Domenica: 'Dom'
+            };
+            return map[day] || day.slice(0, 3);
+          });
+        if (closed.length > 0) {
+          provider.closingDays = closed.join(' + ');
+          filled.push('días de cierre');
+        }
+      }
+      const total = [...filled, ...updated];
+      if (total.length > 0) {
+        this.save();
+        this.logEvent('provider.places_autofill',
+          `auto-completó "${provider.name || 'provider'}" desde Google Places (${total.join(', ')})`,
+          { provider_id: provider.id, fields: total });
+        this.toast(`Auto-completado: ${total.join(', ')}`, 'success');
+        // Refresh travel calc — coords likely changed
+        this.refreshAllTravelTimes && this.refreshAllTravelTimes();
+      } else {
+        this.toast('Ya estaba todo cargado · sin cambios', 'info');
+      }
+      // Reset picker so user can search another place if they want
+      picker.value = null;
+    },
+
+    // === GOOGLE PLACES BULK SCAN ===
+    // Lazy-load the Place class from Google Maps JS API.
+    async _getPlaceClass() {
+      if (window.google?.maps?.places?.Place) return window.google.maps.places.Place;
+      // Wait up to 8s for SDK to be ready
+      let waited = 0;
+      while (!window.google?.maps?.importLibrary && waited < 8000) {
+        await new Promise(r => setTimeout(r, 200));
+        waited += 200;
+      }
+      if (!window.google?.maps?.importLibrary) {
+        throw new Error('Google Maps API no cargó. Verificá la API key o conexión.');
+      }
+      const places = await window.google.maps.importLibrary('places');
+      return places.Place;
+    },
+    // List of providers that NEED scanning: have name+location, missing coords
+    get providersNeedingScan() {
+      return this.data.providers.filter(p => {
+        const hasCoords = (p.latitude && p.longitude) || (p.mapUrl && this.parseMapUrl(p.mapUrl));
+        return !hasCoords && p.name && (p.location || p.name.length > 6);
+      });
+    },
+    openPlacesScan() {
+      this.placesScan = {
+        open: true,
+        phase: 'scanning',
+        progress: { done: 0, total: 0 },
+        results: []
+      };
+      document.body.style.overflow = 'hidden';
+      this.runPlacesScan();
+    },
+    closePlacesScan() {
+      this.placesScan.open = false;
+      this.placesScan.phase = 'idle';
+      this.placesScan.results = [];
+      document.body.style.overflow = '';
+    },
+    async runPlacesScan() {
+      const candidates = this.providersNeedingScan;
+      this.placesScan.progress = { done: 0, total: candidates.length };
+      this.placesScan.results = [];
+      if (candidates.length === 0) {
+        this.placesScan.phase = 'review';
+        return;
+      }
+      let PlaceClass;
+      try {
+        PlaceClass = await this._getPlaceClass();
+      } catch (e) {
+        this.toast('No se pudo cargar Google Maps · ' + e.message, 'error');
+        this.closePlacesScan();
+        return;
+      }
+      // Sequential with light throttle. Concurrent would be faster but Places
+      // has per-second rate limits and sequential is easier to debug.
+      for (const p of candidates) {
+        const result = await this._scanOneProvider(PlaceClass, p);
+        this.placesScan.results.push(result);
+        this.placesScan.progress.done++;
+        // Tiny pause to be polite to the API
+        await new Promise(r => setTimeout(r, 100));
+      }
+      this.placesScan.phase = 'review';
+    },
+    async _scanOneProvider(PlaceClass, provider) {
+      const queryParts = [provider.name];
+      if (provider.location) queryParts.push(provider.location);
+      queryParts.push('Piemonte', 'Italy');
+      const textQuery = queryParts.filter(Boolean).join(' ');
+      const base = {
+        providerId: provider.id,
+        current: {
+          name: provider.name,
+          location: provider.location,
+          phone: provider.phone,
+          web: provider.web
+        },
+        query: textQuery
+      };
+      try {
+        const request = {
+          textQuery,
+          fields: [
+            'displayName', 'formattedAddress', 'location',
+            'internationalPhoneNumber', 'nationalPhoneNumber',
+            'websiteURI', 'googleMapsURI', 'regularOpeningHours', 'id'
+          ],
+          language: 'it',
+          maxResultCount: 1
+        };
+        const { places } = await PlaceClass.searchByText(request);
+        const found = places && places[0];
+        if (!found) return { ...base, notFound: true, apply: false };
+        const loc = found.location;
+        const lat = typeof loc?.lat === 'function' ? loc.lat() : loc?.lat;
+        const lon = typeof loc?.lng === 'function' ? loc.lng() : loc?.lng;
+        return {
+          ...base,
+          apply: true,  // default checked
+          found: {
+            placeId: found.id,
+            name: found.displayName,
+            address: found.formattedAddress,
+            phone: found.internationalPhoneNumber || found.nationalPhoneNumber,
+            web: found.websiteURI,
+            mapUrl: found.googleMapsURI,
+            lat, lon,
+            hoursDescriptions: found.regularOpeningHours?.weekdayDescriptions || []
+          }
+        };
+      } catch (e) {
+        console.warn('Place search failed for', provider.name, e);
+        return { ...base, error: e.message || 'error', apply: false };
+      }
+    },
+    // Toggle per-row apply
+    togglePlacesScanRow(idx) {
+      const r = this.placesScan.results[idx];
+      if (r && (r.found)) r.apply = !r.apply;
+    },
+    setAllPlacesScanApply(value) {
+      this.placesScan.results.forEach(r => { if (r.found) r.apply = value; });
+    },
+    get placesScanApplyCount() {
+      return this.placesScan.results.filter(r => r.apply && r.found).length;
+    },
+    async applyPlacesScanResults() {
+      this.placesScan.phase = 'applying';
+      let applied = 0;
+      for (const r of this.placesScan.results) {
+        if (!r.apply || !r.found) continue;
+        const provider = this.data.providers.find(p => p.id === r.providerId);
+        if (!provider) continue;
+        const f = r.found;
+        // Smart merge: fill empties, always overwrite coords
+        if (!provider.name && f.name) provider.name = f.name;
+        if (!provider.location && f.address) provider.location = f.address;
+        if (!provider.phone && f.phone) provider.phone = f.phone;
+        if (!provider.web && f.web) provider.web = String(f.web).replace(/^https?:\/\//, '').replace(/\/$/, '');
+        if (!provider.mapUrl && f.mapUrl) provider.mapUrl = f.mapUrl;
+        if (Number.isFinite(f.lat) && Number.isFinite(f.lon)) {
+          provider.latitude = f.lat;
+          provider.longitude = f.lon;
+        }
+        if (!provider.closingDays && Array.isArray(f.hoursDescriptions)) {
+          const closed = f.hoursDescriptions
+            .filter(d => /(?:closed|cerrado|chiuso|fermé)/i.test(d))
+            .map(d => {
+              const day = d.split(':')[0].trim();
+              const map = {
+                Monday: 'Lun', Lunedì: 'Lun', Tuesday: 'Mar', Martedì: 'Mar',
+                Wednesday: 'Mié', Mercoledì: 'Mié', Thursday: 'Jue', Giovedì: 'Jue',
+                Friday: 'Vie', Venerdì: 'Vie', Saturday: 'Sáb', Sabato: 'Sáb',
+                Sunday: 'Dom', Domenica: 'Dom'
+              };
+              return map[day] || day.slice(0, 3);
+            });
+          if (closed.length) provider.closingDays = closed.join(' + ');
+        }
+        applied++;
+      }
+      this.save();
+      this.logEvent('providers.bulk_geocoded',
+        `barrido masivo · ${applied} proveedores geocodificados desde Google Places`,
+        { applied_count: applied, total_scanned: this.placesScan.results.length });
+      this.placesScan.phase = 'done';
+      this.toast(`✓ ${applied} proveedores actualizados`, 'success');
+      // Refresh travel times — many chips will appear now
+      this.refreshAllTravelTimes && this.refreshAllTravelTimes();
     },
 
     // === DUPLICATE SLOT ===
