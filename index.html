@@ -2949,6 +2949,56 @@ color: var(--text-1);
 }
 .v5b-slot.just-moved { animation: v5b-slot-flash 1.5s ease-out; }
 
+/* Slot group wraps a slot row + the optional travel chip below it.
+   SortableJS handles .v5b-slot-group as the draggable unit. The chip
+   between is computed off the next slot's coords, so when slots are
+   reordered, chips re-render via reactivity. */
+.v5b-slot-group { display: block; }
+
+.v5b-travel-chip {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 24px 0 36px;
+  padding: 6px 14px;
+  background: var(--surface-2);
+  border-left: 2px dashed var(--line);
+  border-radius: 0 999px 999px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.04em;
+  color: var(--text-2);
+  text-decoration: none;
+  width: fit-content;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.v5b-travel-chip:hover {
+  background: var(--tint-accent);
+  border-left-color: var(--accent);
+  color: var(--accent-deep);
+  transform: translateX(2px);
+}
+.v5b-travel-chip .ico { font-size: 13px; }
+.v5b-travel-chip .duration { font-weight: 600; color: var(--text-1); }
+.v5b-travel-chip .sep { color: var(--text-3); }
+.v5b-travel-chip .dist { color: var(--text-3); }
+/* Color variants by duration */
+.v5b-travel-chip.short  { border-left-color: var(--ok); }
+.v5b-travel-chip.medium { border-left-color: var(--warn); }
+.v5b-travel-chip.long   { border-left-color: var(--bad); background: color-mix(in oklab, var(--bad) 5%, var(--surface-2)); }
+.v5b-travel-chip.long .duration { color: var(--bad); }
+
+.v5b-travel-chip-missing {
+  margin: 0 24px 0 36px;
+  padding: 4px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.04em;
+  color: var(--text-3); font-style: italic;
+  opacity: 0.7;
+}
+
+/* In compact view, chips become inline & smaller */
+.v5b-itin.is-compact .v5b-travel-chip { padding: 3px 10px; font-size: 10px; }
+.v5b-itin.is-compact .v5b-travel-chip-missing { display: none; }
+
 .v5b-slot-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .v5b-slot-badge {
   display: inline-flex; align-items: center; gap: 4px;
@@ -4815,41 +4865,72 @@ textarea:focus-visible {
         </header>
         <div class="v5b-day-body">
           <div class="v5b-day-slots" x-init="initSortable($el, day.id)" :data-day-id="day.id">
-            <template x-for="slot in day.slots" :key="slot.id">
-              <div class="v5b-slot" :data-slot-id="slot.id" :class="{'is-untimed': !slotStart(slot), 'has-conflict': slotIssues(day, slot).conflict}" @click="openSlotDrawer(slot.id)">
-                <span class="v5b-slot-handle" @click.stop @mousedown.stop @touchstart.stop title="Arrastrar para mover este slot a otro día o reordenarlo">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>
-                </span>
-                <div class="v5b-slot-time" x-text="slotDisplayTime(slot) || '—'"></div>
-                <div class="v5b-slot-glyph" :class="slotKind(slot)" x-html="slotKindIcon(slotKind(slot))"></div>
-                <div class="v5b-slot-body">
-                  <div class="v5b-slot-title" :class="{empty: !slot.title}" x-text="slot.title || 'Sin título'"></div>
-                  <div class="v5b-slot-sub" x-show="slot.description" x-text="slot.description"></div>
-                  <div class="v5b-slot-verdict" x-show="slot.verdict" x-text="slot.verdict"></div>
-                  <template x-if="slotIssues(day, slot).hasAny">
-                    <div class="v5b-slot-badges">
-                      <template x-for="(c, ci) in slotIssues(day, slot).conflicts" :key="'cf'+ci">
-                        <span class="v5b-slot-badge conflict" x-text="'⚠ choca con ' + c"></span>
-                      </template>
-                      <template x-if="slotIssues(day, slot).rushed">
-                        <span class="v5b-slot-badge rushed">⏱ apurado</span>
-                      </template>
-                      <template x-if="slotIssues(day, slot).freeHours">
-                        <span class="v5b-slot-badge free" x-text="slotIssues(day, slot).freeHours + 'h libres'"></span>
-                      </template>
-                    </div>
-                  </template>
-                </div>
-                <div class="v5b-slot-end">
-                  <span class="v5b-status-dot" :class="slot.status" :title="statusLabel(slot.status)"></span>
-                  <span class="v5b-comment-pill" :class="{has: commentCount('slot', slot.id) > 0}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    <span x-text="commentCount('slot', slot.id) || ''"></span>
+            <template x-for="(slot, sIdx) in day.slots" :key="slot.id">
+              <div class="v5b-slot-group">
+                <div class="v5b-slot" :data-slot-id="slot.id" :class="{'is-untimed': !slotStart(slot), 'has-conflict': slotIssues(day, slot).conflict}" @click="openSlotDrawer(slot.id)">
+                  <span class="v5b-slot-handle" @click.stop @mousedown.stop @touchstart.stop title="Arrastrar para mover este slot a otro día o reordenarlo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>
                   </span>
-                  <span class="v5b-slot-arrow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                  </span>
+                  <div class="v5b-slot-time" x-text="slotDisplayTime(slot) || '—'"></div>
+                  <div class="v5b-slot-glyph" :class="slotKind(slot)" x-html="slotKindIcon(slotKind(slot))"></div>
+                  <div class="v5b-slot-body">
+                    <div class="v5b-slot-title" :class="{empty: !slot.title}" x-text="slot.title || 'Sin título'"></div>
+                    <div class="v5b-slot-sub" x-show="slot.description" x-text="slot.description"></div>
+                    <div class="v5b-slot-verdict" x-show="slot.verdict" x-text="slot.verdict"></div>
+                    <template x-if="slotIssues(day, slot).hasAny">
+                      <div class="v5b-slot-badges">
+                        <template x-for="(c, ci) in slotIssues(day, slot).conflicts" :key="'cf'+ci">
+                          <span class="v5b-slot-badge conflict" x-text="'⚠ choca con ' + c"></span>
+                        </template>
+                        <template x-if="slotIssues(day, slot).rushed">
+                          <span class="v5b-slot-badge rushed">⏱ apurado</span>
+                        </template>
+                        <template x-if="slotIssues(day, slot).freeHours">
+                          <span class="v5b-slot-badge free" x-text="slotIssues(day, slot).freeHours + 'h libres'"></span>
+                        </template>
+                      </div>
+                    </template>
+                  </div>
+                  <div class="v5b-slot-end">
+                    <span class="v5b-status-dot" :class="slot.status" :title="statusLabel(slot.status)"></span>
+                    <span class="v5b-comment-pill" :class="{has: commentCount('slot', slot.id) > 0}">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      <span x-text="commentCount('slot', slot.id) || ''"></span>
+                    </span>
+                    <span class="v5b-slot-arrow">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </span>
+                  </div>
                 </div>
+                <!-- Travel chip · only between consecutive slots that both resolve coords -->
+                <template x-if="sIdx < day.slots.length - 1 && travelBetween(slot, day.slots[sIdx+1])">
+                  <a class="v5b-travel-chip" :class="travelChipClass(travelBetween(slot, day.slots[sIdx+1])?.duration_min)"
+                     :href="travelGmapsUrl(slot, day.slots[sIdx+1])" target="_blank" rel="noopener"
+                     @click.stop
+                     :title="travelBetween(slot, day.slots[sIdx+1])?.estimated ? 'Estimado · click para tiempo exacto en Google Maps' : 'Abrir ruta en Google Maps'">
+                    <template x-if="travelBetween(slot, day.slots[sIdx+1])?.same_location">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="ico" aria-hidden="true">🚶</span>
+                        <span class="duration">Caminando · mismo lugar</span>
+                      </div>
+                    </template>
+                    <template x-if="!travelBetween(slot, day.slots[sIdx+1])?.same_location">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="ico" aria-hidden="true">🚗</span>
+                        <span class="duration">
+                          <span x-show="travelBetween(slot, day.slots[sIdx+1])?.estimated" style="opacity: 0.7;">≈</span>
+                          <span x-text="travelBetween(slot, day.slots[sIdx+1]).duration_min + ' min'"></span>
+                        </span>
+                        <span class="sep">·</span>
+                        <span class="dist" x-text="travelBetween(slot, day.slots[sIdx+1]).distance_km + ' km'"></span>
+                      </div>
+                    </template>
+                  </a>
+                </template>
+                <!-- Hint when coords missing -->
+                <template x-if="sIdx < day.slots.length - 1 && slotCoords(slot) && !slotCoords(day.slots[sIdx+1])">
+                  <div class="v5b-travel-chip-missing">↓ Sin coordenadas en el siguiente slot · vinculá un proveedor para ver el tiempo de viaje</div>
+                </template>
               </div>
             </template>
           </div>
@@ -5590,6 +5671,27 @@ textarea:focus-visible {
           </div>
 
           <div class="v5b-detail-section">
+            <h4>Ubicación · vinculado a proveedor</h4>
+            <div class="v5b-detail-grid cols-1">
+              <div class="v5b-field">
+                <span class="lbl">Proveedor (heredan las coordenadas para el cálculo de tiempo de viaje)</span>
+                <select x-model="drawerSlot.providerId" @change="save(); refreshAllTravelTimes()">
+                  <option value="">— Sin proveedor vinculado —</option>
+                  <template x-for="p in data.providers" :key="p.id">
+                    <option :value="p.id" x-text="p.name + (p.location ? ' · ' + p.location : '')"></option>
+                  </template>
+                </select>
+                <template x-if="drawerSlot.providerId && slotCoords(drawerSlot)">
+                  <span style="font-size: 10px; color: var(--olive-deep); margin-top: 4px;" x-text="'✓ Coordenadas: ' + slotCoords(drawerSlot).lat.toFixed(4) + ', ' + slotCoords(drawerSlot).lon.toFixed(4)"></span>
+                </template>
+                <template x-if="drawerSlot.providerId && !slotCoords(drawerSlot)">
+                  <span style="font-size: 10px; color: var(--bad); margin-top: 4px;">⚠ El proveedor no tiene coordenadas. Cargá un link de mapa en el proveedor.</span>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <div class="v5b-detail-section">
             <h4>Estado</h4>
             <div class="v5b-status-chips">
               <button class="v5b-status-chip ok" :class="{active: drawerSlot.status === 'ok'}" @click="drawerSlot.status = 'ok'; save()"><span class="d"></span>OK</button>
@@ -6012,6 +6114,7 @@ textarea:focus-visible {
 
   <!-- ====== V5 CONFIRM MODAL ====== -->
   <template x-if="confirmState.open">
+    <div class="v5-confirm-overlay" @click.self="resolveConfirm(false)">
       <div class="v5-confirm" role="dialog" aria-modal="true">
         <h3 x-text="confirmState.title"></h3>
         <p x-text="confirmState.body" x-show="confirmState.body"></p>
@@ -6397,6 +6500,10 @@ function app() {
 
       // Fetch weather (non-blocking)
       this.fetchWeather();
+
+      // Background: fetch missing travel times via OSRM (non-blocking)
+      // Fires shortly after init so the first paint isn't blocked
+      setTimeout(() => this.refreshAllTravelTimes(), 1500);
     },
 
     // === IDENTITY ===
@@ -6795,23 +6902,26 @@ function app() {
       const slot = this.data.itinerary[dayIdx].slots[slotIdx];
       const day = this.data.itinerary[dayIdx];
       const ok = await this.askConfirm({
-        title: 'Eliminar slot?',
-        body: `Se borra "${slot.title || 'sin título'}" del ${day.weekday}.`,
+        title: '¿Eliminar este slot?',
+        body: `Se va a borrar "${slot.title || 'sin título'}" del ${day.weekday}. Esta acción no se puede deshacer.`,
         confirmLabel: 'Eliminar',
+        cancelLabel: 'Cancelar',
         danger: true
       });
-      if (!ok) return;
+      if (!ok) return false;
       this.data.itinerary[dayIdx].slots.splice(slotIdx, 1);
       this.logEvent('itinerary.slot_deleted', `eliminó el slot "${slot.title}" de "${day.title}"`, { day_id: day.id, slot_id: slot.id, title: slot.title });
       this.save();
       this.toast('Slot eliminado');
+      return true;
     },
     async deleteSlotById(slotId) {
       for (let di = 0; di < this.data.itinerary.length; di++) {
         const si = this.data.itinerary[di].slots.findIndex(s => s.id === slotId);
         if (si !== -1) {
-          this.closeSlotDrawer();
-          await this.deleteSlot(di, si);
+          // Ask first, then close drawer only if user confirms
+          const wasDeleted = await this.deleteSlot(di, si);
+          if (wasDeleted) this.closeSlotDrawer();
           return;
         }
       }
@@ -7129,6 +7239,78 @@ function app() {
       return Number.isFinite(lat) && Number.isFinite(lon) &&
              Math.abs(lat) <= 90 && Math.abs(lon) <= 180 &&
              !(lat === 0 && lon === 0);
+    },
+
+    // === SLOT COORDS + TRAVEL TIMES ===
+    // Resolve coords for a slot via: explicit lat/lon → mapUrl → linked provider
+    slotCoords(slot) {
+      if (!slot) return null;
+      if (slot.latitude && slot.longitude && this._validCoords(slot.latitude, slot.longitude)) {
+        return { lat: slot.latitude, lon: slot.longitude };
+      }
+      if (slot.mapUrl) {
+        const c = this.parseMapUrl(slot.mapUrl);
+        if (c) return c;
+      }
+      if (slot.providerId) {
+        const p = this.data.providers.find(x => x.id === slot.providerId);
+        if (p) return this.providerCoords(p);
+      }
+      return null;
+    },
+    // Cache key for any future OSRM enablement
+    _travelKey(from, to) {
+      return `${from.lat.toFixed(4)},${from.lon.toFixed(4)}->${to.lat.toFixed(4)},${to.lon.toFixed(4)}`;
+    },
+    // Synchronous travel calc.
+    // Currently uses Haversine + 1.3 road factor + 50 km/h avg speed because
+    // public OSRM (router.project-osrm.org) refuses CORS from browsers.
+    // The result is approximate (~±20% in short rural distances like Langhe).
+    // The user can click the chip to verify exact time in Google Maps.
+    // If a routing API with CORS is configured in the future, populate
+    // this.data.travelCache[key] and it will be preferred over the estimate.
+    travelBetween(slotA, slotB) {
+      const a = this.slotCoords(slotA);
+      const b = this.slotCoords(slotB);
+      if (!a || !b) return null;
+      const cache = this.data.travelCache || {};
+      const cached = cache[this._travelKey(a, b)];
+      if (cached) return cached;
+      return this._estimateTravel(a, b);
+    },
+    _estimateTravel(a, b) {
+      const R = 6371; // Earth radius km
+      const dLat = (b.lat - a.lat) * Math.PI / 180;
+      const dLon = (b.lon - a.lon) * Math.PI / 180;
+      const lat1 = a.lat * Math.PI / 180;
+      const lat2 = b.lat * Math.PI / 180;
+      const h = Math.sin(dLat/2)**2 + Math.sin(dLon/2)**2 * Math.cos(lat1) * Math.cos(lat2);
+      const directKm = 2 * R * Math.asin(Math.sqrt(h));
+      if (directKm < 0.05) {
+        return { duration_min: 0, distance_km: 0, estimated: true, same_location: true };
+      }
+      const roadKm = directKm * 1.3;
+      // 50 km/h average for Langhe rural roads, 5 min minimum for any transfer
+      const minutes = Math.max(5, Math.round(roadKm / 50 * 60));
+      return {
+        duration_min: minutes,
+        distance_km: Math.round(roadKm * 10) / 10,
+        estimated: true
+      };
+    },
+    // Kept for future OSRM enablement, currently a no-op due to CORS
+    async refreshAllTravelTimes() { /* no-op while estimate is sync */ },
+    travelChipClass(durationMin) {
+      if (durationMin == null) return '';
+      if (durationMin < 20) return 'short';
+      if (durationMin < 50) return 'medium';
+      return 'long';
+    },
+    travelGmapsUrl(slotA, slotB) {
+      const a = this.slotCoords(slotA);
+      const b = this.slotCoords(slotB);
+      if (!a || !b) return '#';
+      return `https://www.google.com/maps/dir/?api=1&origin=${a.lat},${a.lon}&destination=${b.lat},${b.lon}&travelmode=driving`;
     },
 
     // === SLOT HELPERS (fixes #3, #7, #8) ===
@@ -7457,17 +7639,35 @@ function app() {
     // === DATA MIGRATION (fix #7 backward compat) ===
     migrateData(d) {
       if (!d) return d;
-      // Slots: time → timeStart, ensure timeEnd exists, normalize
+      // Slots: time → timeStart, timeEnd, providerId (auto-link by title)
       if (Array.isArray(d.itinerary)) {
         d.itinerary.forEach(day => {
           if (!Array.isArray(day.slots)) return;
           day.slots.forEach(s => {
-            if (s.timeStart === undefined) {
-              s.timeStart = s.time || '';
-            }
+            if (s.timeStart === undefined) s.timeStart = s.time || '';
             if (s.timeEnd === undefined) s.timeEnd = '';
-            // Keep s.time for backward compat with ICS export
             if (!s.time && s.timeStart) s.time = s.timeStart;
+            // providerId: auto-link by title if missing
+            if (s.providerId === undefined) {
+              s.providerId = '';
+              if (s.title && Array.isArray(d.providers)) {
+                const titleLower = s.title.toLowerCase();
+                // Sort providers by name length desc so longer names match first
+                const sorted = [...d.providers].sort((a, b) => (b.name||'').length - (a.name||'').length);
+                for (const p of sorted) {
+                  if (!p.name || p.name.length < 5) continue;
+                  // Extract core name: strip stars, parens, dots, dashes
+                  const core = p.name.toLowerCase().replace(/[★\(\)\.\-,]/g, ' ').replace(/\s+/g, ' ').trim();
+                  if (core.length < 5) continue;
+                  if (titleLower.includes(core)) { s.providerId = p.id; break; }
+                  // Also try first significant word (e.g. "Vietti" matches "Cata en Vietti")
+                  const firstWord = core.split(' ')[0];
+                  if (firstWord.length >= 5 && titleLower.includes(firstWord)) {
+                    s.providerId = p.id; break;
+                  }
+                }
+              }
+            }
           });
         });
       }
@@ -7490,23 +7690,20 @@ function app() {
         d.actions.forEach(a => {
           if (a.type === undefined) a.type = 'reservation';
           if (a.dueDate === undefined) a.dueDate = '';
-          if (a.linkType === undefined) a.linkType = '';   // 'provider' | 'slot' | 'day' | ''
+          if (a.linkType === undefined) a.linkType = '';
           if (a.linkId === undefined) a.linkId = '';
         });
       }
-      // Meta: FX table + view currency (keeps eurUsdRate for backward compat)
+      // Meta: FX table + view currency + travel cache
       if (d.meta) {
         if (!d.meta.fx) {
-          d.meta.fx = {
-            EUR: 1,
-            USD: d.meta.eurUsdRate || 1.09,
-            ARS: 1180
-          };
+          d.meta.fx = { EUR: 1, USD: d.meta.eurUsdRate || 1.09, ARS: 1180 };
         }
-        // Ensure all known currencies are present even if fx was partial
         ['EUR','USD','ARS'].forEach(c => { if (!(c in d.meta.fx)) d.meta.fx[c] = (c==='EUR'?1:(c==='USD'?1.09:1180)); });
         if (!d.meta.viewCurrency) d.meta.viewCurrency = 'EUR';
       }
+      // Travel cache (lives at top level, persisted)
+      if (!d.travelCache || typeof d.travelCache !== 'object') d.travelCache = {};
       return d;
     },
 
@@ -7982,9 +8179,12 @@ function app() {
     },
 
     slotLocation(slot) {
-      // Detect location by scanning slot title/description for known location keys
+      // Priority 1: explicit slot coords via providerId / mapUrl / direct lat-lon
+      const explicit = this.slotCoords(slot);
+      if (explicit) return explicit;
+      // Priority 2: fallback to text scanning of LOCATION_COORDS
       const text = ((slot.title || '') + ' ' + (slot.description || '')).toLowerCase();
-      const keys = Object.keys(LOCATION_COORDS).sort((a, b) => b.length - a.length); // longer keys first
+      const keys = Object.keys(LOCATION_COORDS).sort((a, b) => b.length - a.length);
       for (const key of keys) {
         if (text.includes(key.toLowerCase())) return LOCATION_COORDS[key];
       }
