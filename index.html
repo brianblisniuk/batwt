@@ -4501,6 +4501,102 @@ textarea:focus-visible {
   .v5-ps-row-grid { grid-template-columns: 1fr; }
   .v5c-places-scan-banner { grid-template-columns: 1fr; text-align: center; }
 }
+
+/* Slot title autocomplete (Etapa 3) */
+.v5b-slot-title-ac {
+  position: relative;
+  width: 100%;
+}
+.v5b-slot-title-ac .v5b-detail-title { width: 100%; }
+.v5b-slot-ac-drop {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+  z-index: 50;
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 6px;
+}
+.v5b-ac-section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-3);
+  padding: 8px 10px 6px;
+}
+.v5b-ac-item {
+  display: flex; flex-direction: column;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  position: relative;
+}
+.v5b-ac-item:hover { background: var(--surface-2); }
+.v5b-ac-item.google-result:hover { background: color-mix(in oklab, var(--accent) 8%, var(--surface-2)); }
+.v5b-ac-name {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  color: var(--text-1);
+  margin-bottom: 2px;
+}
+.v5b-ac-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.04em;
+  color: var(--text-3);
+  text-transform: lowercase;
+}
+.v5b-ac-coords {
+  position: absolute;
+  top: 10px; right: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--olive-deep);
+  font-weight: 600;
+}
+.v5b-ac-google-trigger {
+  display: block; width: 100%;
+  text-align: left;
+  background: color-mix(in oklab, var(--accent) 4%, transparent);
+  border: 1px dashed color-mix(in oklab, var(--accent) 30%, var(--line));
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Lora', serif;
+  font-size: 13px;
+  color: var(--accent-deep);
+  margin-top: 6px;
+}
+.v5b-ac-google-trigger:hover { background: color-mix(in oklab, var(--accent) 8%, transparent); }
+.v5b-ac-google-trigger em { font-style: italic; color: var(--text-1); }
+.v5b-ac-loading {
+  padding: 16px 12px;
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-2);
+  text-align: center;
+}
+.v5b-ac-clear {
+  display: block; width: 100%;
+  text-align: center;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  margin-top: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.06em;
+  color: var(--text-3);
+  cursor: pointer;
+}
+.v5b-ac-clear:hover { color: var(--accent); }
 .v5c-res-end {
   display: flex; align-items: center; gap: 10px;
 }
@@ -5874,7 +5970,56 @@ textarea:focus-visible {
                 <span class="v5-spacer" style="flex:1"></span>
                 <span class="v5b-status-dot" :class="drawerSlot.status"></span>
               </div>
-              <input type="text" class="v5b-detail-title" x-model="drawerSlot.title" @blur="save()" placeholder="Actividad / lugar...">
+              <div class="v5b-slot-title-ac" @click.outside="slotAC.open = false">
+                <input type="text" class="v5b-detail-title"
+                  x-model="drawerSlot.title"
+                  @input="onSlotTitleInput($event.target.value)"
+                  @focus="slotAC.open = drawerSlot.title?.length >= 2"
+                  @blur="save()"
+                  @keydown.escape="slotAC.open = false"
+                  placeholder="Empezá a tipear · te sugiero proveedores tuyos y de Google Maps">
+                <div class="v5b-slot-ac-drop" x-show="slotAC.open && (slotAC.providerMatches.length || slotAC.canSearchGoogle || slotAC.googleResults.length || slotAC.searchingGoogle)" x-cloak>
+                  <!-- Provider matches (existing data, instant) -->
+                  <template x-if="slotAC.providerMatches.length > 0 && !slotAC.googleResults.length">
+                    <div>
+                      <div class="v5b-ac-section-label">TUS PROVEEDORES</div>
+                      <template x-for="p in slotAC.providerMatches" :key="p.id">
+                        <button class="v5b-ac-item" @mousedown.prevent="pickProviderForSlot(p)">
+                          <span class="v5b-ac-name" x-text="p.name"></span>
+                          <span class="v5b-ac-meta">
+                            <span x-text="p.type"></span>
+                            <span x-show="p.location" x-text="' · ' + p.location"></span>
+                          </span>
+                          <span class="v5b-ac-coords" x-show="p.latitude && p.longitude">✓</span>
+                        </button>
+                      </template>
+                    </div>
+                  </template>
+                  <!-- Google search trigger -->
+                  <template x-if="slotAC.canSearchGoogle && !slotAC.googleResults.length && !slotAC.searchingGoogle">
+                    <button class="v5b-ac-google-trigger" @mousedown.prevent="searchGoogleForSlot()">
+                      🔍 Buscar <em>"<span x-text="drawerSlot.title"></span>"</em> en Google Maps
+                    </button>
+                  </template>
+                  <!-- Loading state -->
+                  <template x-if="slotAC.searchingGoogle">
+                    <div class="v5b-ac-loading">Buscando en Google Maps…</div>
+                  </template>
+                  <!-- Google results — clickable, each creates a new provider -->
+                  <template x-if="slotAC.googleResults.length > 0">
+                    <div>
+                      <div class="v5b-ac-section-label">RESULTADOS DE GOOGLE · tap para crear el proveedor y vincular</div>
+                      <template x-for="(gr, gi) in slotAC.googleResults" :key="gi">
+                        <button class="v5b-ac-item google-result" @mousedown.prevent="pickGoogleResultForSlot(gr)">
+                          <span class="v5b-ac-name" x-text="gr.displayName"></span>
+                          <span class="v5b-ac-meta" x-text="gr.formattedAddress"></span>
+                        </button>
+                      </template>
+                      <button class="v5b-ac-clear" @mousedown.prevent="slotAC.googleResults = []">← volver a sugerencias</button>
+                    </div>
+                  </template>
+                </div>
+              </div>
             </div>
             <button class="v5-drawer-close" @click="closeSlotDrawer()" aria-label="Cerrar">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -6747,6 +6892,14 @@ function app() {
     providerStatusFilter: 'all',
     actionFilter: 'all',
     actionTypeFilter: '',
+    // Slot title autocomplete state
+    slotAC: {
+      open: false,
+      providerMatches: [],
+      canSearchGoogle: false,
+      googleResults: [],
+      searchingGoogle: false
+    },
     // Places scan wizard
     placesScan: {
       open: false,
@@ -6863,6 +7016,10 @@ function app() {
       // Background: fetch missing travel times via OSRM (non-blocking)
       // Fires shortly after init so the first paint isn't blocked
       setTimeout(() => this.refreshAllTravelTimes(), 1500);
+
+      // One-shot: auto-geocode the villa via Google Places if it lacks coords.
+      // Cheap (1 API call), silent, only runs once per session.
+      setTimeout(() => this._autoGeocodeVillaIfNeeded(), 3000);
     },
 
     // === IDENTITY ===
@@ -8199,6 +8356,177 @@ function app() {
       this.toast(`✓ ${applied} proveedores actualizados`, 'success');
       // Refresh travel times — many chips will appear now
       this.refreshAllTravelTimes && this.refreshAllTravelTimes();
+    },
+
+    // === SLOT TITLE AUTOCOMPLETE (Etapa 3) ===
+    // Hybrid: suggests existing providers first, then offers Google Maps search.
+    onSlotTitleInput(value) {
+      const q = (value || '').trim().toLowerCase();
+      // Reset Google results when user keeps typing
+      this.slotAC.googleResults = [];
+      this.slotAC.searchingGoogle = false;
+      if (q.length < 2) {
+        this.slotAC.providerMatches = [];
+        this.slotAC.canSearchGoogle = false;
+        this.slotAC.open = false;
+        return;
+      }
+      // Substring match against provider names; prioritise names that START with q
+      const all = this.data.providers.filter(p => p.name);
+      const startsWith = all.filter(p => p.name.toLowerCase().startsWith(q));
+      const contains = all.filter(p => !p.name.toLowerCase().startsWith(q) && p.name.toLowerCase().includes(q));
+      // Also try matching by individual words in the query (e.g. "Cata en Vietti" matches Vietti)
+      const words = q.split(/\s+/).filter(w => w.length >= 3);
+      const byWord = [];
+      for (const word of words) {
+        for (const p of all) {
+          if (startsWith.includes(p) || contains.includes(p) || byWord.includes(p)) continue;
+          if (p.name.toLowerCase().includes(word)) byWord.push(p);
+        }
+      }
+      this.slotAC.providerMatches = [...startsWith, ...contains, ...byWord].slice(0, 6);
+      this.slotAC.canSearchGoogle = q.length >= 3;
+      this.slotAC.open = true;
+    },
+    pickProviderForSlot(provider) {
+      if (!this.drawerSlot || !provider) return;
+      this.drawerSlot.providerId = provider.id;
+      this.slotAC.open = false;
+      this.slotAC.providerMatches = [];
+      this.save();
+      this.toast(`Vinculado a "${provider.name}"`, 'success');
+      this.refreshAllTravelTimes && this.refreshAllTravelTimes();
+    },
+    async searchGoogleForSlot() {
+      const query = (this.drawerSlot?.title || '').trim();
+      if (!query) return;
+      this.slotAC.searchingGoogle = true;
+      this.slotAC.providerMatches = [];
+      try {
+        const PlaceClass = await this._getPlaceClass();
+        const { places } = await PlaceClass.searchByText({
+          textQuery: query + ' Piemonte Italy',
+          fields: ['displayName', 'formattedAddress', 'location',
+                   'internationalPhoneNumber', 'nationalPhoneNumber',
+                   'websiteURI', 'googleMapsURI', 'regularOpeningHours', 'id'],
+          language: 'it',
+          maxResultCount: 4
+        });
+        this.slotAC.googleResults = places || [];
+        if (this.slotAC.googleResults.length === 0) {
+          this.toast(`Sin resultados para "${query}"`, 'info');
+        }
+      } catch (e) {
+        console.warn('Google search for slot failed:', e);
+        this.toast('Búsqueda en Google falló · ' + (e.message || ''), 'error');
+      } finally {
+        this.slotAC.searchingGoogle = false;
+      }
+    },
+    async pickGoogleResultForSlot(place) {
+      if (!this.drawerSlot || !place) return;
+      try {
+        // Already fetched fields by setting them in the request, but ensure full data
+        if (typeof place.fetchFields === 'function') {
+          await place.fetchFields({
+            fields: ['displayName', 'formattedAddress', 'location',
+                     'internationalPhoneNumber', 'nationalPhoneNumber',
+                     'websiteURI', 'googleMapsURI', 'regularOpeningHours', 'id']
+          });
+        }
+      } catch (e) {
+        console.warn('fetchFields for Google result failed:', e);
+      }
+      const loc = place.location;
+      const lat = typeof loc?.lat === 'function' ? loc.lat() : loc?.lat;
+      const lon = typeof loc?.lng === 'function' ? loc.lng() : loc?.lng;
+      // Create a fresh provider with everything Google gave us
+      const newProvider = {
+        id: 'p' + Date.now(),
+        name: place.displayName || this.drawerSlot.title,
+        type: 'restaurant',  // default; user can refine later in provider drawer
+        location: place.formattedAddress || '',
+        phone: place.internationalPhoneNumber || place.nationalPhoneNumber || '',
+        email: '',
+        web: place.websiteURI ? String(place.websiteURI).replace(/^https?:\/\//, '').replace(/\/$/, '') : '',
+        mapUrl: place.googleMapsURI || '',
+        latitude: Number.isFinite(lat) ? lat : null,
+        longitude: Number.isFinite(lon) ? lon : null,
+        notes: '',
+        priceRange: '',
+        closingDays: '',
+        michelin: 0,
+        reservationStatus: 'pending',
+        communications: []
+      };
+      // Parse closing days from opening hours
+      if (place.regularOpeningHours?.weekdayDescriptions) {
+        const closed = place.regularOpeningHours.weekdayDescriptions
+          .filter(d => /(?:closed|cerrado|chiuso|fermé)/i.test(d))
+          .map(d => {
+            const day = d.split(':')[0].trim();
+            const map = {
+              Monday: 'Lun', Lunedì: 'Lun', Tuesday: 'Mar', Martedì: 'Mar',
+              Wednesday: 'Mié', Mercoledì: 'Mié', Thursday: 'Jue', Giovedì: 'Jue',
+              Friday: 'Vie', Venerdì: 'Vie', Saturday: 'Sáb', Sabato: 'Sáb',
+              Sunday: 'Dom', Domenica: 'Dom'
+            };
+            return map[day] || day.slice(0, 3);
+          });
+        if (closed.length) newProvider.closingDays = closed.join(' + ');
+      }
+      this.data.providers.push(newProvider);
+      this.drawerSlot.providerId = newProvider.id;
+      this.slotAC.open = false;
+      this.slotAC.googleResults = [];
+      this.save();
+      this.logEvent('provider.created_from_slot_ac',
+        `creó "${newProvider.name}" desde Google + lo vinculó al slot "${this.drawerSlot.title}"`,
+        { provider_id: newProvider.id, slot_id: this.drawerSlot.id });
+      this.toast(`✓ Creado "${newProvider.name}" y vinculado al slot`, 'success');
+      this.refreshAllTravelTimes && this.refreshAllTravelTimes();
+    },
+
+    // === SILENT VILLA AUTO-GEOCODE ON FIRST LOAD ===
+    // If the villa provider exists but lacks coords, and we have an address
+    // in data.meta.villa.address, do a one-shot Place search to geocode it.
+    // Fires once per session. Cheap (1 API call).
+    _villaGeocodeAttempted: false,
+    async _autoGeocodeVillaIfNeeded() {
+      if (this._villaGeocodeAttempted) return;
+      this._villaGeocodeAttempted = true;
+      // Find a villa provider missing coords
+      const villaProvider = this.data.providers.find(p =>
+        (p.type === 'villa' || /villa/i.test(p.name || '')) &&
+        !(p.latitude && p.longitude)
+      );
+      if (!villaProvider) return;
+      const address = this.data.meta?.villa?.address;
+      if (!address) return;
+      try {
+        const PlaceClass = await this._getPlaceClass();
+        const { places } = await PlaceClass.searchByText({
+          textQuery: address,
+          fields: ['formattedAddress', 'location', 'googleMapsURI', 'id'],
+          maxResultCount: 1
+        });
+        const found = places && places[0];
+        if (!found?.location) return;
+        const lat = typeof found.location.lat === 'function' ? found.location.lat() : found.location.lat;
+        const lon = typeof found.location.lng === 'function' ? found.location.lng() : found.location.lng;
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+        villaProvider.latitude = lat;
+        villaProvider.longitude = lon;
+        if (!villaProvider.location) villaProvider.location = found.formattedAddress || address;
+        if (!villaProvider.mapUrl) villaProvider.mapUrl = found.googleMapsURI || '';
+        this.save();
+        this.logEvent('villa.auto_geocoded',
+          `Villa geocodificada automáticamente desde dirección`,
+          { provider_id: villaProvider.id });
+        this.refreshAllTravelTimes && this.refreshAllTravelTimes();
+      } catch (e) {
+        console.warn('Villa auto-geocode failed:', e);
+      }
     },
 
     // === DUPLICATE SLOT ===
