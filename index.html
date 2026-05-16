@@ -5019,7 +5019,6 @@ textarea:focus-visible {
   </div>
   <template x-for="alert in dashboardAlerts" :key="alert.id">
     <button class="v5-alert-row" :class="alert.severity" @click="tab = (alert.id === 'p1-pending' ? 'actions' : 'itinerary')">
-      <span></span>
       <div class="v5-alert-body">
         <div class="v5-alert-tag" x-text="alert.tag"></div>
         <div class="v5-alert-title" x-text="alert.title"></div>
@@ -6064,10 +6063,10 @@ textarea:focus-visible {
             <div class="v5b-detail-grid cols-1">
               <div class="v5b-field">
                 <span class="lbl">Proveedor (heredan las coordenadas para el cálculo de tiempo de viaje)</span>
-                <select x-model="drawerSlot.providerId" @change="save(); refreshAllTravelTimes()">
-                  <option value="">— Sin proveedor vinculado —</option>
+                <select @change="drawerSlot.providerId = $event.target.value; save(); refreshAllTravelTimes()">
+                  <option value="" :selected="!drawerSlot.providerId">— Sin proveedor vinculado —</option>
                   <template x-for="p in data.providers" :key="p.id">
-                    <option :value="p.id" x-text="p.name + (p.location ? ' · ' + p.location : '')"></option>
+                    <option :value="p.id" :selected="drawerSlot.providerId === p.id" x-text="p.name + (p.location ? ' · ' + p.location : '')"></option>
                   </template>
                 </select>
                 <template x-if="drawerSlot.providerId && slotCoords(drawerSlot)">
