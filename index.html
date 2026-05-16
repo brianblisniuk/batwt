@@ -4686,6 +4686,31 @@ textarea:focus-visible {
   transition: background 0.12s ease;
 }
 .v5b-att-row:hover { background: var(--surface-3); }
+.v5b-att-row.uploading {
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--accent) 4%, var(--surface-2)),
+    color-mix(in oklab, var(--accent) 12%, var(--surface-2)),
+    color-mix(in oklab, var(--accent) 4%, var(--surface-2)));
+  background-size: 200% 100%;
+  animation: v5b-att-shimmer 1.4s ease-in-out infinite;
+  border-color: color-mix(in oklab, var(--accent) 30%, var(--line));
+}
+@keyframes v5b-att-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.v5b-att-spinner {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  color: var(--accent);
+  animation: v5b-spin 0.8s linear infinite;
+}
+.v5b-att-spinner svg { width: 18px; height: 18px; }
+@keyframes v5b-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.v5b-att-meta-up {
+  color: var(--accent);
+  font-weight: 600;
+}
 .v5b-att-icon {
   font-size: 16px;
   text-align: center;
@@ -6300,6 +6325,16 @@ textarea:focus-visible {
         <button class="btn btn-sm btn-ghost" @click="printItinerary()">Imprimir / PDF</button>
       </div>
     </div>
+    <div class="v5c-set-card">
+      <div class="ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      </div>
+      <h3>Storage de <em>archivos</em></h3>
+      <p>Probar conexión al bucket de Supabase Storage. Abrí DevTools (F12 → Console) antes de tappear para ver el detalle.</p>
+      <div class="actions">
+        <button class="btn btn-sm btn-ghost" @click="_testStorage()">Probar Storage</button>
+      </div>
+    </div>
     <div class="v5c-set-card danger" style="grid-column: 1 / -1;">
       <div class="ic">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -6606,11 +6641,17 @@ textarea:focus-visible {
             <h4>Archivos y links</h4>
             <div class="v5b-att-list" x-show="(drawerSlot.attachments || []).length > 0">
               <template x-for="att in (drawerSlot.attachments || [])" :key="att.id">
-                <div class="v5b-att-row">
-                  <span class="v5b-att-icon" x-text="att.kind === 'link' ? '🔗' : _mimeIcon(att.mimeType)"></span>
-                  <a class="v5b-att-name" :href="att.url" target="_blank" rel="noopener" x-text="att.name" :title="att.url"></a>
-                  <span class="v5b-att-meta" x-show="att.kind === 'file' && att.size" x-text="_humanSize(att.size)"></span>
-                  <button class="v5b-att-del" @click="removeAttachment('slot', drawerSlot.id, att.id)" title="Eliminar">✕</button>
+                <div class="v5b-att-row" :class="{uploading: att.uploading}">
+                  <span class="v5b-att-icon" x-show="!att.uploading" x-text="att.kind === 'link' ? '🔗' : _mimeIcon(att.mimeType)"></span>
+                  <span class="v5b-att-spinner" x-show="att.uploading" aria-label="Subiendo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-dasharray="42" stroke-dashoffset="32"/></svg>
+                  </span>
+                  <a class="v5b-att-name" x-show="!att.uploading" :href="att.url" target="_blank" rel="noopener" x-text="att.name" :title="att.url"></a>
+                  <span class="v5b-att-name" x-show="att.uploading" x-text="'Subiendo · ' + att.name"></span>
+                  <span class="v5b-att-meta" x-show="!att.uploading && att.kind === 'file' && att.size" x-text="_humanSize(att.size)"></span>
+                  <span class="v5b-att-meta v5b-att-meta-up" x-show="att.uploading">…</span>
+                  <button class="v5b-att-del" x-show="!att.uploading" @click="removeAttachment('slot', drawerSlot.id, att.id)" title="Eliminar">✕</button>
+                  <span x-show="att.uploading" style="width: 22px;"></span>
                 </div>
               </template>
             </div>
@@ -6618,10 +6659,10 @@ textarea:focus-visible {
               Sin adjuntos. Cargá la confirmación, el menú, el contrato.
             </div>
             <div class="v5b-att-actions">
-              <label class="v5b-action-btn v5b-att-file-btn">
-                <input type="file" style="display: none;" @change="attachFile('slot', drawerSlot.id, $event.target)">
+              <button class="v5b-action-btn v5b-att-file-btn" @click="$refs.slotFileInput.click()">
                 📎 Subir archivo
-              </label>
+              </button>
+              <input x-ref="slotFileInput" type="file" style="position: absolute; left: -9999px; opacity: 0; width: 1px; height: 1px;" @change="attachFile('slot', drawerSlot.id, $event.target)">
               <button class="v5b-action-btn" @click="linkOpen = !linkOpen">
                 🔗 <span x-text="linkOpen ? 'Cerrar' : 'Pegar link'"></span>
               </button>
@@ -6866,11 +6907,17 @@ textarea:focus-visible {
             <h4>Archivos y links</h4>
             <div class="v5b-att-list" x-show="(drawerProvider.attachments || []).length > 0">
               <template x-for="att in (drawerProvider.attachments || [])" :key="att.id">
-                <div class="v5b-att-row">
-                  <span class="v5b-att-icon" x-text="att.kind === 'link' ? '🔗' : _mimeIcon(att.mimeType)"></span>
-                  <a class="v5b-att-name" :href="att.url" target="_blank" rel="noopener" x-text="att.name" :title="att.url"></a>
-                  <span class="v5b-att-meta" x-show="att.kind === 'file' && att.size" x-text="_humanSize(att.size)"></span>
-                  <button class="v5b-att-del" @click="removeAttachment('provider', drawerProvider.id, att.id)" title="Eliminar">✕</button>
+                <div class="v5b-att-row" :class="{uploading: att.uploading}">
+                  <span class="v5b-att-icon" x-show="!att.uploading" x-text="att.kind === 'link' ? '🔗' : _mimeIcon(att.mimeType)"></span>
+                  <span class="v5b-att-spinner" x-show="att.uploading" aria-label="Subiendo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-dasharray="42" stroke-dashoffset="32"/></svg>
+                  </span>
+                  <a class="v5b-att-name" x-show="!att.uploading" :href="att.url" target="_blank" rel="noopener" x-text="att.name" :title="att.url"></a>
+                  <span class="v5b-att-name" x-show="att.uploading" x-text="'Subiendo · ' + att.name"></span>
+                  <span class="v5b-att-meta" x-show="!att.uploading && att.kind === 'file' && att.size" x-text="_humanSize(att.size)"></span>
+                  <span class="v5b-att-meta v5b-att-meta-up" x-show="att.uploading">…</span>
+                  <button class="v5b-att-del" x-show="!att.uploading" @click="removeAttachment('provider', drawerProvider.id, att.id)" title="Eliminar">✕</button>
+                  <span x-show="att.uploading" style="width: 22px;"></span>
                 </div>
               </template>
             </div>
@@ -6878,10 +6925,10 @@ textarea:focus-visible {
               Sin adjuntos. Confirmaciones, menús, contratos, fotos del lugar.
             </div>
             <div class="v5b-att-actions">
-              <label class="v5b-action-btn v5b-att-file-btn">
-                <input type="file" style="display: none;" @change="attachFile('provider', drawerProvider.id, $event.target)">
+              <button class="v5b-action-btn v5b-att-file-btn" @click="$refs.providerFileInput.click()">
                 📎 Subir archivo
-              </label>
+              </button>
+              <input x-ref="providerFileInput" type="file" style="position: absolute; left: -9999px; opacity: 0; width: 1px; height: 1px;" @change="attachFile('provider', drawerProvider.id, $event.target)">
               <button class="v5b-action-btn" @click="linkOpen = !linkOpen">
                 🔗 <span x-text="linkOpen ? 'Cerrar' : 'Pegar link'"></span>
               </button>
@@ -9160,29 +9207,71 @@ function app() {
       return '📎';
     },
     async attachFile(ownerType, ownerId, fileInputEl) {
-      const file = fileInputEl.files?.[0];
-      if (!file) return;
-      fileInputEl.value = '';  // reset so same file can be picked again
+      console.log('[attachFile] triggered', { ownerType, ownerId, hasInput: !!fileInputEl });
+      const file = fileInputEl?.files?.[0];
+      if (!file) {
+        console.warn('[attachFile] no file selected (cancelled or empty)');
+        return;
+      }
+      console.log('[attachFile] file picked', { name: file.name, size: file.size, type: file.type });
+      // Reset the input so the same file can be re-selected later
+      fileInputEl.value = '';
+
       if (file.size > 25 * 1024 * 1024) {
         this.toast('Archivo > 25 MB · subí a Drive y pegá el link', 'error');
         return;
       }
       if (!this._client) {
         this.toast('Supabase no inicializado · no se pudo subir', 'error');
+        console.error('[attachFile] this._client is null. Supabase initialization failed.');
         return;
       }
-      const safeName = this._slugifyFilename(file.name);
-      const path = `${TRIP_ID}/${ownerType}/${ownerId}/${Date.now()}_${safeName}`;
+
+      // Find owner & insert PENDING placeholder row IMMEDIATELY so user sees feedback
+      const target = this._findAttachmentTarget(ownerType, ownerId);
+      if (!target) {
+        console.error('[attachFile] target not found', { ownerType, ownerId });
+        this.toast('No se encontró el destino del adjunto', 'error');
+        return;
+      }
+      if (!Array.isArray(target.attachments)) target.attachments = [];
+      const tempId = 'att_pending_' + Date.now() + Math.random().toString(36).slice(2, 6);
+      const pending = {
+        id: tempId,
+        kind: 'file',
+        name: file.name,
+        url: '',
+        mimeType: file.type || '',
+        size: file.size,
+        uploading: true,
+        addedAt: Date.now(),
+        addedBy: this.identity || ''
+      };
+      target.attachments.push(pending);
       this.toast(`Subiendo ${file.name}…`, 'info');
+      console.log('[attachFile] pending row added, starting upload to Storage...');
+
+      const safeName = this._slugifyFilename(file.name);
+      const path = `${this.TRIP_ID}/${ownerType}/${ownerId}/${Date.now()}_${safeName}`;
+      console.log('[attachFile] target path:', path);
+
       try {
-        const { error: upErr } = await this._client.storage
+        const t0 = Date.now();
+        const { data, error: upErr } = await this._client.storage
           .from('attachments')
           .upload(path, file, { cacheControl: '3600', upsert: false });
+        const elapsed = Date.now() - t0;
+        console.log('[attachFile] upload returned after', elapsed, 'ms', { data, upErr });
         if (upErr) throw upErr;
+
         const { data: urlData } = this._client.storage
           .from('attachments')
           .getPublicUrl(path);
-        const att = {
+        console.log('[attachFile] public URL:', urlData?.publicUrl);
+
+        // Replace pending row with the final attachment
+        const idx = target.attachments.findIndex(a => a.id === tempId);
+        const finalAtt = {
           id: 'att' + Date.now() + Math.random().toString(36).slice(2, 6),
           kind: 'file',
           name: file.name,
@@ -9193,17 +9282,83 @@ function app() {
           addedAt: Date.now(),
           addedBy: this.identity || ''
         };
-        this._appendAttachment(ownerType, ownerId, att);
+        if (idx >= 0) target.attachments.splice(idx, 1, finalAtt);
+        else target.attachments.push(finalAtt);
+
+        this.save();
+        this.logEvent(ownerType + '.attachment_added',
+          `agregó archivo "${file.name}" a ${ownerType === 'slot' ? 'slot' : 'proveedor'}`,
+          { [ownerType + '_id']: ownerId, attachment_id: finalAtt.id, kind: 'file' });
         this.toast(`✓ ${file.name} subido`, 'success');
+        console.log('[attachFile] DONE — attachment finalized');
       } catch (e) {
-        const msg = e?.message || String(e);
-        if (/Bucket not found/i.test(msg)) {
-          this.toast('Falta crear el bucket "attachments" en Supabase Storage. Ver instrucciones en consola.', 'error');
-          console.warn(`%cSETUP REQUIRED: create a Storage bucket named 'attachments' in your Supabase dashboard:\n1. Dashboard → Storage → New bucket\n2. Name: attachments, Public: ON\n3. (optional) Add policy allowing anon INSERT and SELECT for development.`, 'color: #b8512e; font-weight: 700');
+        // Remove pending placeholder on failure
+        const idx = target.attachments.findIndex(a => a.id === tempId);
+        if (idx >= 0) target.attachments.splice(idx, 1);
+
+        const msg = e?.message || (typeof e === 'string' ? e : 'error desconocido');
+        const statusCode = e?.statusCode || e?.status || '';
+        console.error('[attachFile] FAILED', { msg, statusCode, error: e });
+
+        // Classify the failure to show actionable toast
+        if (/Bucket not found/i.test(msg) || /not found/i.test(msg) && /bucket/i.test(msg)) {
+          this.toast('No existe el bucket "attachments". Creálo en Supabase Storage.', 'error');
+          console.warn('%c→ FIX: Supabase Dashboard → Storage → New bucket → name: attachments, public: ON', 'color: #b8512e; font-weight: 700;');
+        } else if (/policy|RLS|row[- ]level/i.test(msg) || statusCode === 403 || statusCode === '403') {
+          this.toast('Permiso denegado · falta policy en el bucket (ver consola)', 'error');
+          console.warn('%c→ FIX: Supabase Dashboard → Storage → attachments → Policies → New policy', 'color: #b8512e; font-weight: 700;');
+          console.warn('Add 2 policies for role "anon":');
+          console.warn('  1. INSERT  → WITH CHECK: bucket_id = \'attachments\'');
+          console.warn('  2. DELETE  → USING: bucket_id = \'attachments\'');
+        } else if (/duplicate/i.test(msg) || /already exists/i.test(msg)) {
+          this.toast('Ese archivo ya existe en Storage (raro · reintentá)', 'error');
+        } else if (/network|fetch|timeout/i.test(msg)) {
+          this.toast('Sin conexión a Supabase · revisá internet', 'error');
         } else {
-          this.toast('Error subiendo: ' + msg, 'error');
+          this.toast('Error subiendo · ' + msg.slice(0, 100), 'error');
         }
-        console.warn('attachFile error:', e);
+      }
+    },
+
+    // Diagnostic: test the Storage bucket connection from the console (or call from button)
+    // Usage: app._testStorage() from DevTools console
+    async _testStorage() {
+      console.group('%c[Storage Diagnostic]', 'color: #2563eb; font-weight: 700;');
+      try {
+        if (!this._client) { console.error('✕ this._client is null'); return; }
+        console.log('✓ Supabase client OK');
+        // Try listing the bucket
+        const { data, error } = await this._client.storage.from('attachments').list('', { limit: 1 });
+        if (error) {
+          console.error('✕ List failed:', error);
+          if (/not found/i.test(error.message)) console.warn('→ Bucket "attachments" does not exist. Create it in Storage.');
+          else if (/policy|RLS/i.test(error.message)) console.warn('→ Missing SELECT policy on the bucket.');
+        } else {
+          console.log('✓ Bucket "attachments" reachable. Contains', data?.length || 0, 'items at root.');
+        }
+        // Test upload of a tiny blob
+        const testBlob = new Blob(['storage test ' + new Date().toISOString()], { type: 'text/plain' });
+        const testPath = `${this.TRIP_ID}/_diagnostic/${Date.now()}_test.txt`;
+        console.log('Testing upload to', testPath, '...');
+        const { error: upErr } = await this._client.storage.from('attachments').upload(testPath, testBlob);
+        if (upErr) {
+          console.error('✕ Upload failed:', upErr);
+          if (/policy|RLS|row[- ]level/i.test(upErr.message)) {
+            console.warn('→ Missing INSERT policy. Add this in Supabase Dashboard → Storage → attachments → Policies:');
+            console.warn('   New policy → For full customization');
+            console.warn('   Operation: INSERT  |  Target roles: anon  |  WITH CHECK: bucket_id = \'attachments\'');
+          }
+        } else {
+          console.log('✓ Upload OK');
+          // Clean up
+          await this._client.storage.from('attachments').remove([testPath]);
+          console.log('✓ Test file cleaned up');
+          console.log('%c All checks passed. Uploads should work.', 'color: #3c6b3c; font-weight: 700;');
+        }
+      } catch (e) {
+        console.error('Diagnostic crashed:', e);
+      } finally {
+        console.groupEnd();
       }
     },
     attachLink(ownerType, ownerId, url, label) {
