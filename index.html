@@ -9183,9 +9183,9 @@ function app() {
     },
 
     // === ATTACHMENTS (files + links on slots and providers) ===
-    // Files go to Supabase Storage bucket 'attachments'. Links are just URLs.
+    // Files go to Supabase Storage bucket 'trip-attachments'. Links are just URLs.
     // Bucket setup required (one-time): in Supabase dashboard, Storage → new bucket
-    // named 'attachments', public ON, INSERT/DELETE policies for anon.
+    // named 'trip-attachments', public ON, INSERT/DELETE policies for anon.
     _slugifyFilename(name) {
       return String(name).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
     },
@@ -9258,14 +9258,14 @@ function app() {
       try {
         const t0 = Date.now();
         const { data, error: upErr } = await this._client.storage
-          .from('attachments')
+          .from('trip-attachments')
           .upload(path, file, { cacheControl: '3600', upsert: false });
         const elapsed = Date.now() - t0;
         console.log('[attachFile] upload returned after', elapsed, 'ms', { data, upErr });
         if (upErr) throw upErr;
 
         const { data: urlData } = this._client.storage
-          .from('attachments')
+          .from('trip-attachments')
           .getPublicUrl(path);
         console.log('[attachFile] public URL:', urlData?.publicUrl);
 
@@ -9302,7 +9302,7 @@ function app() {
 
         // Classify the failure to show actionable toast
         if (/Bucket not found/i.test(msg) || /not found/i.test(msg) && /bucket/i.test(msg)) {
-          this.toast('No existe el bucket "attachments". Creálo en Supabase Storage.', 'error');
+          this.toast('No existe el bucket "trip-attachments". Creálo en Supabase Storage.', 'error');
           console.warn('%c→ FIX: Supabase Dashboard → Storage → New bucket → name: attachments, public: ON', 'color: #b8512e; font-weight: 700;');
         } else if (/policy|RLS|row[- ]level/i.test(msg) || statusCode === 403 || statusCode === '403') {
           this.toast('Permiso denegado · falta policy en el bucket (ver consola)', 'error');
@@ -9328,7 +9328,7 @@ function app() {
         if (!this._client) { console.error('✕ this._client is null'); return; }
         console.log('✓ Supabase client OK');
         // Try listing the bucket
-        const { data, error } = await this._client.storage.from('attachments').list('', { limit: 1 });
+        const { data, error } = await this._client.storage.from('trip-attachments').list('', { limit: 1 });
         if (error) {
           console.error('✕ List failed:', error);
           if (/not found/i.test(error.message)) console.warn('→ Bucket "attachments" does not exist. Create it in Storage.');
@@ -9340,7 +9340,7 @@ function app() {
         const testBlob = new Blob(['storage test ' + new Date().toISOString()], { type: 'text/plain' });
         const testPath = `${this.TRIP_ID}/_diagnostic/${Date.now()}_test.txt`;
         console.log('Testing upload to', testPath, '...');
-        const { error: upErr } = await this._client.storage.from('attachments').upload(testPath, testBlob);
+        const { error: upErr } = await this._client.storage.from('trip-attachments').upload(testPath, testBlob);
         if (upErr) {
           console.error('✕ Upload failed:', upErr);
           if (/policy|RLS|row[- ]level/i.test(upErr.message)) {
@@ -9351,7 +9351,7 @@ function app() {
         } else {
           console.log('✓ Upload OK');
           // Clean up
-          await this._client.storage.from('attachments').remove([testPath]);
+          await this._client.storage.from('trip-attachments').remove([testPath]);
           console.log('✓ Test file cleaned up');
           console.log('%c All checks passed. Uploads should work.', 'color: #3c6b3c; font-weight: 700;');
         }
@@ -9403,7 +9403,7 @@ function app() {
       // If file, also remove from Storage
       if (att.kind === 'file' && att.storagePath && this.supabase) {
         try {
-          await this._client.storage.from('attachments').remove([att.storagePath]);
+          await this._client.storage.from('trip-attachments').remove([att.storagePath]);
         } catch (e) { console.warn('storage remove failed (data still removed locally):', e); }
       }
       target.attachments.splice(idx, 1);
