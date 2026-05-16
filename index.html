@@ -2913,6 +2913,13 @@ color: var(--text-1);
   opacity: 0.95;
 }
 
+/* Flash a slot that was just moved (auto-sort may relocate it) */
+@keyframes v5b-slot-flash {
+  0%   { background: var(--tint-accent); box-shadow: inset 0 0 0 2px var(--accent); }
+  100% { background: transparent;        box-shadow: inset 0 0 0 0 transparent; }
+}
+.v5b-slot.just-moved { animation: v5b-slot-flash 1.5s ease-out; }
+
 .v5b-slot-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .v5b-slot-badge {
   display: inline-flex; align-items: center; gap: 4px;
@@ -6819,14 +6826,7 @@ function app() {
     },
     sortDaySlots(day) {
       if (!day || !Array.isArray(day.slots)) return;
-      day.slots.sort((a, b) => {
-        const ma = this.parseTimeToMinutes(this.slotStart(a));
-        const mb = this.parseTimeToMinutes(this.slotStart(b));
-        if (ma === null && mb === null) return 0;
-        if (ma === null) return 1;  // untimed/varios goes last
-        if (mb === null) return -1;
-        return ma - mb;
-      });
+      this._sortSlotsByTime(day.slots);
       this.save();
     },
 
@@ -6868,12 +6868,16 @@ function app() {
       if (!fromDay || !toDay) return;
       const slot = fromDay.slots[oldIdx];
       if (!slot) return;
-      // Remove from origin, then insert at destination
+      // Remove from origin, insert at destination
       // SortableJS's newIndex is the post-drop visual position in evt.to,
       // which already accounts for the removal — no adjustment needed.
       fromDay.slots.splice(oldIdx, 1);
       toDay.slots.splice(newIdx, 0, slot);
-      // Log + save
+      // Re-impose chronological order on the destination day (timed slots first
+      // by timeStart, untimed/varios last). The drop-position is just a hint;
+      // the time field is the source of truth.
+      this._sortSlotsByTime(toDay.slots);
+      // Log
       if (fromDay.id === toDay.id) {
         this.logEvent('itinerary.slot_reordered',
           `reordenó "${slot.title || 'sin título'}" en ${toDay.title || toDay.weekday}`,
@@ -6884,6 +6888,27 @@ function app() {
           { from_day_id: fromDay.id, to_day_id: toDay.id, slot_id: slot.id });
       }
       this.save();
+      // After Alpine re-renders, briefly highlight where the slot landed and
+      // scroll it into view if it ended up off-screen.
+      this.$nextTick(() => {
+        const el = document.querySelector(`[data-slot-id="${slot.id}"]`);
+        if (!el) return;
+        el.classList.add('just-moved');
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        setTimeout(() => el.classList.remove('just-moved'), 1500);
+      });
+    },
+    // Pure helper: sorts slot array in place by timeStart (untimed last)
+    _sortSlotsByTime(slots) {
+      if (!Array.isArray(slots)) return;
+      slots.sort((a, b) => {
+        const ma = this.parseTimeToMinutes(this.slotStart(a));
+        const mb = this.parseTimeToMinutes(this.slotStart(b));
+        if (ma === null && mb === null) return 0;
+        if (ma === null) return 1;
+        if (mb === null) return -1;
+        return ma - mb;
+      });
     },
 
     slotIssues(day, slot) {
