@@ -1480,6 +1480,18 @@ main { padding: 20px; max-width: none; }
 .v5-shell { display: block !important; }
 .v5-content { padding: 0 !important; max-width: none !important; }
 .card, .day-card, .budget-table, .provider-card, .action-item { box-shadow: none; border: 1px solid #ccc; }
+/* Itinerary print specifics */
+.section-header em { font-style: italic; }
+.section-header p.lead { display: none; }
+.v5b-view-toggle, .v5b-day-add, .v5b-day-delete, .v5b-slot-drag, .v5b-action-btn, .v5b-travel-chip { display: none !important; }
+.v5b-day { page-break-inside: avoid; margin-bottom: 24px; }
+.v5b-day-title { page-break-after: avoid; }
+.v5b-slot-row { page-break-inside: avoid; }
+.v5b-add-slot { display: none !important; }
+.v5-places-scan-banner, .v5c-places-scan-banner { display: none !important; }
+.v5b-status-dot { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+* { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+@page { margin: 1.5cm 1.2cm; }
 }
 
 /* ==========================================================================
@@ -4649,6 +4661,88 @@ textarea:focus-visible {
 }
 .v5-mp-actions { display: flex; gap: 8px; }
 
+/* Attachments (files + links) on slots and providers */
+.v5b-attachments { }
+.v5b-att-empty {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 10px;
+}
+.v5b-att-list {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: 12px;
+}
+.v5b-att-row {
+  display: grid;
+  grid-template-columns: 22px 1fr auto 22px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  transition: background 0.12s ease;
+}
+.v5b-att-row:hover { background: var(--surface-3); }
+.v5b-att-icon {
+  font-size: 16px;
+  text-align: center;
+}
+.v5b-att-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-1);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.v5b-att-name:hover { color: var(--accent); text-decoration: underline; }
+.v5b-att-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+.v5b-att-del {
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+.v5b-att-del:hover { background: var(--surface-1); color: var(--bad); }
+.v5b-att-actions {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.v5b-att-file-btn { cursor: pointer; }
+.v5b-att-link-form {
+  display: grid;
+  grid-template-columns: 1fr 180px auto;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--surface-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: 6px;
+}
+.v5b-att-link-form input {
+  padding: 8px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-1);
+  color: var(--text-1);
+}
+@media (max-width: 540px) {
+  .v5b-att-link-form { grid-template-columns: 1fr; }
+}
+
 /* Bulk Places scan banner */
 .v5c-places-scan-banner {
   display: grid;
@@ -6203,7 +6297,7 @@ textarea:focus-visible {
       <h3>Imprimir <em>itinerario</em></h3>
       <p>Versión printer-friendly del itinerario completo. Cmd/Ctrl + P → Guardar como PDF.</p>
       <div class="actions">
-        <button class="btn btn-sm btn-ghost" @click="window.print()">Imprimir / PDF</button>
+        <button class="btn btn-sm btn-ghost" @click="printItinerary()">Imprimir / PDF</button>
       </div>
     </div>
     <div class="v5c-set-card danger" style="grid-column: 1 / -1;">
@@ -6507,6 +6601,38 @@ textarea:focus-visible {
             </div>
           </div>
 
+          <!-- Attachments · files + links -->
+          <div class="v5b-detail-section v5b-attachments" x-data="{ linkOpen: false, linkUrl: '', linkLabel: '' }">
+            <h4>Archivos y links</h4>
+            <div class="v5b-att-list" x-show="(drawerSlot.attachments || []).length > 0">
+              <template x-for="att in (drawerSlot.attachments || [])" :key="att.id">
+                <div class="v5b-att-row">
+                  <span class="v5b-att-icon" x-text="att.kind === 'link' ? '🔗' : _mimeIcon(att.mimeType)"></span>
+                  <a class="v5b-att-name" :href="att.url" target="_blank" rel="noopener" x-text="att.name" :title="att.url"></a>
+                  <span class="v5b-att-meta" x-show="att.kind === 'file' && att.size" x-text="_humanSize(att.size)"></span>
+                  <button class="v5b-att-del" @click="removeAttachment('slot', drawerSlot.id, att.id)" title="Eliminar">✕</button>
+                </div>
+              </template>
+            </div>
+            <div class="v5b-att-empty" x-show="(drawerSlot.attachments || []).length === 0">
+              Sin adjuntos. Cargá la confirmación, el menú, el contrato.
+            </div>
+            <div class="v5b-att-actions">
+              <label class="v5b-action-btn v5b-att-file-btn">
+                <input type="file" style="display: none;" @change="attachFile('slot', drawerSlot.id, $event.target)">
+                📎 Subir archivo
+              </label>
+              <button class="v5b-action-btn" @click="linkOpen = !linkOpen">
+                🔗 <span x-text="linkOpen ? 'Cerrar' : 'Pegar link'"></span>
+              </button>
+            </div>
+            <div class="v5b-att-link-form" x-show="linkOpen" x-cloak>
+              <input type="text" placeholder="https://..." x-model="linkUrl" @keydown.enter="if (linkUrl) { attachLink('slot', drawerSlot.id, linkUrl, linkLabel); linkUrl=''; linkLabel=''; linkOpen=false; }">
+              <input type="text" placeholder="Nombre (opcional)" x-model="linkLabel">
+              <button class="btn btn-sm" :disabled="!linkUrl" @click="attachLink('slot', drawerSlot.id, linkUrl, linkLabel); linkUrl=''; linkLabel=''; linkOpen=false;">Guardar</button>
+            </div>
+          </div>
+
           <div class="v5b-detail-section">
             <h4>Acciones</h4>
             <div class="v5b-detail-actions">
@@ -6732,6 +6858,38 @@ textarea:focus-visible {
                 <input type="text" class="comment-input" name="text" placeholder="Escribir comentario..." maxlength="500">
                 <button type="submit" class="btn btn-sm">Enviar</button>
               </form>
+            </div>
+          </div>
+
+          <!-- Attachments · files + links -->
+          <div class="v5b-detail-section v5b-attachments" x-data="{ linkOpen: false, linkUrl: '', linkLabel: '' }">
+            <h4>Archivos y links</h4>
+            <div class="v5b-att-list" x-show="(drawerProvider.attachments || []).length > 0">
+              <template x-for="att in (drawerProvider.attachments || [])" :key="att.id">
+                <div class="v5b-att-row">
+                  <span class="v5b-att-icon" x-text="att.kind === 'link' ? '🔗' : _mimeIcon(att.mimeType)"></span>
+                  <a class="v5b-att-name" :href="att.url" target="_blank" rel="noopener" x-text="att.name" :title="att.url"></a>
+                  <span class="v5b-att-meta" x-show="att.kind === 'file' && att.size" x-text="_humanSize(att.size)"></span>
+                  <button class="v5b-att-del" @click="removeAttachment('provider', drawerProvider.id, att.id)" title="Eliminar">✕</button>
+                </div>
+              </template>
+            </div>
+            <div class="v5b-att-empty" x-show="(drawerProvider.attachments || []).length === 0">
+              Sin adjuntos. Confirmaciones, menús, contratos, fotos del lugar.
+            </div>
+            <div class="v5b-att-actions">
+              <label class="v5b-action-btn v5b-att-file-btn">
+                <input type="file" style="display: none;" @change="attachFile('provider', drawerProvider.id, $event.target)">
+                📎 Subir archivo
+              </label>
+              <button class="v5b-action-btn" @click="linkOpen = !linkOpen">
+                🔗 <span x-text="linkOpen ? 'Cerrar' : 'Pegar link'"></span>
+              </button>
+            </div>
+            <div class="v5b-att-link-form" x-show="linkOpen" x-cloak>
+              <input type="text" placeholder="https://..." x-model="linkUrl" @keydown.enter="if (linkUrl) { attachLink('provider', drawerProvider.id, linkUrl, linkLabel); linkUrl=''; linkLabel=''; linkOpen=false; }">
+              <input type="text" placeholder="Nombre (opcional)" x-model="linkLabel">
+              <button class="btn btn-sm" :disabled="!linkUrl" @click="attachLink('provider', drawerProvider.id, linkUrl, linkLabel); linkUrl=''; linkLabel=''; linkOpen=false;">Guardar</button>
             </div>
           </div>
 
@@ -8977,6 +9135,138 @@ function app() {
       this.save();
     },
 
+    // === ATTACHMENTS (files + links on slots and providers) ===
+    // Files go to Supabase Storage bucket 'attachments'. Links are just URLs.
+    // Bucket setup required (one-time): in Supabase dashboard, Storage → new bucket
+    // named 'attachments', public ON, INSERT/DELETE policies for anon.
+    _slugifyFilename(name) {
+      return String(name).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
+    },
+    _humanSize(bytes) {
+      if (!Number.isFinite(bytes)) return '';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+      return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    },
+    _mimeIcon(mt) {
+      if (!mt) return '📎';
+      if (mt.startsWith('image/')) return '🖼';
+      if (mt === 'application/pdf') return '📕';
+      if (mt.includes('word')) return '📄';
+      if (mt.includes('spreadsheet') || mt.includes('excel') || mt.includes('csv')) return '📊';
+      if (mt.startsWith('video/')) return '🎬';
+      if (mt.startsWith('audio/')) return '🎵';
+      if (mt.includes('zip') || mt.includes('rar') || mt.includes('compressed')) return '🗜';
+      return '📎';
+    },
+    async attachFile(ownerType, ownerId, fileInputEl) {
+      const file = fileInputEl.files?.[0];
+      if (!file) return;
+      fileInputEl.value = '';  // reset so same file can be picked again
+      if (file.size > 25 * 1024 * 1024) {
+        this.toast('Archivo > 25 MB · subí a Drive y pegá el link', 'error');
+        return;
+      }
+      if (!this._client) {
+        this.toast('Supabase no inicializado · no se pudo subir', 'error');
+        return;
+      }
+      const safeName = this._slugifyFilename(file.name);
+      const path = `${TRIP_ID}/${ownerType}/${ownerId}/${Date.now()}_${safeName}`;
+      this.toast(`Subiendo ${file.name}…`, 'info');
+      try {
+        const { error: upErr } = await this._client.storage
+          .from('attachments')
+          .upload(path, file, { cacheControl: '3600', upsert: false });
+        if (upErr) throw upErr;
+        const { data: urlData } = this._client.storage
+          .from('attachments')
+          .getPublicUrl(path);
+        const att = {
+          id: 'att' + Date.now() + Math.random().toString(36).slice(2, 6),
+          kind: 'file',
+          name: file.name,
+          url: urlData.publicUrl,
+          storagePath: path,
+          mimeType: file.type || '',
+          size: file.size,
+          addedAt: Date.now(),
+          addedBy: this.identity || ''
+        };
+        this._appendAttachment(ownerType, ownerId, att);
+        this.toast(`✓ ${file.name} subido`, 'success');
+      } catch (e) {
+        const msg = e?.message || String(e);
+        if (/Bucket not found/i.test(msg)) {
+          this.toast('Falta crear el bucket "attachments" en Supabase Storage. Ver instrucciones en consola.', 'error');
+          console.warn(`%cSETUP REQUIRED: create a Storage bucket named 'attachments' in your Supabase dashboard:\n1. Dashboard → Storage → New bucket\n2. Name: attachments, Public: ON\n3. (optional) Add policy allowing anon INSERT and SELECT for development.`, 'color: #b8512e; font-weight: 700');
+        } else {
+          this.toast('Error subiendo: ' + msg, 'error');
+        }
+        console.warn('attachFile error:', e);
+      }
+    },
+    attachLink(ownerType, ownerId, url, label) {
+      const u = String(url || '').trim();
+      if (!u) return;
+      // Normalize: prepend https:// if missing scheme
+      const fullUrl = /^https?:\/\//i.test(u) ? u : 'https://' + u;
+      const att = {
+        id: 'att' + Date.now() + Math.random().toString(36).slice(2, 6),
+        kind: 'link',
+        name: (label || '').trim() || u,
+        url: fullUrl,
+        addedAt: Date.now(),
+        addedBy: this.identity || ''
+      };
+      this._appendAttachment(ownerType, ownerId, att);
+      this.toast('Link agregado', 'success');
+    },
+    _appendAttachment(ownerType, ownerId, att) {
+      const target = this._findAttachmentTarget(ownerType, ownerId);
+      if (!target) return;
+      if (!Array.isArray(target.attachments)) target.attachments = [];
+      target.attachments.push(att);
+      this.save();
+      this.logEvent(ownerType + '.attachment_added',
+        `agregó ${att.kind === 'file' ? 'archivo' : 'link'} "${att.name}" a ${ownerType === 'slot' ? 'slot' : 'proveedor'}`,
+        { [ownerType + '_id']: ownerId, attachment_id: att.id, kind: att.kind });
+    },
+    async removeAttachment(ownerType, ownerId, attId) {
+      const target = this._findAttachmentTarget(ownerType, ownerId);
+      if (!target || !Array.isArray(target.attachments)) return;
+      const idx = target.attachments.findIndex(a => a.id === attId);
+      if (idx < 0) return;
+      const att = target.attachments[idx];
+      const ok = await this.askConfirm({
+        title: '¿Eliminar adjunto?',
+        body: `Se va a borrar "${att.name}". Esta acción no se puede deshacer.`,
+        confirmLabel: 'Eliminar',
+        danger: true
+      });
+      if (!ok) return;
+      // If file, also remove from Storage
+      if (att.kind === 'file' && att.storagePath && this.supabase) {
+        try {
+          await this._client.storage.from('attachments').remove([att.storagePath]);
+        } catch (e) { console.warn('storage remove failed (data still removed locally):', e); }
+      }
+      target.attachments.splice(idx, 1);
+      this.save();
+      this.toast('Adjunto eliminado', 'success');
+    },
+    _findAttachmentTarget(ownerType, ownerId) {
+      if (ownerType === 'slot') {
+        for (const d of this.data.itinerary || []) {
+          const s = (d.slots || []).find(s => s.id === ownerId);
+          if (s) return s;
+        }
+      } else if (ownerType === 'provider') {
+        return this.data.providers.find(p => p.id === ownerId);
+      }
+      return null;
+    },
+
     // === GOOGLE PLACES INTEGRATION ===
     // Called when user selects a place from <gmpx-place-picker> in the provider drawer.
     // Smart-merge: fills empty fields, always overwrites coords (Google is authoritative),
@@ -9485,6 +9775,7 @@ function app() {
             if (s.timeStart === undefined) s.timeStart = s.time || '';
             if (s.timeEnd === undefined) s.timeEnd = '';
             if (!s.time && s.timeStart) s.time = s.timeStart;
+            if (!Array.isArray(s.attachments)) s.attachments = [];
             // providerId: auto-link by title if missing
             if (s.providerId === undefined) {
               s.providerId = '';
@@ -9521,6 +9812,7 @@ function app() {
         d.providers.forEach(p => {
           if (p.mapUrl === undefined) p.mapUrl = '';
           if (!Array.isArray(p.communications)) p.communications = [];
+          if (!Array.isArray(p.attachments)) p.attachments = [];
         });
       }
       // Actions: extend with type, dueDate, link fields
@@ -9747,6 +10039,20 @@ function app() {
     },
 
     // === iCAL EXPORT ===
+    // Print: switch to Itinerario tab first so the print captures the right content,
+    // then restore the previous tab after the print dialog closes.
+    async printItinerary() {
+      const prev = this.tab;
+      if (this.tab !== 'itinerary') {
+        this.tab = 'itinerary';
+        // Wait for x-show to update + DOM repaint
+        await new Promise(r => setTimeout(r, 250));
+      }
+      window.print();
+      // Restore (fires after print dialog closes since print() is synchronous-blocking)
+      if (prev !== 'itinerary') this.tab = prev;
+    },
+
     exportICal() {
       const pad = n => String(n).padStart(2, '0');
       const fmtDT = (date, time) => {
