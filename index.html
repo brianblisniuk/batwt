@@ -13083,11 +13083,14 @@ function app() {
 
     _renderMapForCurrentMode() {
       if (!this._gmap) return;
+      // Bump render token so any in-flight async re-render from a previous
+      // call is invalidated and ignored when its fetches resolve.
+      this._renderToken = (this._renderToken || 0) + 1;
       this._clearGoogleMapOverlays();
       if (this.mapView === 'p2p') {
         this._renderP2pRoute();
       } else {
-        this._renderMapForDay(this.mapSelectedDay);
+        this._renderMapForDay(this.mapSelectedDay, this._renderToken);
       }
     },
 
@@ -13120,7 +13123,14 @@ function app() {
     },
 
     // === DAY MODE: numbered pins by order, real polylines from Directions API ===
-    _renderMapForDay(dayIdx) {
+    // `token` is the render token at the time _renderMapForCurrentMode was called.
+    // Used to ignore stale async re-renders triggered by a day the user already
+    // switched away from.
+    _renderMapForDay(dayIdx, token) {
+      // Defensive: always start from a clean state — guards against any caller
+      // that forgets to clear, plus race conditions during quick day clicks.
+      this._clearGoogleMapOverlays();
+      const myToken = (token != null) ? token : this._renderToken;
       const day = this.data.itinerary[dayIdx];
       if (!day) return;
       // Build positioned slots in order, skipping those without coords
@@ -13159,9 +13169,9 @@ function app() {
       });
       // Render each segment with the REAL driving polyline from Directions API.
       // We render the cached one immediately if present; for un-cached pairs we
-      // fire the fetch and re-render once data arrives.
+      // fire the fetch and re-render once data arrives. NO straight lines drawn —
+      // we leave the segment blank until the real route is in cache.
       if (positioned.length >= 2) {
-        const routeColor = 'var(--accent, #b8512e)';
         const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#b8512e';
         const segmentsToFetch = [];
         for (let i = 0; i < positioned.length - 1; i++) {
@@ -13191,20 +13201,8 @@ function app() {
             chip.setMap(this._gmap);
             this._gmapChips.push(chip);
           } else {
-            // No cached real route yet — draw a thin estimate line for now and queue a fetch
-            const polyline = new google.maps.Polyline({
-              path: [{ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng }],
-              map: this._gmap,
-              geodesic: false,
-              strokeColor: accentColor,
-              strokeOpacity: 0.35,
-              strokeWeight: 2,
-              icons: [{
-                icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, strokeWeight: 2, scale: 2 },
-                offset: '0', repeat: '8px'
-              }]
-            });
-            this._gmapPolylines.push(polyline);
+            // No cached real route yet — DON'T draw anything; just queue fetch.
+            // The route will appear after Directions returns.
             segmentsToFetch.push({ a: aLatLon, b: bLatLon });
           }
         }
@@ -13214,10 +13212,14 @@ function app() {
             for (const seg of segmentsToFetch) {
               await this._fetchDirections(seg.a, seg.b);
             }
-            // After all fetched, re-render to show real polylines
-            if (this._gmap && this.mapView === 'day' && this.mapSelectedDay === dayIdx) {
+            // Only re-render if (a) this is still the most recent render, (b) we
+            // are still in Día mode, (c) the user has not switched to a different day.
+            if (this._renderToken === myToken
+                && this._gmap
+                && this.mapView === 'day'
+                && this.mapSelectedDay === dayIdx) {
               this._clearGoogleMapOverlays();
-              this._renderMapForDay(dayIdx);
+              this._renderMapForDay(dayIdx, myToken);
             }
           })();
         }
@@ -13233,6 +13235,8 @@ function app() {
 
     // === POINT-TO-POINT MODE: render the from/to pins + the directions polyline ===
     _renderP2pRoute() {
+      // Defensive clear — guards against double-render race conditions
+      this._clearGoogleMapOverlays();
       const { from, to, route } = this.p2p;
       if (!from || !to) return;
       const bounds = new google.maps.LatLngBounds();
