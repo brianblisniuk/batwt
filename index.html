@@ -6487,6 +6487,553 @@ textarea:focus-visible {
 .v5-identity-logout:hover {
   background: color-mix(in oklab, #6e1a1f 8%, transparent) !important;
 }
+/* ===== RUTA TAB (Día + Punto a punto) ===== */
+
+/* Day chips with stop count + drive time totals */
+.v5c-ruta-day-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 18px;
+}
+.v5c-ruta-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text-2);
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  min-width: 90px;
+}
+.v5c-ruta-chip:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.v5c-ruta-chip.active {
+  background: var(--text-1);
+  color: var(--surface-1);
+  border-color: var(--text-1);
+}
+.v5c-ruta-chip .num {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+.v5c-ruta-chip .meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+.v5c-ruta-chip.active .meta { opacity: 0.85; }
+.v5c-ruta-chip .meta .dot { opacity: 0.5; }
+.v5c-ruta-chip .meta .dur { font-weight: 600; }
+
+/* Sidebar + map layout */
+.v5c-map-wrap {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) 1fr;
+  gap: 18px;
+  align-items: stretch;
+  min-height: 580px;
+}
+@media (max-width: 900px) {
+  .v5c-map-wrap {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+}
+
+/* Sidebar */
+.v5c-ruta-sidebar {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.v5c-ruta-head {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.v5c-ruta-head .head-l h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.v5c-ruta-head .sub {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+.v5c-ruta-open-maps {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: all 0.12s ease;
+  align-self: flex-start;
+}
+.v5c-ruta-open-maps:hover {
+  background: var(--text-1);
+  color: var(--surface-1);
+  border-color: var(--text-1);
+}
+
+/* Timeline */
+.v5c-ruta-timeline {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px 10px;
+  display: flex;
+  flex-direction: column;
+}
+.v5c-ruta-slot {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  align-items: flex-start;
+}
+.v5c-ruta-slot:hover {
+  background: var(--surface-2);
+}
+.v5c-ruta-slot.active {
+  background: var(--surface-2);
+  outline: 1px solid var(--accent);
+}
+.v5c-ruta-slot.dim {
+  opacity: 0.55;
+}
+.v5c-ruta-slot .num {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.v5c-ruta-slot .num.dim {
+  background: var(--surface-0);
+  color: var(--text-3);
+  border: 1px dashed var(--line);
+}
+.v5c-ruta-slot .body {
+  flex: 1;
+  min-width: 0;
+}
+.v5c-ruta-slot .head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 2px;
+}
+.v5c-ruta-slot .head .warn {
+  color: var(--warn, #b8512e);
+  font-style: italic;
+}
+.v5c-ruta-slot .title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-1);
+  line-height: 1.3;
+}
+.v5c-ruta-slot .prov {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+/* Travel chip between slots */
+.v5c-ruta-travel {
+  display: flex;
+  padding: 4px 14px 4px 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+}
+.v5c-ruta-travel .arrow {
+  color: var(--text-3);
+  margin-right: 8px;
+  font-size: 12px;
+}
+.v5c-ruta-travel .info {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.v5c-ruta-travel .dur {
+  font-weight: 600;
+  color: var(--text-2);
+}
+.v5c-ruta-travel .sep { opacity: 0.5; }
+.v5c-ruta-travel .est {
+  margin-left: 4px;
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* Day total bar */
+.v5c-ruta-total {
+  border-top: 1px solid var(--line);
+  padding: 14px 18px;
+  background: var(--surface-0);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.v5c-ruta-total .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.v5c-ruta-total .val {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+.v5c-ruta-total .val .sep {
+  margin: 0 6px;
+  opacity: 0.4;
+}
+.v5c-ruta-total .val .dist {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text-2);
+  font-weight: 400;
+}
+
+/* Punto a punto form */
+.v5c-p2p-form {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin: 14px 0 16px;
+}
+.v5c-p2p-fields {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+@media (max-width: 800px) {
+  .v5c-p2p-fields {
+    grid-template-columns: 1fr;
+  }
+}
+.v5c-p2p-field { position: relative; }
+.v5c-p2p-field label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+.v5c-p2p-input-wrap {
+  position: relative;
+}
+.v5c-p2p-input {
+  width: 100%;
+  padding: 9px 32px 9px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.v5c-p2p-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-1);
+}
+.v5c-p2p-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--text-3);
+  color: var(--surface-1);
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.v5c-p2p-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  z-index: 20;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.v5c-p2p-option {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+.v5c-p2p-option:hover {
+  background: var(--surface-2);
+}
+.v5c-p2p-option .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.v5c-p2p-option .body { flex: 1; min-width: 0; }
+.v5c-p2p-option .name {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  color: var(--text-1);
+}
+.v5c-p2p-option .sub {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+.v5c-p2p-option .tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.v5c-p2p-empty {
+  padding: 12px;
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--text-3);
+  text-align: center;
+}
+.v5c-p2p-swap {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+  margin-bottom: 0;
+}
+.v5c-p2p-swap:hover:not(:disabled) {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.v5c-p2p-swap:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.v5c-p2p-open {
+  white-space: nowrap;
+}
+
+/* Frequent routes */
+.v5c-p2p-frequent {
+  margin-top: 16px;
+}
+.v5c-p2p-frequent .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.v5c-p2p-frequent .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.v5c-p2p-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--surface-2);
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+  color: var(--text-2);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.v5c-p2p-chip:hover {
+  background: var(--text-1);
+  color: var(--surface-1);
+  border-color: var(--text-1);
+  border-style: solid;
+}
+.v5c-p2p-chip .arr {
+  color: var(--text-3);
+  font-size: 11px;
+}
+.v5c-p2p-chip:hover .arr { color: inherit; opacity: 0.7; }
+
+/* Route summary card */
+.v5c-p2p-summary {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: color-mix(in oklab, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent) 22%, transparent);
+  border-radius: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.v5c-p2p-summary .duration {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+.v5c-p2p-summary .separator {
+  color: var(--text-3);
+  font-size: 16px;
+}
+.v5c-p2p-summary .distance {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.v5c-p2p-summary .hint {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-3);
+  margin-left: auto;
+}
+
+.v5c-p2p-map-wrap {
+  min-height: 480px;
+}
+.v5c-p2p-frame {
+  height: 480px;
+  position: relative;
+}
+.v5c-p2p-empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in oklab, var(--surface-1) 60%, transparent);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+}
+.v5c-p2p-empty-state .hint {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-2);
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  padding: 12px 20px;
+  border-radius: 8px;
+}
+
+/* Segmented control (used in section-header) */
+.v5-segmented {
+  display: inline-flex;
+  background: var(--surface-0);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+}
+.v5-segmented button {
+  padding: 7px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.v5-segmented button.active {
+  background: var(--surface-1);
+  color: var(--text-1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
 
 </style>
 
@@ -6976,7 +7523,7 @@ textarea:focus-visible {
       </button>
       <button class="v5-nav-item" :class="{active: tab === 'map'}" @click="tab = 'map'; $nextTick(() => initMap())">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>
-        <span>Mapa</span>
+        <span>Ruta</span>
       </button>
       <button class="v5-nav-item" :class="{active: tab === 'providers'}" @click="tab = 'providers'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21V12h6v9"/></svg>
@@ -7032,7 +7579,7 @@ textarea:focus-visible {
         <span class="tab-badge" x-text="data.providers.length"></span>
       </button>
       <button class="tab" :class="{ active: tab === 'map' }" @click="tab = 'map'; $nextTick(() => initMap())">
-        <span>Mapa</span>
+        <span>Ruta</span>
       </button>
       <button class="tab" :class="{ active: tab === 'actions' }" @click="tab = 'actions'">
         <span>To-Do</span>
@@ -7670,148 +8217,305 @@ textarea:focus-visible {
 <section x-show="tab === 'map'">
   <div class="section-header">
     <div>
-      <h1>Mapa del <em>viaje</em></h1>
-      <p class="lead">Elegí un día para ver paradas numeradas, ruta y tiempos entre cada lugar. <em>TODO</em> muestra todos los proveedores ubicados.</p>
+      <h1>Ruta del <em>viaje</em></h1>
+      <p class="lead">Tiempos reales en ruta. Modo <em>Día</em> para el plan completo, <em>Punto a punto</em> para chequear distancias específicas.</p>
+    </div>
+    <!-- View toggle: Día (default) vs Punto a punto -->
+    <div class="v5-segmented" role="tablist" aria-label="Modo de visualización">
+      <button :class="{active: mapView === 'day'}" @click="setMapView('day')" role="tab">Día</button>
+      <button :class="{active: mapView === 'p2p'}" @click="setMapView('p2p')" role="tab">Punto a punto</button>
     </div>
   </div>
 
-  <!-- Day selector tabs -->
-  <div class="v5c-map-day-tabs" role="tablist">
-    <button class="v5c-mdt" :class="{active: mapMode === 'overview'}"
-            @click="setMapMode('overview')">
-      <span class="rom">TODO</span>
-      <span class="wd" x-text="data.providers.filter(p => providerCoords(p)).length + ' lugares'"></span>
-    </button>
-    <template x-for="(d, idx) in data.itinerary" :key="d.id">
-      <button class="v5c-mdt"
-              :class="{active: mapMode === 'day' && mapSelectedDay === idx}"
-              :style="mapMode === 'day' && mapSelectedDay === idx ? '--c: ' + dayRouteColor(idx) : ''"
-              @click="setMapMode('day', idx)">
-        <span class="rom" x-text="toRoman(idx + 1)"></span>
-        <span class="wd">
-          <span x-text="d.weekday?.slice(0,3) || ('D' + (idx+1))"></span>
-          <span class="cnt" x-text="d.slots.filter(s => slotCoords(s)).length + '·' + d.slots.length"></span>
-        </span>
-      </button>
-    </template>
-  </div>
-
-  <div class="v5c-map-wrap">
-    <div class="v5c-map-frame">
-      <div id="trip-map"></div>
-      <!-- Floating slot card on click (bottom sheet) -->
-      <template x-if="mapBottomSheet">
-        <div class="v5c-map-bsh" @click.outside="mapBottomSheet = null">
-          <button class="v5c-bsh-close" @click="mapBottomSheet = null" aria-label="Cerrar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  <!-- ===== MODE: DÍA ===== -->
+  <template x-if="mapView === 'day'">
+    <div>
+      <!-- Day selector chips with stop count + total drive time -->
+      <div class="v5c-ruta-day-tabs" role="tablist">
+        <template x-for="(d, idx) in data.itinerary" :key="d.id">
+          <button class="v5c-ruta-chip"
+                  :class="{active: mapSelectedDay === idx}"
+                  @click="setMapDay(idx)"
+                  role="tab">
+            <span class="num" x-text="'Día ' + (idx + 1)"></span>
+            <span class="meta">
+              <span x-text="dayPositionedSlotCount(idx) + ' parada' + (dayPositionedSlotCount(idx) === 1 ? '' : 's')"></span>
+              <template x-if="dayTotalDriving(idx).min > 0">
+                <span class="dot">·</span>
+              </template>
+              <template x-if="dayTotalDriving(idx).min > 0">
+                <span class="dur" x-text="formatDuration(dayTotalDriving(idx).min)"></span>
+              </template>
+            </span>
           </button>
-          <div class="v5c-bsh-eyebrow">
-            <span class="num" :style="`background: ${mapBottomSheet.color}`" x-text="mapBottomSheet.num"></span>
-            <span class="time" x-text="mapBottomSheet.time || '—'"></span>
-            <span class="day" x-text="mapBottomSheet.day"></span>
-          </div>
-          <h3 class="v5c-bsh-title" x-text="mapBottomSheet.title"></h3>
-          <p class="v5c-bsh-desc" x-show="mapBottomSheet.desc" x-text="mapBottomSheet.desc"></p>
-          <div class="v5c-bsh-prov" x-show="mapBottomSheet.providerName">
-            <span class="lbl">Proveedor</span>
-            <strong x-text="mapBottomSheet.providerName"></strong>
-          </div>
-          <div class="v5c-bsh-actions">
-            <button class="btn btn-sm" @click="openSlotDrawer(mapBottomSheet.slotId); mapBottomSheet = null">Abrir slot →</button>
-            <a class="btn btn-sm btn-ghost" :href="mapBottomSheet.gmapsUrl" target="_blank" rel="noopener">Ver en Google Maps</a>
-          </div>
-        </div>
-      </template>
-    </div>
+        </template>
+      </div>
 
-    <aside class="v5c-map-panel" aria-label="Panel del mapa">
-      <!-- DAY MODE: timeline -->
-      <template x-if="mapMode === 'day'">
-        <div>
-          <header class="v5c-mp-head" :style="`border-left: 3px solid ${dayRouteColor(mapSelectedDay)};`">
-            <h3 x-text="data.itinerary[mapSelectedDay]?.title || ('Día ' + (mapSelectedDay+1))"></h3>
-            <div class="sub">
-              <span x-text="data.itinerary[mapSelectedDay]?.weekday"></span>
-              <span x-show="data.itinerary[mapSelectedDay]?.date"> · </span>
-              <span x-text="data.itinerary[mapSelectedDay]?.date"></span>
+      <div class="v5c-map-wrap">
+        <!-- Sidebar: timeline of the active day -->
+        <aside class="v5c-ruta-sidebar" aria-label="Paradas del día">
+          <header class="v5c-ruta-head">
+            <div class="head-l">
+              <h3 x-text="data.itinerary[mapSelectedDay]?.title || ('Día ' + (mapSelectedDay+1))"></h3>
+              <div class="sub">
+                <span x-text="data.itinerary[mapSelectedDay]?.weekday"></span>
+                <span x-show="data.itinerary[mapSelectedDay]?.date"> · </span>
+                <span x-text="data.itinerary[mapSelectedDay]?.date"></span>
+              </div>
             </div>
-            <template x-if="getDayRouteUrl(mapSelectedDay)">
-              <a class="v5c-mp-route-btn" :href="getDayRouteUrl(mapSelectedDay)" target="_blank" rel="noopener" title="Abrir ruta del día en Google Maps">
-                🗺 Ver ruta completa →
+            <template x-if="dayFullRouteUrl(mapSelectedDay) !== '#'">
+              <a class="v5c-ruta-open-maps" :href="dayFullRouteUrl(mapSelectedDay)" target="_blank" rel="noopener" title="Abrir el día completo en Google Maps con todos los waypoints">
+                🗺 Abrir día en Maps →
               </a>
             </template>
           </header>
-          <div class="v5c-mp-body">
-            <div class="v5c-mp-timeline">
-              <template x-for="(slot, sIdx) in (data.itinerary[mapSelectedDay]?.slots || [])" :key="slot.id">
-                <div class="v5c-mpt-row"
+
+          <!-- Timeline of slots with travel chips between consecutive positioned ones -->
+          <div class="v5c-ruta-timeline">
+            <template x-for="(slot, sIdx) in (data.itinerary[mapSelectedDay]?.slots || [])" :key="slot.id">
+              <div>
+                <!-- Slot card -->
+                <div class="v5c-ruta-slot"
                      :class="{ active: mapBottomSheet?.slotId === slot.id, dim: !slotCoords(slot) }"
                      @click="flyToSlot(slot.id)">
-                  <span class="num" :style="`background: ${slotCoords(slot) ? dayRouteColor(mapSelectedDay) : 'var(--text-3)'}`" x-text="sIdx + 1"></span>
+                  <template x-if="slotCoords(slot)">
+                    <span class="num" :style="{ background: slotProvider(slot)?.type ? layerColor(slotProvider(slot).type) : 'var(--text-2)' }"
+                          x-text="(data.itinerary[mapSelectedDay].slots.slice(0, sIdx+1).filter(s => slotCoords(s)).length)"></span>
+                  </template>
+                  <template x-if="!slotCoords(slot)">
+                    <span class="num dim">—</span>
+                  </template>
                   <div class="body">
                     <div class="head">
-                      <span class="time" x-text="slot.timeStart || '—'"></span>
+                      <span class="time" x-text="slot.timeStart || slot.time || '—'"></span>
                       <span x-show="!slotCoords(slot)" class="warn">sin mapa</span>
                     </div>
                     <div class="title" x-text="slot.title || 'Sin título'"></div>
+                    <template x-if="slotProvider(slot) && slotProvider(slot).name !== slot.title">
+                      <div class="prov" x-text="slotProvider(slot).name"></div>
+                    </template>
                   </div>
                 </div>
-              </template>
-              <div x-show="!data.itinerary[mapSelectedDay]?.slots?.length" class="v5b-empty-tiny">
-                Día sin slots todavía.
-              </div>
-            </div>
-          </div>
-        </div>
-      </template>
 
-      <!-- OVERVIEW MODE: type filters + provider list -->
-      <template x-if="mapMode === 'overview'">
-        <div>
-          <header class="v5c-mp-head">
-            <h3>Capas <em>y filtros</em></h3>
-            <div class="sub"><span x-text="mappedProvidersCount"></span> · de <span x-text="data.providers.length"></span> proveedores ubicados</div>
-          </header>
-          <div class="v5c-mp-body">
-            <div class="v5c-mp-section">
-              <h4>
-                <span>Por tipo</span>
-                <button class="all" @click="toggleAllLayers()">
-                  <span x-text="allLayersOn ? 'Ninguno' : 'Todos'"></span>
-                </button>
-              </h4>
-              <div class="v5c-mp-layer" :class="{off: !mapLayers.villa}" @click="toggleMapLayer('villa')">
-                <span class="sw" style="background: #6e1a1f;"></span>
-                <span class="lb">Villa</span>
-                <span class="cnt">1</span>
-              </div>
-              <template x-for="type in providerTypes" :key="type.key">
-                <div class="v5c-mp-layer" :class="{off: !mapLayers[type.key]}" @click="toggleMapLayer(type.key)">
-                  <span class="sw" :style="`background: ${layerColor(type.key)}`"></span>
-                  <span class="lb" x-text="type.label"></span>
-                  <span class="cnt" x-text="data.providers.filter(p => p.type === type.key).length"></span>
-                </div>
-              </template>
-            </div>
-            <div class="v5c-mp-section">
-              <h4><span>Pins ubicados</span></h4>
-              <div class="v5c-mp-pins">
-                <template x-for="provider in mappedProviders" :key="provider.id">
-                  <div class="v5c-mp-pin" @click="openProviderDrawer(provider.id)">
-                    <span class="dot" :style="`background: ${layerColor(provider.type)}`"></span>
-                    <span class="name" x-text="provider.name"></span>
-                    <span class="ml" x-show="provider.michelin > 0" x-text="'★'.repeat(provider.michelin)"></span>
-                    <span class="loc" x-text="provider.location"></span>
+                <!-- Travel chip between this slot and the next positioned slot -->
+                <template x-if="(() => {
+                  const slots = data.itinerary[mapSelectedDay]?.slots || [];
+                  if (sIdx >= slots.length - 1) return false;
+                  if (!slotCoords(slot)) return false;
+                  // Find next positioned slot
+                  for (let i = sIdx + 1; i < slots.length; i++) {
+                    if (slotCoords(slots[i])) return true;
+                  }
+                  return false;
+                })()">
+                  <div class="v5c-ruta-travel">
+                    <template x-if="(() => {
+                      const slots = data.itinerary[mapSelectedDay]?.slots || [];
+                      for (let i = sIdx + 1; i < slots.length; i++) {
+                        if (slotCoords(slots[i])) {
+                          const t = travelBetween(slot, slots[i]);
+                          return t && !t.same_location;
+                        }
+                      }
+                      return false;
+                    })()">
+                      <div>
+                        <span class="arrow">↓</span>
+                        <span class="info">
+                          <template x-for="next in [(() => {
+                            const slots = data.itinerary[mapSelectedDay]?.slots || [];
+                            for (let i = sIdx + 1; i < slots.length; i++) {
+                              if (slotCoords(slots[i])) return slots[i];
+                            }
+                            return null;
+                          })()]" :key="next?.id">
+                            <span>
+                              <span class="dur" x-text="formatDuration(travelBetween(slot, next)?.duration_min)"></span>
+                              <span class="sep">·</span>
+                              <span class="dist" x-text="(travelBetween(slot, next)?.distance_km || 0) + ' km'"></span>
+                              <span x-show="travelBetween(slot, next)?.estimated" class="est" title="Estimado · click para abrir en Google Maps">≈</span>
+                            </span>
+                          </template>
+                        </span>
+                      </div>
+                    </template>
                   </div>
                 </template>
-                <div x-show="mappedProviders.length === 0" class="v5b-empty-tiny">Sin proveedores ubicados todavía.</div>
               </div>
+            </template>
+            <div x-show="!data.itinerary[mapSelectedDay]?.slots?.length" class="v5b-empty-tiny">
+              Día sin slots todavía.
             </div>
           </div>
+
+          <!-- Day total bar -->
+          <template x-if="dayTotalDriving(mapSelectedDay).min > 0">
+            <div class="v5c-ruta-total">
+              <div class="lbl">Total del día</div>
+              <div class="val">
+                <span class="dur" x-text="formatDuration(dayTotalDriving(mapSelectedDay).min)"></span>
+                <span class="sep">·</span>
+                <span class="dist" x-text="dayTotalDriving(mapSelectedDay).km + ' km'"></span>
+              </div>
+            </div>
+          </template>
+        </aside>
+
+        <!-- Map frame -->
+        <div class="v5c-map-frame">
+          <div id="trip-map"></div>
+          <template x-if="mapBottomSheet">
+            <div class="v5c-map-bsh" @click.outside="mapBottomSheet = null">
+              <button class="v5c-bsh-close" @click="mapBottomSheet = null" aria-label="Cerrar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+              <div class="v5c-bsh-eyebrow">
+                <span class="num" :style="`background: ${mapBottomSheet.color}`" x-text="mapBottomSheet.num"></span>
+                <span class="time" x-text="mapBottomSheet.time || '—'"></span>
+                <span class="day" x-text="mapBottomSheet.day"></span>
+              </div>
+              <h3 class="v5c-bsh-title" x-text="mapBottomSheet.title"></h3>
+              <p class="v5c-bsh-desc" x-show="mapBottomSheet.desc" x-text="mapBottomSheet.desc"></p>
+              <div class="v5c-bsh-prov" x-show="mapBottomSheet.providerName">
+                <span class="lbl">Proveedor</span>
+                <strong x-text="mapBottomSheet.providerName"></strong>
+              </div>
+              <div class="v5c-bsh-actions">
+                <button class="btn btn-sm" @click="openSlotDrawer(mapBottomSheet.slotId); mapBottomSheet = null">Abrir slot →</button>
+                <a class="btn btn-sm btn-ghost" :href="mapBottomSheet.gmapsUrl" target="_blank" rel="noopener">Ver en Google Maps</a>
+              </div>
+            </div>
+          </template>
         </div>
-      </template>
-    </aside>
-  </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ===== MODE: PUNTO A PUNTO ===== -->
+  <template x-if="mapView === 'p2p'">
+    <div>
+      <!-- A → B form -->
+      <div class="v5c-p2p-form">
+        <div class="v5c-p2p-fields">
+          <!-- From -->
+          <div class="v5c-p2p-field" @click.outside="p2p.fromOpen = false">
+            <label>Desde</label>
+            <div class="v5c-p2p-input-wrap">
+              <input type="text"
+                     x-model="p2p.fromQuery"
+                     @focus="p2p.fromOpen = true"
+                     @input="p2p.fromOpen = true; p2p.from = null"
+                     placeholder="Basecamp, proveedor o lugar…"
+                     class="v5c-p2p-input">
+              <template x-if="p2p.from">
+                <button class="v5c-p2p-clear" @click="clearP2pCandidate('from')" title="Limpiar">×</button>
+              </template>
+              <template x-if="p2p.fromOpen">
+                <div class="v5c-p2p-dropdown">
+                  <template x-for="cand in p2pFiltered(p2p.fromQuery)" :key="cand.kind + ':' + (cand.id || cand.name)">
+                    <button class="v5c-p2p-option" @click="selectP2pCandidate('from', cand)">
+                      <span class="dot" :style="`background: ${cand.type ? layerColor(cand.type) : 'var(--text-3)'}`"></span>
+                      <span class="body">
+                        <span class="name" x-text="cand.name"></span>
+                        <span class="sub" x-text="cand.subtitle"></span>
+                      </span>
+                      <template x-if="cand.kind === 'basecamp'">
+                        <span class="tag">basecamp</span>
+                      </template>
+                    </button>
+                  </template>
+                  <div x-show="p2pFiltered(p2p.fromQuery).length === 0" class="v5c-p2p-empty">
+                    Sin coincidencias en este viaje.
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <button class="v5c-p2p-swap" @click="swapP2p()" :disabled="!p2p.from || !p2p.to" title="Invertir A ↔ B" aria-label="Invertir desde/hasta">
+            ⇄
+          </button>
+
+          <!-- To -->
+          <div class="v5c-p2p-field" @click.outside="p2p.toOpen = false">
+            <label>Hasta</label>
+            <div class="v5c-p2p-input-wrap">
+              <input type="text"
+                     x-model="p2p.toQuery"
+                     @focus="p2p.toOpen = true"
+                     @input="p2p.toOpen = true; p2p.to = null"
+                     placeholder="Basecamp, proveedor o lugar…"
+                     class="v5c-p2p-input">
+              <template x-if="p2p.to">
+                <button class="v5c-p2p-clear" @click="clearP2pCandidate('to')" title="Limpiar">×</button>
+              </template>
+              <template x-if="p2p.toOpen">
+                <div class="v5c-p2p-dropdown">
+                  <template x-for="cand in p2pFiltered(p2p.toQuery)" :key="cand.kind + ':' + (cand.id || cand.name)">
+                    <button class="v5c-p2p-option" @click="selectP2pCandidate('to', cand)">
+                      <span class="dot" :style="`background: ${cand.type ? layerColor(cand.type) : 'var(--text-3)'}`"></span>
+                      <span class="body">
+                        <span class="name" x-text="cand.name"></span>
+                        <span class="sub" x-text="cand.subtitle"></span>
+                      </span>
+                      <template x-if="cand.kind === 'basecamp'">
+                        <span class="tag">basecamp</span>
+                      </template>
+                    </button>
+                  </template>
+                  <div x-show="p2pFiltered(p2p.toQuery).length === 0" class="v5c-p2p-empty">
+                    Sin coincidencias en este viaje.
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <template x-if="p2p.from && p2p.to">
+            <a class="btn v5c-p2p-open" :href="p2pGmapsUrl()" target="_blank" rel="noopener">Abrir en Maps →</a>
+          </template>
+        </div>
+
+        <!-- Frequent routes from the itinerary -->
+        <template x-if="p2pFrequentRoutes().length > 0">
+          <div class="v5c-p2p-frequent">
+            <div class="lbl">Rutas frecuentes</div>
+            <div class="chips">
+              <template x-for="(r, ri) in p2pFrequentRoutes()" :key="ri">
+                <button class="v5c-p2p-chip" @click="applyFrequentRoute(r)">
+                  <span x-text="r.fromName"></span>
+                  <span class="arr">→</span>
+                  <span x-text="r.toName"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- Route summary card -->
+        <template x-if="p2p.route">
+          <div class="v5c-p2p-summary">
+            <div class="duration" x-text="formatDuration(p2p.route.duration_min)"></div>
+            <div class="separator">·</div>
+            <div class="distance" x-text="p2p.route.distance_km + ' km'"></div>
+            <div class="hint">en coche · ruta más rápida según Google</div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Map for P2P mode (shares same #trip-map element) -->
+      <div class="v5c-p2p-map-wrap">
+        <div class="v5c-map-frame v5c-p2p-frame">
+          <div id="trip-map"></div>
+          <template x-if="!p2p.from || !p2p.to">
+            <div class="v5c-p2p-empty-state">
+              <div class="hint">Elegí <strong>Desde</strong> y <strong>Hasta</strong> para ver la ruta.</div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
 </section>
 
 <!-- ====== RESERVAS / ACTIONS ====== -->
@@ -8085,7 +8789,7 @@ textarea:focus-visible {
     </button>
     <button class="v5-bottomnav-item" :class="{active: tab === 'map'}" @click="tab = 'map'; $nextTick(() => initMap())">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>
-      <span>Mapa</span>
+      <span>Ruta</span>
     </button>
     <button class="v5-bottomnav-item" :class="{active: tab === 'providers'}" @click="tab = 'providers'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21V12h6v9"/></svg>
@@ -12213,7 +12917,8 @@ function app() {
     _mapLayers: {},
     mapLayers: { villa: true, restaurant: true, winery: true, truffle: true, activity: true, transfer: true, service: true },
     // New Google-Maps-based map state (Etapa final)
-    mapMode: 'day',          // 'overview' | 'day'
+    mapMode: 'day',          // 'overview' | 'day' — kept for legacy mobile-more compat, but day-only effectively
+    mapView: 'day',          // 'day' | 'p2p' — primary toggle in the refactored Mapa tab
     mapSelectedDay: 0,       // index into data.itinerary
     mapBottomSheet: null,    // populated on marker click
     _gmap: null,             // google.maps.Map instance
@@ -12221,6 +12926,20 @@ function app() {
     _gmapPolylines: [],      // google.maps.Polyline[]
     _gmapChips: [],          // OverlayView[] for travel time chips
     _routeLayers: [],        // legacy (kept to avoid breakage; unused)
+    _directionsService: null,  // lazy-loaded google.maps.DirectionsService
+    _directionsCache: {},      // { 'lat,lng→lat,lng': { duration_min, distance_km, encoded_polyline, fetched_at } }
+    _directionsFetching: {},   // dedup in-flight requests
+    _dirRefreshTick: 0,        // bump to trigger Alpine re-render of cached chips
+    // Point-to-point mode
+    p2p: {
+      from: null,            // { kind: 'basecamp'|'provider'|'custom', id?, name, lat, lng }
+      to: null,
+      fromQuery: '',
+      toQuery: '',
+      fromOpen: false,       // autocomplete dropdown open
+      toOpen: false,
+      route: null            // { duration_min, distance_km, encoded_polyline }
+    },
 
     // initMap is the public entry — called from nav buttons via $nextTick
     // Internally it delegates to the async _initGoogleMap.
@@ -12265,19 +12984,23 @@ function app() {
           gestureHandling: 'cooperative',
           styles: this._mapStyles()
         });
-        // Restore last viewed mode/day from localStorage (default: day I)
+        // Load persisted directions cache for this trip
+        this._loadDirectionsCache();
+        // Restore last viewed mode/day from localStorage (default: día 0)
         try {
-          const savedMode = localStorage.getItem(this._storeKey('map-mode'));
+          const savedView = localStorage.getItem(this._storeKey('map-view'));
           const savedDay = parseInt(localStorage.getItem(this._storeKey('map-day')) || '0', 10);
-          if (savedMode === 'overview') {
-            this.mapMode = 'overview';
-          } else {
-            this.mapMode = 'day';
-            this.mapSelectedDay = Number.isFinite(savedDay) && savedDay >= 0 && savedDay < this.data.itinerary.length ? savedDay : 0;
-          }
+          this.mapView = (savedView === 'p2p') ? 'p2p' : 'day';
+          this.mapMode = 'day';
+          this.mapSelectedDay = Number.isFinite(savedDay) && savedDay >= 0 && savedDay < this.data.itinerary.length ? savedDay : 0;
         } catch(e) {
           this.mapSelectedDay = 0;
+          this.mapView = 'day';
           this.mapMode = 'day';
+        }
+        // Pre-fetch directions for the active day in background
+        if (this.mapView === 'day') {
+          this._refreshDayDirections(this.mapSelectedDay);
         }
         this._renderMapForCurrentMode();
       } catch (e) {
@@ -12306,14 +13029,42 @@ function app() {
     },
 
     setMapMode(mode, dayIdx) {
-      this.mapMode = mode;
-      if (mode === 'day' && Number.isFinite(dayIdx)) this.mapSelectedDay = dayIdx;
+      // Legacy entry — overview mode no longer exists, so map all calls to 'day'.
+      this.mapMode = 'day';
+      this.mapView = 'day';
+      if (Number.isFinite(dayIdx)) this.mapSelectedDay = dayIdx;
       this.mapBottomSheet = null;
-      // Persist so reopening the tab returns to the same day
       try {
-        localStorage.setItem(this._storeKey('map-mode'), mode);
-        if (mode === 'day') localStorage.setItem(this._storeKey('map-day'), String(this.mapSelectedDay));
+        localStorage.setItem(this._storeKey('map-mode'), 'day');
+        localStorage.setItem(this._storeKey('map-day'), String(this.mapSelectedDay));
       } catch(e) {}
+      if (this._gmap) this._renderMapForCurrentMode();
+    },
+    // Switch between Día (default) and Punto a punto modes
+    setMapView(view) {
+      this.mapView = view;
+      this.mapBottomSheet = null;
+      try { localStorage.setItem(this._storeKey('map-view'), view); } catch(e) {}
+      // Each mode renders its own <div id="trip-map"> inside an x-if template,
+      // so when we switch view the DOM element our _gmap is bound to gets
+      // removed. Force re-init on the freshly-rendered element.
+      this._gmap = null;
+      this._gmapMarkers = [];
+      this._gmapPolylines = [];
+      this._gmapChips = [];
+      this.$nextTick(() => this.initMap());
+    },
+    // Select a day in Día mode (chip click)
+    setMapDay(dayIdx) {
+      this.mapSelectedDay = dayIdx;
+      this.mapView = 'day';
+      this.mapBottomSheet = null;
+      try {
+        localStorage.setItem(this._storeKey('map-day'), String(dayIdx));
+        localStorage.setItem(this._storeKey('map-view'), 'day');
+      } catch(e) {}
+      // Fire async pre-fetch of all segment directions for this day
+      this._refreshDayDirections(dayIdx);
       if (this._gmap) this._renderMapForCurrentMode();
     },
 
@@ -12333,18 +13084,45 @@ function app() {
     _renderMapForCurrentMode() {
       if (!this._gmap) return;
       this._clearGoogleMapOverlays();
-      if (this.mapMode === 'day') {
-        this._renderMapForDay(this.mapSelectedDay);
+      if (this.mapView === 'p2p') {
+        this._renderP2pRoute();
       } else {
-        this._renderMapOverview();
+        this._renderMapForDay(this.mapSelectedDay);
       }
     },
 
-    // === DAY MODE: numbered markers for slots, polyline, time chips ===
+    // Decode a polyline string from Google's encoded format.
+    // Standard algorithm — extracted from Google's published reference.
+    _decodePolyline(encoded) {
+      if (!encoded) return [];
+      const points = [];
+      let index = 0, lat = 0, lng = 0;
+      while (index < encoded.length) {
+        let b, shift = 0, result = 0;
+        do {
+          b = encoded.charCodeAt(index++) - 63;
+          result |= (b & 0x1f) << shift;
+          shift += 5;
+        } while (b >= 0x20);
+        const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lat += dlat;
+        shift = 0; result = 0;
+        do {
+          b = encoded.charCodeAt(index++) - 63;
+          result |= (b & 0x1f) << shift;
+          shift += 5;
+        } while (b >= 0x20);
+        const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lng += dlng;
+        points.push({ lat: lat / 1e5, lng: lng / 1e5 });
+      }
+      return points;
+    },
+
+    // === DAY MODE: numbered pins by order, real polylines from Directions API ===
     _renderMapForDay(dayIdx) {
       const day = this.data.itinerary[dayIdx];
       if (!day) return;
-      const color = this.dayRouteColor(dayIdx);
       // Build positioned slots in order, skipping those without coords
       const positioned = [];
       day.slots.forEach((slot, sIdx) => {
@@ -12358,12 +13136,12 @@ function app() {
         if (basecamp) this._gmap.setCenter({ lat: basecamp.latitude, lng: basecamp.longitude });
         return;
       }
-      // Markers
+      // Markers — pin color comes from the provider's type, not from day color
       const bounds = new google.maps.LatLngBounds();
       positioned.forEach((pos, n) => {
-        // Derive provider type for the type-icon badge on the pin
-        const provider = pos.slot.providerId ? this.data.providers.find(p => p.id === pos.slot.providerId) : null;
+        const provider = this.slotProvider(pos.slot);
         const typeKey = provider?.type || null;
+        const color = typeKey ? this.layerColor(typeKey) : '#6b6258';
         const marker = new google.maps.Marker({
           position: { lat: pos.lat, lng: pos.lng },
           map: this._gmap,
@@ -12379,33 +13157,72 @@ function app() {
         this._gmapMarkers.push(marker);
         bounds.extend({ lat: pos.lat, lng: pos.lng });
       });
-      // Polyline connecting them in order
+      // Render each segment with the REAL driving polyline from Directions API.
+      // We render the cached one immediately if present; for un-cached pairs we
+      // fire the fetch and re-render once data arrives.
       if (positioned.length >= 2) {
-        const path = positioned.map(p => ({ lat: p.lat, lng: p.lng }));
-        const polyline = new google.maps.Polyline({
-          path, map: this._gmap, geodesic: false,
-          strokeColor: color, strokeOpacity: 0.85, strokeWeight: 4,
-          icons: [{
-            icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 3, strokeColor: color, fillColor: color, fillOpacity: 1 },
-            offset: '50%'
-          }]
-        });
-        this._gmapPolylines.push(polyline);
-        // Travel time chip at each segment midpoint
+        const routeColor = 'var(--accent, #b8512e)';
+        const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#b8512e';
+        const segmentsToFetch = [];
         for (let i = 0; i < positioned.length - 1; i++) {
           const a = positioned[i], b = positioned[i + 1];
-          const t = this.travelBetween(a.slot, b.slot);
-          if (!t) continue;
-          const midLat = (a.lat + b.lat) / 2;
-          const midLng = (a.lng + b.lng) / 2;
-          const label = t.same_location ? '🚶 mismo lugar' : `≈ ${t.duration_min}′ · ${t.distance_km}km`;
-          const klass = this.travelChipClass(t.duration_min);
-          const chip = new TravelChipOverlay({ lat: midLat, lng: midLng }, label, klass, { lat: a.lat, lon: a.lng }, { lat: b.lat, lon: b.lng });
-          chip.setMap(this._gmap);
-          this._gmapChips.push(chip);
+          const aLatLon = { lat: a.lat, lon: a.lng };
+          const bLatLon = { lat: b.lat, lon: b.lng };
+          const cached = this._cachedDirections(aLatLon, bLatLon);
+          if (cached) {
+            // Render real polyline from encoded geometry
+            const decoded = this._decodePolyline(cached.encoded_polyline);
+            const polyline = new google.maps.Polyline({
+              path: decoded.length ? decoded : [{ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng }],
+              map: this._gmap,
+              geodesic: false,
+              strokeColor: accentColor,
+              strokeOpacity: 0.85,
+              strokeWeight: 4
+            });
+            this._gmapPolylines.push(polyline);
+            // Fold the polyline's bounds in so the map fit covers the actual route
+            decoded.forEach(pt => bounds.extend(pt));
+            // Travel chip at midpoint
+            const midIdx = Math.floor(decoded.length / 2);
+            const mid = decoded[midIdx] || { lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 };
+            const label = `${cached.duration_min}′ · ${cached.distance_km}km`;
+            const chip = new TravelChipOverlay({ lat: mid.lat, lng: mid.lng }, label, this.travelChipClass(cached.duration_min), aLatLon, bLatLon);
+            chip.setMap(this._gmap);
+            this._gmapChips.push(chip);
+          } else {
+            // No cached real route yet — draw a thin estimate line for now and queue a fetch
+            const polyline = new google.maps.Polyline({
+              path: [{ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng }],
+              map: this._gmap,
+              geodesic: false,
+              strokeColor: accentColor,
+              strokeOpacity: 0.35,
+              strokeWeight: 2,
+              icons: [{
+                icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, strokeWeight: 2, scale: 2 },
+                offset: '0', repeat: '8px'
+              }]
+            });
+            this._gmapPolylines.push(polyline);
+            segmentsToFetch.push({ a: aLatLon, b: bLatLon });
+          }
+        }
+        // Fetch missing segments async, then re-render
+        if (segmentsToFetch.length > 0) {
+          (async () => {
+            for (const seg of segmentsToFetch) {
+              await this._fetchDirections(seg.a, seg.b);
+            }
+            // After all fetched, re-render to show real polylines
+            if (this._gmap && this.mapView === 'day' && this.mapSelectedDay === dayIdx) {
+              this._clearGoogleMapOverlays();
+              this._renderMapForDay(dayIdx);
+            }
+          })();
         }
       }
-      // Fit bounds with padding so markers are visible
+      // Fit bounds with padding so markers + polylines are visible
       if (positioned.length === 1) {
         this._gmap.setCenter({ lat: positioned[0].lat, lng: positioned[0].lng });
         this._gmap.setZoom(13);
@@ -12414,92 +13231,67 @@ function app() {
       }
     },
 
-    // === OVERVIEW MODE: all providers as type-colored pins ===
-    _renderMapOverview() {
+    // === POINT-TO-POINT MODE: render the from/to pins + the directions polyline ===
+    _renderP2pRoute() {
+      const { from, to, route } = this.p2p;
+      if (!from || !to) return;
       const bounds = new google.maps.LatLngBounds();
-      const basecamp = this.findBasecampProvider();
-      const basecampColor = this.layerColor(this.data.meta?.basecamp?.type || 'villa');
-      const overviewMarkers = [];  // for clusterer
-      if (basecamp) {
-        const marker = new google.maps.Marker({
-          position: { lat: basecamp.latitude, lng: basecamp.longitude },
-          icon: { url: this._svgStarPin(basecampColor), scaledSize: new google.maps.Size(44, 56), anchor: new google.maps.Point(22, 54) },
-          title: basecamp.name,
-          zIndex: 200
-        });
-        marker.addListener('click', () => this.openProviderDrawer(basecamp.id));
-        marker.setMap(this._gmap);
-        this._gmapMarkers.push(marker);
-        bounds.extend({ lat: basecamp.latitude, lng: basecamp.longitude });
-      }
-      // Other providers respecting layer toggles — collected for the clusterer
-      this.data.providers.forEach(p => {
-        if (p === basecamp) return;
-        const c = this.providerCoords(p);
-        if (!c) return;
-        if (this.mapLayers[p.type] === false) return;
-        const color = this.layerColor(p.type);
-        const letter = (this.providerTypes.find(t => t.key === p.type) || { label: p.type }).label.charAt(0);
-        const marker = new google.maps.Marker({
-          position: { lat: c.lat, lng: c.lon },
-          icon: { url: this._svgLetterPin(letter, color), scaledSize: new google.maps.Size(34, 44), anchor: new google.maps.Point(17, 42) },
-          title: p.name
-        });
-        marker.addListener('click', () => this.openProviderDrawer(p.id));
-        this._gmapMarkers.push(marker);
-        overviewMarkers.push(marker);
-        bounds.extend({ lat: c.lat, lng: c.lon });
+      const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#b8512e';
+      // From pin
+      const fromColor = from.type ? this.layerColor(from.type) : accentColor;
+      const fromMarker = new google.maps.Marker({
+        position: { lat: from.lat, lng: from.lng },
+        map: this._gmap,
+        icon: { url: this._svgNumberedPin(1, fromColor, from.type), scaledSize: new google.maps.Size(40, 52), anchor: new google.maps.Point(20, 50) },
+        title: from.name,
+        zIndex: 100
       });
-      // Clusterer for the non-villa markers (villa stays standalone)
-      if (overviewMarkers.length > 0 && window.markerClusterer?.MarkerClusterer) {
-        const clusterer = new markerClusterer.MarkerClusterer({
-          map: this._gmap,
-          markers: overviewMarkers,
-          renderer: {
-            render: ({ count, position }) => {
-              const div = document.createElement('div');
-              div.className = 'gm-cluster';
-              div.textContent = String(count);
-              return new google.maps.marker.AdvancedMarkerElement
-                ? new google.maps.marker.AdvancedMarkerElement({ position, content: div })
-                : new google.maps.Marker({
-                    position,
-                    icon: { url: this._svgClusterPin(count), scaledSize: new google.maps.Size(40, 40), anchor: new google.maps.Point(20, 20) },
-                    zIndex: 1000 + count
-                  });
-            }
-          }
-        });
-        this._gmapCluster = clusterer;
-      } else {
-        // Fallback: drop markers directly on map if clusterer isn't loaded yet
-        overviewMarkers.forEach(m => m.setMap(this._gmap));
-      }
-      // Polylines per day with day color (dashed)
-      this.data.itinerary.forEach((day, dayIdx) => {
-        const color = this.dayRouteColor(dayIdx);
-        const positioned = day.slots
-          .map(s => ({ s, c: this.slotCoords(s) }))
-          .filter(x => x.c)
-          .map(x => ({ lat: x.c.lat, lng: x.c.lon }));
-        if (positioned.length < 2) return;
-        // Dashed line via icons pattern
-        const lineSymbol = {
-          path: 'M 0,-1 0,1',
-          strokeOpacity: 1,
-          strokeWeight: 2.5,
-          scale: 3
-        };
-        const poly = new google.maps.Polyline({
-          path: positioned,
-          map: this._gmap,
-          strokeOpacity: 0,
-          strokeColor: color,
-          icons: [{ icon: lineSymbol, offset: '0', repeat: '14px' }]
-        });
-        this._gmapPolylines.push(poly);
+      this._gmapMarkers.push(fromMarker);
+      bounds.extend({ lat: from.lat, lng: from.lng });
+      // To pin
+      const toColor = to.type ? this.layerColor(to.type) : accentColor;
+      const toMarker = new google.maps.Marker({
+        position: { lat: to.lat, lng: to.lng },
+        map: this._gmap,
+        icon: { url: this._svgNumberedPin(2, toColor, to.type), scaledSize: new google.maps.Size(40, 52), anchor: new google.maps.Point(20, 50) },
+        title: to.name,
+        zIndex: 101
       });
-      if (!bounds.isEmpty()) this._gmap.fitBounds(bounds, { top: 60, right: 60, bottom: 60, left: 60 });
+      this._gmapMarkers.push(toMarker);
+      bounds.extend({ lat: to.lat, lng: to.lng });
+      // Polyline if we have the route
+      if (route?.encoded_polyline) {
+        const decoded = this._decodePolyline(route.encoded_polyline);
+        const polyline = new google.maps.Polyline({
+          path: decoded,
+          map: this._gmap,
+          geodesic: false,
+          strokeColor: accentColor,
+          strokeOpacity: 0.85,
+          strokeWeight: 4
+        });
+        this._gmapPolylines.push(polyline);
+        decoded.forEach(pt => bounds.extend(pt));
+        // Chip at midpoint
+        const mid = decoded[Math.floor(decoded.length / 2)];
+        if (mid) {
+          const a = { lat: from.lat, lon: from.lng };
+          const b = { lat: to.lat, lon: to.lng };
+          const label = `${route.duration_min}′ · ${route.distance_km}km`;
+          const chip = new TravelChipOverlay({ lat: mid.lat, lng: mid.lng }, label, this.travelChipClass(route.duration_min), a, b);
+          chip.setMap(this._gmap);
+          this._gmapChips.push(chip);
+        }
+      }
+      this._gmap.fitBounds(bounds, { top: 60, right: 60, bottom: 80, left: 60 });
+    },
+
+    // === OVERVIEW MODE: REMOVED in Turno 11 ===
+    // The all-days overview was dropped — every research finding agreed that
+    // showing multiple days simultaneously degrades planning. Keep the function
+    // name reachable so any straggler call doesn't crash; it just no-ops.
+    _renderMapOverview() {
+      // intentional no-op — overview mode dropped in Turno 11
     },
 
     _svgClusterPin(count) {
@@ -12780,8 +13572,20 @@ function app() {
              !(lat === 0 && lon === 0);
     },
 
+    // Unified: returns the provider associated with a slot, whether by explicit
+    // providerId OR by fuzzy title match. Used by the sidebar for color + name.
+    slotProvider(slot) {
+      if (!slot) return null;
+      if (slot.providerId) {
+        const p = this.data.providers.find(x => x.id === slot.providerId);
+        if (p) return p;
+      }
+      if (slot.title) return this._slotProviderByTitle(slot.title);
+      return null;
+    },
+
     // === SLOT COORDS + TRAVEL TIMES ===
-    // Resolve coords for a slot via: explicit lat/lon → mapUrl → linked provider
+    // Resolve coords for a slot via: explicit lat/lon → mapUrl → linked provider → fuzzy title match
     slotCoords(slot) {
       if (!slot) return null;
       if (slot.latitude && slot.longitude && this._validCoords(slot.latitude, slot.longitude)) {
@@ -12795,7 +13599,44 @@ function app() {
         const p = this.data.providers.find(x => x.id === slot.providerId);
         if (p) return this.providerCoords(p);
       }
+      // Fallback: fuzzy match slot.title against provider names.
+      // Many legacy slots have titles like "La Madernassa" matching providers
+      // exactly, but slot.providerId was never populated. This bridges that gap
+      // without requiring a manual relinking pass.
+      if (slot.title) {
+        const matched = this._slotProviderByTitle(slot.title);
+        if (matched) return this.providerCoords(matched);
+      }
       return null;
+    },
+    // Cached fuzzy resolver: slot.title → provider. Memoized per call by title
+    // since this gets called in render loops (per slot, per render).
+    _slotProviderByTitle(title) {
+      if (!title) return null;
+      this._slotProviderTitleCache = this._slotProviderTitleCache || {};
+      const key = title.toLowerCase().trim();
+      if (key in this._slotProviderTitleCache) return this._slotProviderTitleCache[key];
+      const providers = this.data.providers || [];
+      // 1. Exact name match (case-insensitive, trimmed)
+      let p = providers.find(pp => pp.name && pp.name.toLowerCase().trim() === key);
+      // 2. Contains: slot title contains the full provider name (e.g. "Cena · La Madernassa")
+      if (!p) {
+        p = providers.find(pp => {
+          if (!pp.name) return false;
+          const pn = pp.name.toLowerCase().trim();
+          return pn.length > 3 && key.includes(pn);
+        });
+      }
+      // 3. Reverse contains: provider name contains the full slot title
+      if (!p) {
+        p = providers.find(pp => {
+          if (!pp.name) return false;
+          const pn = pp.name.toLowerCase().trim();
+          return key.length > 3 && pn.includes(key);
+        });
+      }
+      this._slotProviderTitleCache[key] = p || null;
+      return p || null;
     },
     // Cache key for any future OSRM enablement
     _travelKey(from, to) {
@@ -12808,13 +13649,296 @@ function app() {
     // The user can click the chip to verify exact time in Google Maps.
     // If a routing API with CORS is configured in the future, populate
     // this.data.travelCache[key] and it will be preferred over the estimate.
+    // === GOOGLE DIRECTIONS API ===
+    // Real driving times/distances/polylines via google.maps.DirectionsService.
+    // Cache is in-memory (this._directionsCache) and also persisted to localStorage
+    // scoped per trip, so revisits don't refetch. The cache key uses 5-decimal
+    // rounded coords (~1m precision, plenty for routing).
+    _dirKey(a, b) {
+      const r = n => Math.round(n * 1e5) / 1e5;
+      return `${r(a.lat)},${r(a.lon)}→${r(b.lat)},${r(b.lon)}`;
+    },
+    // Load directions cache from localStorage on first access (trip-scoped key).
+    _loadDirectionsCache() {
+      try {
+        const raw = localStorage.getItem(this._storeKey('directions'));
+        if (raw) this._directionsCache = JSON.parse(raw);
+      } catch(e) { this._directionsCache = {}; }
+    },
+    _saveDirectionsCache() {
+      try { localStorage.setItem(this._storeKey('directions'), JSON.stringify(this._directionsCache)); } catch(e) {}
+    },
+    // Async fetch of real driving directions. Returns cached if available, else
+    // requests from DirectionsService and stores result.
+    async _fetchDirections(a, b) {
+      const key = this._dirKey(a, b);
+      if (this._directionsCache[key]) return this._directionsCache[key];
+      // Dedup in-flight to avoid duplicate requests when re-rendering
+      if (this._directionsFetching[key]) return this._directionsFetching[key];
+      const p = (async () => {
+        try {
+          if (!this._directionsService) {
+            if (!window.google?.maps) return null;
+            const { DirectionsService } = await google.maps.importLibrary('routes');
+            this._directionsService = new DirectionsService();
+          }
+          const result = await this._directionsService.route({
+            origin: { lat: a.lat, lng: a.lon },
+            destination: { lat: b.lat, lng: b.lon },
+            travelMode: google.maps.TravelMode.DRIVING
+          });
+          const leg = result.routes[0]?.legs[0];
+          if (!leg) return null;
+          const data = {
+            duration_min: Math.round(leg.duration.value / 60),
+            distance_km: Math.round(leg.distance.value / 100) / 10,  // 1 decimal
+            encoded_polyline: result.routes[0].overview_polyline,
+            fetched_at: Date.now()
+          };
+          this._directionsCache[key] = data;
+          this._saveDirectionsCache();
+          this._dirRefreshTick++;  // trigger any reactive consumers
+          return data;
+        } catch(e) {
+          console.warn('Directions fetch failed:', e?.message || e);
+          return null;
+        } finally {
+          delete this._directionsFetching[key];
+        }
+      })();
+      this._directionsFetching[key] = p;
+      return p;
+    },
+    // Synchronous lookup — returns the cached real directions if present, else null.
+    // Falls through to the haversine estimate via travelBetween if null.
+    _cachedDirections(a, b) {
+      if (!a || !b) return null;
+      return this._directionsCache[this._dirKey(a, b)] || null;
+    },
+    // Pre-fetch all segments of a given day (best-effort, fires async).
+    async _refreshDayDirections(dayIdx) {
+      const day = this.data.itinerary[dayIdx];
+      if (!day) return;
+      const positioned = [];
+      day.slots.forEach(slot => {
+        const c = this.slotCoords(slot);
+        if (c) positioned.push({ slot, c });
+      });
+      for (let i = 0; i < positioned.length - 1; i++) {
+        const a = positioned[i].c, b = positioned[i + 1].c;
+        // Fire-and-await sequentially to be gentle on API
+        await this._fetchDirections(a, b);
+      }
+    },
+    // Sum the day's segment durations (uses real directions if cached, else estimate).
+    dayTotalDriving(dayIdx) {
+      // ref _dirRefreshTick to make this reactive when cache updates
+      const _ = this._dirRefreshTick;
+      const day = this.data.itinerary[dayIdx];
+      if (!day) return { min: 0, km: 0 };
+      const positioned = [];
+      day.slots.forEach(slot => {
+        const c = this.slotCoords(slot);
+        if (c) positioned.push(c);
+      });
+      let totalMin = 0, totalKm = 0;
+      for (let i = 0; i < positioned.length - 1; i++) {
+        const cached = this._cachedDirections(positioned[i], positioned[i + 1]);
+        if (cached) {
+          totalMin += cached.duration_min;
+          totalKm += cached.distance_km;
+        } else {
+          const est = this._estimateTravel(positioned[i], positioned[i + 1]);
+          if (est && !est.same_location) {
+            totalMin += est.duration_min;
+            totalKm += est.distance_km;
+          }
+        }
+      }
+      return { min: totalMin, km: Math.round(totalKm * 10) / 10 };
+    },
+    // Format duration as "2h 45m" or "45m"
+    formatDuration(min) {
+      if (!min || min < 1) return '—';
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      if (h === 0) return `${m}m`;
+      if (m === 0) return `${h}h`;
+      return `${h}h ${m}m`;
+    },
+    // Count of slots on a given day that have coords (so we can show "X paradas")
+    dayPositionedSlotCount(dayIdx) {
+      const day = this.data.itinerary[dayIdx];
+      if (!day) return 0;
+      return day.slots.filter(s => this.slotCoords(s)).length;
+    },
+    // Day-route Google Maps URL with all positioned slots as waypoints
+    dayFullRouteUrl(dayIdx) {
+      const day = this.data.itinerary[dayIdx];
+      if (!day) return '#';
+      const coords = day.slots
+        .map(s => this.slotCoords(s))
+        .filter(c => c)
+        .map(c => `${c.lat},${c.lon}`);
+      if (coords.length < 2) return '#';
+      const origin = coords[0];
+      const destination = coords[coords.length - 1];
+      const waypoints = coords.slice(1, -1).join('|');
+      let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
+      if (waypoints) url += `&waypoints=${waypoints}`;
+      return url;
+    },
+
+    // === POINT-TO-POINT MODE ===
+    // Candidates for the From/To autocompletes: basecamp + all positioned providers.
+    p2pCandidates() {
+      const out = [];
+      // Basecamp: try to find it among providers (matches villa-type or basecamp.name)
+      const bcType = this.data.meta?.basecamp?.type || 'villa';
+      const bcName = this.data.meta?.basecamp?.name || '';
+      const basecampProvider = this.data.providers.find(p =>
+        this.providerCoords(p) &&
+        (p.type === bcType || (bcName && p.name?.toLowerCase().includes(bcName.toLowerCase().slice(0, 6))))
+      );
+      if (basecampProvider) {
+        out.push({
+          kind: 'basecamp',
+          id: basecampProvider.id,
+          name: this.data.meta?.basecamp?.label || 'Basecamp',
+          subtitle: basecampProvider.name,
+          lat: basecampProvider.latitude,
+          lng: basecampProvider.longitude,
+          type: basecampProvider.type
+        });
+      } else if (this.data.meta?.basecamp?.coords?.lat) {
+        out.push({
+          kind: 'basecamp',
+          name: this.data.meta?.basecamp?.label || 'Basecamp',
+          subtitle: this.data.meta?.basecamp?.name || '',
+          lat: this.data.meta.basecamp.coords.lat,
+          lng: this.data.meta.basecamp.coords.lon,
+          type: bcType
+        });
+      }
+      // All providers with coords (excluding the basecamp if already added)
+      this.data.providers.forEach(p => {
+        const c = this.providerCoords(p);
+        if (!c) return;
+        if (basecampProvider && p.id === basecampProvider.id) return;
+        out.push({
+          kind: 'provider',
+          id: p.id,
+          name: p.name,
+          subtitle: p.location || p.type,
+          lat: c.lat,
+          lng: c.lon,
+          type: p.type
+        });
+      });
+      return out;
+    },
+    p2pFiltered(query) {
+      const q = (query || '').trim().toLowerCase();
+      const candidates = this.p2pCandidates();
+      if (!q) return candidates.slice(0, 12);
+      return candidates
+        .filter(c => c.name.toLowerCase().includes(q) || (c.subtitle || '').toLowerCase().includes(q))
+        .slice(0, 12);
+    },
+    // Frequently-used pairs in the itinerary (most-common adjacent slot pairs)
+    // Returns up to 6 chip-friendly objects { fromName, toName, from, to }.
+    p2pFrequentRoutes() {
+      const pairs = new Map();
+      this.data.itinerary.forEach(day => {
+        for (let i = 0; i < day.slots.length - 1; i++) {
+          const a = day.slots[i], b = day.slots[i + 1];
+          const ca = this.slotCoords(a), cb = this.slotCoords(b);
+          if (!ca || !cb) continue;
+          const aProvider = a.providerId ? this.data.providers.find(p => p.id === a.providerId) : null;
+          const bProvider = b.providerId ? this.data.providers.find(p => p.id === b.providerId) : null;
+          const aName = aProvider?.name || a.title || 'Punto A';
+          const bName = bProvider?.name || b.title || 'Punto B';
+          const key = `${aName}|${bName}`;
+          if (pairs.has(key)) {
+            pairs.get(key).count++;
+          } else {
+            pairs.set(key, {
+              fromName: aName,
+              toName: bName,
+              from: { kind: aProvider ? 'provider' : 'custom', id: aProvider?.id, name: aName, lat: ca.lat, lng: ca.lon, type: aProvider?.type },
+              to: { kind: bProvider ? 'provider' : 'custom', id: bProvider?.id, name: bName, lat: cb.lat, lng: cb.lon, type: bProvider?.type },
+              count: 1
+            });
+          }
+        }
+      });
+      return Array.from(pairs.values()).sort((a, b) => b.count - a.count).slice(0, 6);
+    },
+    selectP2pCandidate(side, candidate) {
+      this.p2p[side] = candidate;
+      this.p2p[side + 'Query'] = candidate.name;
+      this.p2p[side + 'Open'] = false;
+      this.computeP2pRoute();
+    },
+    clearP2pCandidate(side) {
+      this.p2p[side] = null;
+      this.p2p[side + 'Query'] = '';
+      this.p2p.route = null;
+      // Clear map overlays if we have a partial selection
+      if (this._gmap) this._clearGoogleMapOverlays();
+    },
+    applyFrequentRoute(route) {
+      this.p2p.from = route.from;
+      this.p2p.to = route.to;
+      this.p2p.fromQuery = route.fromName;
+      this.p2p.toQuery = route.toName;
+      this.p2p.fromOpen = false;
+      this.p2p.toOpen = false;
+      this.computeP2pRoute();
+    },
+    swapP2p() {
+      const { from, to, fromQuery, toQuery } = this.p2p;
+      this.p2p.from = to;
+      this.p2p.to = from;
+      this.p2p.fromQuery = toQuery;
+      this.p2p.toQuery = fromQuery;
+      this.computeP2pRoute();
+    },
+    async computeP2pRoute() {
+      const { from, to } = this.p2p;
+      if (!from || !to) { this.p2p.route = null; return; }
+      const a = { lat: from.lat, lon: from.lng };
+      const b = { lat: to.lat, lon: to.lng };
+      const cached = this._cachedDirections(a, b) || await this._fetchDirections(a, b);
+      this.p2p.route = cached;
+      if (this._gmap) this._renderP2pRoute();
+    },
+    p2pGmapsUrl() {
+      const { from, to } = this.p2p;
+      if (!from || !to) return '#';
+      return `https://www.google.com/maps/dir/?api=1&origin=${from.lat},${from.lng}&destination=${to.lat},${to.lng}&travelmode=driving`;
+    },
+
     travelBetween(slotA, slotB) {
+      // ref tick so this stays reactive when cache updates
+      const _ = this._dirRefreshTick;
       const a = this.slotCoords(slotA);
       const b = this.slotCoords(slotB);
       if (!a || !b) return null;
-      const cache = this.data.travelCache || {};
-      const cached = cache[this._travelKey(a, b)];
-      if (cached) return cached;
+      // Prefer real Google Directions if cached
+      const cached = this._cachedDirections(a, b);
+      if (cached) {
+        return {
+          duration_min: cached.duration_min,
+          distance_km: cached.distance_km,
+          estimated: false
+        };
+      }
+      // Legacy in-data cache (kept for compat)
+      const legacyCache = this.data.travelCache || {};
+      const legacy = legacyCache[this._travelKey(a, b)];
+      if (legacy) return legacy;
+      // Fall back to haversine estimate
       return this._estimateTravel(a, b);
     },
     _estimateTravel(a, b) {
