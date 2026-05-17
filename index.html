@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f5efe5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1a1310" media="(prefers-color-scheme: dark)">
-<title>BA × TWT · Piemonte Oct 2026 · Operaciones</title>
+<title>Blisniuk & Amanov · Operaciones</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -20,7 +20,8 @@
   // Apply persisted theme ASAP to avoid flash
   (function(){
     try {
-      var t = localStorage.getItem('piemonte-theme');
+      // Prefer new scoped key (bna:theme); fall back to legacy 'piemonte-theme' for backwards compat
+      var t = localStorage.getItem('bna:theme') || localStorage.getItem('piemonte-theme');
       if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
       else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         document.documentElement.setAttribute('data-theme', 'dark');
@@ -5223,7 +5224,887 @@ textarea:focus-visible {
   .v5c-res-title { font-size: 14px; }
   .v5c-snap-form { max-width: none; width: 100%; }
   .v5c-snap-head { flex-direction: column; align-items: stretch; }
+}/* ===== HOME VIEW ===== */
+.v5-home {
+  padding: 32px 32px 80px;
+  background: var(--surface-0);
+  min-height: calc(100vh - 64px);
 }
+.v5-home-inner { max-width: 1280px; margin: 0 auto; }
+.v5-home-head { margin-bottom: 48px; padding: 16px 0 32px; }
+.v5-home-eyebrow {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.v5-home-title {
+  font-family: 'Fraunces', serif;
+  font-size: 56px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  color: var(--text-1);
+}
+.v5-home-title em {
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 400;
+}
+.v5-home-sub {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--text-2);
+  margin-top: 12px;
+}
+.v5-home-group { margin-bottom: 40px; }
+.v5-home-group-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.v5-home-group-count {
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 10px;
+  color: var(--text-3);
+}
+.v5-home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+.v5-trip-card {
+  position: relative;
+  height: 240px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  background: var(--surface-1);
+}
+.v5-trip-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  border-color: var(--accent);
+}
+.v5-trip-card-bg {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--surface-2);
+  /* Fallback gradient — varies by status */
+}
+.v5-trip-card.status-active     .v5-trip-card-bg { background-image: linear-gradient(135deg, #3c6b3c 0%, #1f5a3a 100%); }
+.v5-trip-card.status-confirmed  .v5-trip-card-bg { background-image: linear-gradient(135deg, #b8893a 0%, #8b6914 100%); }
+.v5-trip-card.status-planning   .v5-trip-card-bg { background-image: linear-gradient(135deg, #3a5a8b 0%, #2c4565 100%); }
+.v5-trip-card.status-draft      .v5-trip-card-bg { background-image: linear-gradient(135deg, #6b6258 0%, #4a423a 100%); }
+.v5-trip-card.status-past       .v5-trip-card-bg { background-image: linear-gradient(135deg, #6e1a1f 0%, #4a1015 100%); opacity: 0.7; }
+.v5-trip-card.status-archived   .v5-trip-card-bg { background-image: linear-gradient(135deg, #5a6378 0%, #3d4453 100%); opacity: 0.6; }
+.v5-trip-card-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.65) 100%);
+}
+.v5-trip-card-body {
+  position: relative;
+  height: 100%;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  color: white;
+}
+.v5-trip-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: auto;
+}
+.v5-trip-card-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.25);
+}
+.v5-trip-card-pax {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.85);
+}
+.v5-trip-card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin-bottom: 4px;
+}
+.v5-trip-card-region {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 12px;
+}
+.v5-trip-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: rgba(255,255,255,0.92);
+}
+.v5-trip-card-countdown {
+  background: rgba(255,255,255,0.15);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.v5-trip-card-arrow {
+  position: absolute;
+  top: 16px; right: 18px;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.v5-trip-card:hover .v5-trip-card-arrow {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* New trip section */
+.v5-home-new {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+.v5-home-new-btn {
+  width: 100%;
+  padding: 24px 28px;
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.v5-home-new-btn:hover { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 4%, transparent); }
+.v5-home-new-btn span {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+}
+.v5-home-new-btn em {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.v5-home-newform {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 28px 28px 24px;
+}
+.v5-home-newform h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 22px; font-weight: 400;
+  letter-spacing: -0.015em;
+  color: var(--text-1);
+  margin-bottom: 4px;
+}
+.v5-home-newform h3 em { font-style: italic; color: var(--accent); }
+.v5-home-newform .hint {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 16px;
+}
+.v5-newform-fields {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.v5-newform-field.full { grid-column: 1 / -1; }
+.v5-newform-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.v5-newform-field > span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.v5-newform-field input {
+  padding: 10px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-1);
+  transition: border-color 0.12s ease;
+}
+.v5-newform-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-1);
+}
+.v5-newform-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .v5-home { padding: 16px 16px 64px; }
+  .v5-home-title { font-size: 36px; }
+  .v5-home-grid { grid-template-columns: 1fr; }
+  .v5-newform-fields { grid-template-columns: 1fr 1fr; }
+}
+/* ===== WIZARD (nuevo viaje rico) ===== */
+.v5-wizard {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+}
+.v5-wizard-head { margin-bottom: 24px; }
+.v5-wizard-head h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 28px; font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+  margin-bottom: 4px;
+}
+.v5-wizard-head h3 em { font-style: italic; color: var(--accent); }
+.v5-wizard-head .hint {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.v5-wizard-section {
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.v5-wizard-section:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+.v5-wizard-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+
+/* Category picker — visual cards */
+.v5-wizard-categories {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+.v5-wiz-cat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+}
+.v5-wiz-cat:hover { border-color: var(--accent); transform: translateY(-1px); }
+.v5-wiz-cat.active {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 6%, var(--surface-1));
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.v5-wiz-cat-icon {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+.v5-wiz-cat-label {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  color: var(--text-1);
+  letter-spacing: -0.005em;
+}
+.v5-wiz-cat-desc {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-3);
+  margin-top: 10px;
+}
+
+/* Select for currency */
+.v5-newform-field select {
+  padding: 10px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-1);
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+.v5-newform-field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-1);
+}
+
+/* Preview block */
+.v5-wizard-preview {
+  margin-top: 24px;
+  padding: 18px 20px;
+  background: var(--surface-0);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+.v5-wiz-preview-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+  border-top: 1px dashed var(--line);
+}
+.v5-wiz-preview-row:first-of-type { border-top: none; }
+.v5-wiz-preview-key {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.v5-wiz-preview-val {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.v5-wiz-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--c) 30%, transparent);
+  background: color-mix(in oklab, var(--c) 8%, transparent);
+  font-size: 12px;
+  color: var(--text-1);
+  font-family: 'Inter', sans-serif;
+}
+.v5-wiz-pill-glyph {
+  color: var(--c);
+  font-size: 14px;
+  line-height: 1;
+}
+.v5-wiz-color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in oklab, var(--line) 60%, transparent);
+}
+.v5-wiz-preview-text {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  color: var(--text-1);
+}
+.v5-wiz-preview-aux {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+@media (max-width: 720px) {
+  .v5-wizard { padding: 18px; }
+  .v5-wizard-categories { grid-template-columns: repeat(3, 1fr); }
+  .v5-wiz-preview-row { grid-template-columns: 1fr; gap: 4px; }
+}
+/* ===== TRIP CARD MENU (⋯) ===== */
+.v5-trip-card-menu {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 3;
+}
+.v5-trip-card-menu-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease;
+  backdrop-filter: blur(6px);
+}
+.v5-trip-card-menu-btn:hover { background: rgba(0,0,0,0.55); transform: scale(1.05); }
+.v5-trip-card-menu-pop {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  min-width: 180px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+.v5-trip-card-menu-pop button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 9px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-1);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.12s ease;
+}
+.v5-trip-card-menu-pop button:hover { background: var(--surface-2); color: var(--accent); }
+
+/* ===== MODAL (generic) ===== */
+.v5-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  z-index: 1001;
+}
+.v5-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.v5-modal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text-1);
+  letter-spacing: -0.015em;
+}
+.v5-modal-title em { font-style: italic; color: var(--accent); }
+.v5-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+.v5-modal-body .hint {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.55;
+}
+.v5-modal-body .hint strong { font-style: normal; color: var(--text-1); }
+.v5-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--line);
+}
+
+/* Clone options (checkboxes with labels) */
+.v5-clone-options {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.v5-clone-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.v5-clone-option:hover { border-color: var(--accent); }
+.v5-clone-option input[type="checkbox"] {
+  margin-top: 2px;
+  width: 16px; height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.v5-clone-option div { display: flex; flex-direction: column; gap: 2px; }
+.v5-clone-option strong {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+.v5-clone-option span {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--text-3);
+  line-height: 1.45;
+}
+
+/* Template picker list */
+.v5-template-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.v5-template-card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  transition: border-color 0.15s ease, transform 0.12s ease;
+}
+.v5-template-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.v5-template-card-body {
+  padding: 14px 16px;
+  cursor: pointer;
+  padding-right: 44px;
+}
+.v5-template-card-body h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
+}
+.v5-template-card-body p {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+.v5-template-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+.v5-template-delete {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.v5-template-delete:hover {
+  background: color-mix(in oklab, #6e1a1f 14%, transparent);
+  border-color: #6e1a1f;
+  color: #6e1a1f;
+}
+/* Day template action row (apply/save) */
+.v5b-day-template-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+}
+.v5b-day-tmpl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.v5b-day-tmpl-btn svg { width: 13px; height: 13px; }
+.v5b-day-tmpl-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 5%, transparent);
+}
+.v5b-day-tmpl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* ===== HOME NAV (link a biblioteca) ===== */
+.v5-home-nav {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+}
+.v5-home-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text-2);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.v5-home-nav-btn svg { width: 14px; height: 14px; }
+.v5-home-nav-btn:hover { border-color: var(--accent); color: var(--accent); background: color-mix(in oklab, var(--accent) 4%, var(--surface-2)); }
+
+/* ===== LIBRARY VIEW ===== */
+.v5-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 14px;
+}
+.v5-lib-card {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.15s ease, transform 0.12s ease;
+}
+.v5-lib-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.v5-lib-card-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.v5-lib-card-name {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-1);
+  letter-spacing: -0.012em;
+  line-height: 1.2;
+}
+.v5-lib-card-meta {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 4px;
+}
+.v5-lib-card-contact {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 4px;
+  word-break: break-all;
+}
+.v5-lib-card-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+}
+.v5-lib-stars { color: var(--accent); font-size: 12px; }
+.v5-lib-coords-tag {
+  background: color-mix(in oklab, var(--ok, #3c6b3c) 14%, transparent);
+  color: var(--ok, #3c6b3c);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+}
+.v5-lib-usage-tag {
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.03em;
+}
+.v5-lib-usage-tag.used {
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+.v5-lib-usage-tag.unused {
+  background: var(--surface-2);
+  color: var(--text-3);
+  border: 1px dashed var(--line);
+  padding: 1px 6px;
+}
+
+/* ===== LIBRARY IMPORT MODAL ===== */
+.v5-modal-lib-import { width: min(720px, calc(100vw - 32px)); max-height: 80vh; }
+.v5-lib-import-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.v5-lib-import-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  background: var(--surface-2);
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.v5-lib-import-row:hover { border-color: var(--accent); }
+.v5-lib-import-row.selected {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 7%, var(--surface-1));
+}
+.v5-lib-import-row input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.v5-lib-import-body { flex: 1; min-width: 0; }
+.v5-lib-import-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  color: var(--text-1);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.v5-lib-import-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+}
+.v5-lib-import-meta {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+.v5-lib-import-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+/* ===== PROVIDER DRAWER · library status section ===== */
+.v5b-library-section { padding: 12px 0 !important; }
+.v5b-lib-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+.v5b-lib-status.linked {
+  background: color-mix(in oklab, var(--ok, #3c6b3c) 8%, var(--surface-1));
+  border-color: color-mix(in oklab, var(--ok, #3c6b3c) 30%, var(--line));
+}
+.v5b-lib-icon {
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+.v5b-lib-icon svg { width: 16px; height: 16px; }
+.v5b-lib-status.linked .v5b-lib-icon { color: var(--ok, #3c6b3c); border-color: var(--ok, #3c6b3c); }
+.v5b-lib-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.v5b-lib-body strong {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+.v5b-lib-body span {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
 </style>
 
 </head>
@@ -5237,14 +6118,16 @@ textarea:focus-visible {
   <!-- ====== V5 TOPBAR (siempre visible) ====== -->
   <header class="v5-topbar" data-v5-shell>
     <div class="v5-topbar-brand">
-      <button class="v5-icon-btn" @click="tab='today'" style="margin-left: -8px;" title="Ir a Hoy">
+      <button class="v5-icon-btn" @click="navigateToHome()" style="margin-left: -8px;" title="Volver a la home">
         <span class="v5-topbar-brand-mark">BA × <em>TWT</em></span>
       </button>
-      <span class="v5-topbar-sub">Piemonte · Oct 2026</span>
+      <span class="v5-topbar-sub" x-show="currentView === 'trip'" x-text="`${data.meta.region || data.meta.tripShortLabel || ''} · ${data.meta.shortPeriod || ''}`"></span>
+      <span class="v5-topbar-sub" x-show="currentView === 'home'" x-text="(operator?.brand_config?.tagline || '')"></span>
+      <span class="v5-topbar-sub" x-show="currentView === 'library'">Biblioteca · proveedores compartidos</span>
     </div>
     <div class="v5-topbar-spacer"></div>
     <div class="v5-topbar-actions">
-      <span class="v5-sync-pill" :title="syncLabel + (lastUpdatedBy ? (' · ' + lastUpdatedBy + ' ' + relativeTime(lastUpdatedAt)) : '')">
+      <span class="v5-sync-pill" x-show="currentView === 'trip'" :title="syncLabel + (lastUpdatedBy ? (' · ' + lastUpdatedBy + ' ' + relativeTime(lastUpdatedAt)) : '')">
         <span class="v5-sync-dot" :class="syncStatus"></span>
         <span class="v5-sync-text" x-text="syncLabel"></span>
       </span>
@@ -5252,7 +6135,7 @@ textarea:focus-visible {
         <svg x-show="theme !== 'dark'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg x-show="theme === 'dark'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
       </button>
-      <button class="v5-icon-btn" @click="openHistoryDrawer()" title="Historial" aria-label="Historial">
+      <button class="v5-icon-btn" @click="openHistoryDrawer()" title="Historial" aria-label="Historial" x-show="currentView === 'trip'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
         <span class="v5-badge" x-show="unseenChanges > 0" x-text="unseenChanges"></span>
       </button>
@@ -5278,8 +6161,347 @@ textarea:focus-visible {
     </div>
   </header>
 
-  <!-- ====== V5 SHELL: sidebar + content ====== -->
-  <div class="v5-shell">
+  <!-- ====== HOME VIEW (lista de viajes del operador) ====== -->
+  <main class="v5-home" x-show="currentView === 'home'" x-cloak>
+    <div class="v5-home-inner">
+      <header class="v5-home-head">
+        <div class="v5-home-eyebrow"><span x-text="operator?.brand_config?.tagline || 'Blisniuk &amp; Amanov'"></span></div>
+        <h1 class="v5-home-title">
+          <span x-show="identity" x-text="(new Date().getHours() < 13 ? 'Buen día, ' : (new Date().getHours() < 20 ? 'Buenas tardes, ' : 'Buenas noches, '))"></span>
+          <em x-text="identity || 'Hola'"></em>.
+        </h1>
+        <p class="v5-home-sub">
+          <span x-show="tripList.length > 0"><span x-text="tripList.length"></span> <span x-text="tripList.length === 1 ? 'viaje' : 'viajes'"></span> · elegí uno o creá uno nuevo.</span>
+          <span x-show="tripList.length === 0 && !tripListLoading">No hay viajes aún. Arrancá creando el primero.</span>
+          <span x-show="tripListLoading">Cargando viajes…</span>
+        </p>
+        <div class="v5-home-nav">
+          <button class="v5-home-nav-btn" @click="navigateToLibrary()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Biblioteca de proveedores →
+          </button>
+        </div>
+      </header>
+
+      <!-- Grouped trip list -->
+      <template x-for="group in [
+        { key: 'active',    label: 'En curso' },
+        { key: 'confirmed', label: 'Confirmados' },
+        { key: 'planning',  label: 'Planificando' },
+        { key: 'draft',     label: 'Borradores' },
+        { key: 'past',      label: 'Pasados' },
+        { key: 'archived',  label: 'Archivados' }
+      ]" :key="group.key">
+        <section class="v5-home-group" x-show="tripsByStatus[group.key].length > 0">
+          <h2 class="v5-home-group-title"><span x-text="group.label"></span> <span class="v5-home-group-count" x-text="tripsByStatus[group.key].length"></span></h2>
+          <div class="v5-home-grid">
+            <template x-for="t in tripsByStatus[group.key]" :key="t.id">
+              <article class="v5-trip-card" :class="`status-${t.status}`" role="article">
+                <div class="v5-trip-card-bg" :style="t.cover_image_url ? `background-image:url(${t.cover_image_url})` : ''"></div>
+                <div class="v5-trip-card-overlay"></div>
+                <!-- Card menu (⋯) -->
+                <div class="v5-trip-card-menu" @click.stop="cardMenuOpen = (cardMenuOpen === t.id ? null : t.id)" @click.outside="if (cardMenuOpen === t.id) cardMenuOpen = null">
+                  <button class="v5-trip-card-menu-btn" aria-label="Acciones">⋯</button>
+                  <div class="v5-trip-card-menu-pop" x-show="cardMenuOpen === t.id" x-cloak @click.stop>
+                    <button @click="navigateToTrip(t.id); cardMenuOpen = null">→ Abrir</button>
+                    <button @click="openCloneForm(t.id)">⎘ Clonar</button>
+                    <button x-show="t.status !== 'archived'" @click="archiveTrip(t.id)">⌫ Archivar</button>
+                    <button x-show="t.status === 'archived'" @click="unarchiveTrip(t.id)">↺ Desarchivar</button>
+                  </div>
+                </div>
+                <!-- Card body (click-to-open) -->
+                <div class="v5-trip-card-body" @click="navigateToTrip(t.id)" tabindex="0" @keydown.enter="navigateToTrip(t.id)">
+                  <div class="v5-trip-card-meta">
+                    <span class="v5-trip-card-status" :class="t.status" x-text="statusLabel(t.status)"></span>
+                    <span class="v5-trip-card-pax" x-show="t.pax_count"><span x-text="t.pax_count"></span> pax</span>
+                  </div>
+                  <h3 class="v5-trip-card-title" x-text="t.title"></h3>
+                  <div class="v5-trip-card-region" x-show="t.region_label" x-text="t.region_label"></div>
+                  <div class="v5-trip-card-foot">
+                    <span class="v5-trip-card-dates" x-text="tripCardDates(t)"></span>
+                    <span class="v5-trip-card-countdown" x-text="tripCardCountdown(t)"></span>
+                  </div>
+                  <span class="v5-trip-card-arrow">→</span>
+                </div>
+              </article>
+            </template>
+          </div>
+        </section>
+      </template>
+
+      <!-- New trip button + rich wizard form -->
+      <section class="v5-home-new">
+        <button class="v5-home-new-btn" @click="openNewTripForm()" x-show="!newTripForm.open">
+          <span>+ Nuevo viaje</span>
+          <em>creá el próximo</em>
+        </button>
+        <div class="v5-wizard" x-show="newTripForm.open" x-cloak>
+          <div class="v5-wizard-head">
+            <h3>Nuevo <em>viaje</em></h3>
+            <p class="hint">Elegí la categoría y completá lo esencial. Después editás todo desde adentro.</p>
+          </div>
+
+          <!-- Step 1: Category picker -->
+          <div class="v5-wizard-section">
+            <div class="v5-wizard-label">Categoría</div>
+            <div class="v5-wizard-categories">
+              <template x-for="(preset, key) in {
+                gastro: TRIP_CATEGORY_PRESETS.gastro,
+                ski: TRIP_CATEGORY_PRESETS.ski,
+                sport: TRIP_CATEGORY_PRESETS.sport,
+                urban: TRIP_CATEGORY_PRESETS.urban,
+                nature: TRIP_CATEGORY_PRESETS.nature
+              }" :key="key">
+                <button class="v5-wiz-cat" :class="{active: newTripForm.category === key}" @click="newTripForm.category = key" type="button">
+                  <span class="v5-wiz-cat-icon" :style="`background:${preset.dayColorPalette[0]}`">
+                    <span x-text="preset.providerTypes[0]?.glyph || '●'"></span>
+                  </span>
+                  <span class="v5-wiz-cat-label" x-text="preset.label.split(' · ')[0]"></span>
+                </button>
+              </template>
+            </div>
+            <p class="v5-wiz-cat-desc" x-text="selectedPreset.description"></p>
+          </div>
+
+          <!-- Step 2: Basic info -->
+          <div class="v5-wizard-section">
+            <div class="v5-wizard-label">El viaje</div>
+            <div class="v5-newform-fields">
+              <label class="v5-newform-field full">
+                <span>Título</span>
+                <input type="text" x-model="newTripForm.title" placeholder="Ej: Patagonia · Mar 2027" maxlength="100">
+              </label>
+              <label class="v5-newform-field">
+                <span>Inicio</span>
+                <input type="date" x-model="newTripForm.start_date">
+              </label>
+              <label class="v5-newform-field">
+                <span>Fin</span>
+                <input type="date" x-model="newTripForm.end_date">
+              </label>
+              <label class="v5-newform-field">
+                <span>Pax</span>
+                <input type="number" x-model.number="newTripForm.pax" min="1" max="50">
+              </label>
+            </div>
+          </div>
+
+          <!-- Step 3: Place + currency -->
+          <div class="v5-wizard-section">
+            <div class="v5-wizard-label">El lugar</div>
+            <div class="v5-newform-fields">
+              <label class="v5-newform-field">
+                <span>Región</span>
+                <input type="text" x-model="newTripForm.region" placeholder="Ej: El Calafate">
+              </label>
+              <label class="v5-newform-field">
+                <span>País</span>
+                <input type="text" x-model="newTripForm.country" @blur="onCountryBlur()" placeholder="Ej: Argentina">
+              </label>
+              <label class="v5-newform-field">
+                <span>Moneda base</span>
+                <select x-model="newTripForm.base_currency">
+                  <option value="EUR">EUR · euro</option>
+                  <option value="USD">USD · dólar</option>
+                  <option value="CHF">CHF · franco suizo</option>
+                  <option value="GBP">GBP · libra</option>
+                  <option value="ARS">ARS · peso argentino</option>
+                  <option value="MXN">MXN · peso mexicano</option>
+                  <option value="CAD">CAD · dólar canadiense</option>
+                  <option value="BRL">BRL · real</option>
+                  <option value="CLP">CLP · peso chileno</option>
+                  <option value="UYU">UYU · peso uruguayo</option>
+                  <option value="JPY">JPY · yen</option>
+                </select>
+              </label>
+              <label class="v5-newform-field full">
+                <span x-text="selectedPreset.basecampLabel + ' (opcional)'"></span>
+                <input type="text" x-model="newTripForm.basecamp_name" :placeholder="`Nombre del ${selectedPreset.basecampType}`">
+              </label>
+              <label class="v5-newform-field full">
+                <span>Dirección del basecamp (opcional)</span>
+                <input type="text" x-model="newTripForm.basecamp_address" placeholder="Ej: Via Suvretta 12, 7500 St. Moritz">
+              </label>
+            </div>
+          </div>
+
+          <!-- Preview: what gets configured -->
+          <div class="v5-wizard-preview">
+            <div class="v5-wizard-label">Se va a configurar</div>
+            <div class="v5-wiz-preview-row">
+              <span class="v5-wiz-preview-key">Tipos de proveedor</span>
+              <span class="v5-wiz-preview-val">
+                <template x-for="t in selectedPreset.providerTypes" :key="t.key">
+                  <span class="v5-wiz-pill" :style="`--c:${t.color}`">
+                    <span class="v5-wiz-pill-glyph" x-text="t.glyph"></span>
+                    <span x-text="t.label"></span>
+                  </span>
+                </template>
+              </span>
+            </div>
+            <div class="v5-wiz-preview-row">
+              <span class="v5-wiz-preview-key">Paleta del mapa</span>
+              <span class="v5-wiz-preview-val">
+                <template x-for="c in presetPaletteColors" :key="c">
+                  <span class="v5-wiz-color-swatch" :style="`background:${c}`"></span>
+                </template>
+              </span>
+            </div>
+            <div class="v5-wiz-preview-row">
+              <span class="v5-wiz-preview-key">Basecamp</span>
+              <span class="v5-wiz-preview-val">
+                <span class="v5-wiz-preview-text" x-text="selectedPreset.basecampLabel"></span>
+                <span class="v5-wiz-preview-aux" x-text="`(tipo: ${selectedPreset.basecampType})`"></span>
+              </span>
+            </div>
+          </div>
+
+          <div class="v5-newform-actions">
+            <button class="btn btn-ghost" @click="closeNewTripForm()" :disabled="newTripForm.saving">Cancelar</button>
+            <button class="btn" @click="createNewTrip()" :disabled="newTripForm.saving">
+              <span x-show="!newTripForm.saving">Crear viaje →</span>
+              <span x-show="newTripForm.saving">Creando…</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ====== NOT FOUND ====== -->
+  <main class="v5-home" x-show="currentView === 'not-found'" x-cloak>
+    <div class="v5-home-inner" style="text-align: center; padding-top: 80px;">
+      <h1 class="v5-home-title">Viaje <em>no encontrado</em></h1>
+      <p class="v5-home-sub">El link que seguiste apunta a un viaje que no existe en tu cuenta.</p>
+      <button class="btn" @click="navigateToHome()" style="margin-top: 24px;">← Volver a la home</button>
+    </div>
+  </main>
+
+  <!-- ====== LIBRARY VIEW (operator-level providers) ====== -->
+  <main class="v5-home v5-library" x-show="currentView === 'library'" x-cloak>
+    <div class="v5-home-inner">
+      <header class="v5-home-head">
+        <div class="v5-home-eyebrow"><span x-text="operator?.name || 'Operador'"></span> · biblioteca</div>
+        <h1 class="v5-home-title">Proveedores <em>de la casa</em></h1>
+        <p class="v5-home-sub">
+          <span x-show="library.length > 0"><span x-text="library.length"></span> <span x-text="library.length === 1 ? 'proveedor curado' : 'proveedores curados'"></span>. Lo que se usó una vez, queda disponible para todos los viajes futuros.</span>
+          <span x-show="library.length === 0 && !libraryLoading">La biblioteca está vacía. Promové proveedores desde dentro de cualquier viaje.</span>
+          <span x-show="libraryLoading">Cargando biblioteca…</span>
+        </p>
+        <div class="v5-home-nav">
+          <button class="v5-home-nav-btn" @click="navigateToHome()">← Volver a viajes</button>
+        </div>
+      </header>
+
+      <!-- Toolbar: search + type filter -->
+      <div class="v5b-toolbar" x-show="library.length > 0" style="margin-bottom: 18px;">
+        <div class="v5b-search-wrap">
+          <svg class="v5b-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" x-model="librarySearch" placeholder="Buscar por nombre, tipo, contacto, dirección…">
+          <button class="v5b-search-clear" x-show="librarySearch" @click="librarySearch = ''" aria-label="Limpiar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="v5b-spacer"></div>
+        <div class="v5b-segmented" role="tablist" aria-label="Filtrar por tipo">
+          <button :class="{active: libraryFilter === 'all'}" @click="libraryFilter = 'all'">Todos · <span x-text="library.length"></span></button>
+          <template x-for="t in libraryTypes" :key="t.key">
+            <button :class="{active: libraryFilter === t.key}" @click="libraryFilter = t.key">
+              <span x-text="t.key"></span> · <span x-text="t.count"></span>
+            </button>
+          </template>
+        </div>
+      </div>
+
+      <!-- Library list -->
+      <div class="v5-library-grid" x-show="filteredLibrary.length > 0">
+        <template x-for="p in filteredLibrary" :key="p.id">
+          <article class="v5-lib-card">
+            <div class="v5-lib-card-type" x-text="p.type || 'sin tipo'"></div>
+            <h3 class="v5-lib-card-name" x-text="p.name"></h3>
+            <div class="v5-lib-card-meta">
+              <span x-show="p.contact?.address" x-text="p.contact?.address"></span>
+            </div>
+            <div class="v5-lib-card-contact">
+              <span x-show="p.contact?.phone" x-text="p.contact?.phone"></span>
+              <span x-show="p.contact?.phone && p.contact?.web"> · </span>
+              <span x-show="p.contact?.web" x-text="(p.contact?.web || '').replace(/^https?:\/\//, '').slice(0, 32)"></span>
+            </div>
+            <div class="v5-lib-card-foot">
+              <span x-show="p.details?.michelin > 0" class="v5-lib-stars" x-text="'★'.repeat(p.details?.michelin || 0)"></span>
+              <span x-show="p.latitude" class="v5-lib-coords-tag">✓ Geo</span>
+              <span class="v5-lib-usage-tag" :class="{used: p._usage_count > 0, unused: !p._usage_count}" :title="p._usage_count > 0 ? p._usage_trips.join(' · ') : 'No usado en viajes activos'">
+                <span x-show="p._usage_count > 0"><span x-text="p._usage_count"></span> <span x-text="p._usage_count === 1 ? 'viaje' : 'viajes'"></span></span>
+                <span x-show="!p._usage_count">sin uso</span>
+              </span>
+              <span class="v5-spacer" style="flex:1;"></span>
+              <span class="v5-lib-card-updated" x-text="'actualizado ' + relativeTime(p.updated_at)"></span>
+            </div>
+          </article>
+        </template>
+      </div>
+      <div x-show="library.length > 0 && filteredLibrary.length === 0" style="text-align: center; padding: 40px; color: var(--text-3); font-style: italic;">
+        Sin resultados con este filtro.
+      </div>
+    </div>
+  </main>
+
+  <!-- ====== LIBRARY IMPORT MODAL ====== -->
+  <template x-if="libraryImport.open">
+    <div>
+      <div class="v5-drawer-overlay" @click="closeLibraryImport()"></div>
+      <aside class="v5-modal v5-modal-lib-import" role="dialog" aria-label="Importar de biblioteca">
+        <header class="v5-modal-header">
+          <h2 class="v5-modal-title">Importar de la <em>biblioteca</em></h2>
+          <button class="v5-drawer-close" @click="closeLibraryImport()" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </header>
+        <div class="v5-modal-body">
+          <p class="hint" x-show="!libraryImport.loading && library.length === 0">
+            La biblioteca está vacía. Desde cualquier viaje podés promover proveedores con el botón "↑ Promover" en su drawer.
+          </p>
+          <p class="hint" x-show="libraryImport.loading">Cargando…</p>
+          <div class="v5b-toolbar" x-show="library.length > 0" style="margin-bottom: 14px;">
+            <div class="v5b-search-wrap" style="max-width: 100%;">
+              <svg class="v5b-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" x-model="librarySearch" placeholder="Filtrar…">
+              <button class="v5b-search-clear" x-show="librarySearch" @click="librarySearch = ''" aria-label="Limpiar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="v5-lib-import-list" x-show="filteredLibrary.length > 0">
+            <template x-for="p in filteredLibrary" :key="p.id">
+              <label class="v5-lib-import-row" :class="{selected: isLibrarySelected(p.id)}">
+                <input type="checkbox" :checked="isLibrarySelected(p.id)" @change="toggleLibrarySelection(p.id)">
+                <div class="v5-lib-import-body">
+                  <div class="v5-lib-import-name">
+                    <span x-text="p.name"></span>
+                    <span class="v5-lib-import-type" x-text="p.type || 'sin tipo'"></span>
+                  </div>
+                  <div class="v5-lib-import-meta" x-text="p.contact?.address || p.contact?.web || ''"></div>
+                </div>
+              </label>
+            </template>
+          </div>
+        </div>
+        <footer class="v5-modal-foot">
+          <span class="v5-lib-import-count" x-show="libraryImport.selectedIds.size > 0">
+            <span x-text="libraryImport.selectedIds.size"></span> seleccionado<span x-show="libraryImport.selectedIds.size !== 1">s</span>
+          </span>
+          <span class="v5-spacer" style="flex:1;"></span>
+          <button class="btn btn-ghost" @click="closeLibraryImport()">Cancelar</button>
+          <button class="btn" @click="runLibraryImport()" :disabled="libraryImport.selectedIds.size === 0">
+            Importar al viaje →
+          </button>
+        </footer>
+      </aside>
+    </div>
+  </template>
+
+  <!-- ====== V5 SHELL: sidebar + content (TRIP VIEW only) ====== -->
+  <div class="v5-shell" x-show="currentView === 'trip'" x-cloak>
 
     <!-- Sidebar nav (desktop) -->
     <aside class="v5-sidebar">
@@ -5388,12 +6610,12 @@ textarea:focus-visible {
       <h1 class="v5-hoy-greeting"><span x-text="heroGreeting"></span> <em x-text="(identity || '')"></em></h1>
       <div class="v5-hoy-countdown" x-show="daysUntilTrip > 0">
         <span class="v5-hoy-count-num" x-text="daysUntilTrip"></span>
-        <span class="v5-hoy-count-unit" x-text="daysUntilTrip === 1 ? 'día para Piemonte' : 'días para Piemonte'"></span>
+        <span class="v5-hoy-count-unit" x-text="(daysUntilTrip === 1 ? 'día para ' : 'días para ') + (data.meta.tripShortLabel || 'el viaje')"></span>
       </div>
       <div class="v5-hoy-countdown" x-show="daysUntilTrip === 0">
         <span class="v5-hoy-count-num" style="font-size: clamp(48px, 7vw, 80px);">In viaggio</span>
       </div>
-      <div class="v5-hoy-detail" x-text="`${formatDate(data.meta.startDate)} → ${formatDate(data.meta.endDate)} · ${data.meta.nights} noches · ${data.meta.pax} personas · Villa ${data.meta.villa.name.replace('Villa ','')}`"></div>
+      <div class="v5-hoy-detail" x-text="`${formatDate(data.meta.startDate)} → ${formatDate(data.meta.endDate)} · ${data.meta.nights} noches · ${data.meta.pax} personas · ${data.meta.basecamp?.label || ''} ${data.meta.basecamp?.shortName || ''}`.trim().replace(/\s+/g, ' ')"></div>
     </div>
   </div>
 
@@ -5434,7 +6656,7 @@ textarea:focus-visible {
       <div class="v5-kpi">
         <div class="v5-kpi-label">Costo total</div>
         <div class="v5-kpi-value">€<span x-text="(budgetTotal/1000).toFixed(1)"></span>k</div>
-        <div class="v5-kpi-statement">de €<span x-text="(revenueEUR/1000).toFixed(1)"></span>k ingreso · €<span x-text="Math.round(budgetTotal/data.meta.pax).toLocaleString('es')"></span>/pax</div>
+        <div class="v5-kpi-statement">de €<span x-text="(revenueEUR/1000).toFixed(1)"></span>k ingreso · €<span x-text="Math.round(budgetTotal/data.meta.pax).toLocaleString(data.meta?.locale || 'es')"></span>/pax</div>
       </div>
       <div class="v5-kpi">
         <div class="v5-kpi-label">To-Do P1</div>
@@ -5527,12 +6749,12 @@ textarea:focus-visible {
 
     <div class="v5-progress-card" style="background: linear-gradient(135deg, var(--surface-1) 0%, var(--surface-2) 100%);">
       <div class="v5-progress-head">
-        <h3>La villa</h3>
-        <div class="v5-progress-ratio">€<span x-text="data.meta.villa.cost.toLocaleString('es')"></span></div>
+        <h3 x-text="data.meta.basecamp?.label || 'Basecamp'"></h3>
+        <div class="v5-progress-ratio" x-text="formatMoney(data.meta.basecamp?.cost || 0, data.meta.viewCurrency)"></div>
       </div>
       <div style="font-family: 'Lora', serif; font-style: italic; font-size: 16px; color: var(--text-2); line-height: 1.45;">
-        <strong style="font-family: 'Fraunces', serif; font-style: normal; font-weight: 500; color: var(--text-1); display: block; margin-bottom: 4px;" x-text="data.meta.villa.name"></strong>
-        <span x-text="data.meta.villa.address"></span>
+        <strong style="font-family: 'Fraunces', serif; font-style: normal; font-weight: 500; color: var(--text-1); display: block; margin-bottom: 4px;" x-text="data.meta.basecamp?.name"></strong>
+        <span x-text="data.meta.basecamp?.address"></span>
       </div>
       <div class="v5-progress-foot">
         <div class="v5-progress-foot-item">
@@ -5545,7 +6767,7 @@ textarea:focus-visible {
         </div>
         <div class="v5-progress-foot-item">
           <span class="v5-progress-foot-label">Estado</span>
-          <span class="v5-progress-foot-value ok" x-text="data.meta.villa.status"></span>
+          <span class="v5-progress-foot-value ok" x-text="data.meta.basecamp?.status"></span>
         </div>
       </div>
     </div>
@@ -5553,8 +6775,8 @@ textarea:focus-visible {
 
   <!-- Weather widget (fix #10) -->
   <div class="v5-section-head">
-    <h2>El <em>tiempo</em> en Castiglione Tinella</h2>
-    <span class="v5-section-meta" x-show="weather.source === 'climatology'">Promedio histórico (Oct)</span>
+    <h2>El <em>tiempo</em> en <span x-text="data.meta.basecamp?.shortName || data.meta.region || ''"></span></h2>
+    <span class="v5-section-meta" x-show="weather.source === 'climatology'">Promedio histórico</span>
     <span class="v5-section-meta" x-show="weather.source === 'forecast'">Pronóstico Open-Meteo</span>
   </div>
   <div class="v5-weather-card">
@@ -5686,10 +6908,10 @@ textarea:focus-visible {
                         <span class="ico" aria-hidden="true">🚗</span>
                         <span class="duration">
                           <span x-show="travelBetween(slot, day.slots[sIdx+1])?.estimated" style="opacity: 0.7;">≈</span>
-                          <span x-text="travelBetween(slot, day.slots[sIdx+1]).duration_min + ' min'"></span>
+                          <span x-text="(travelBetween(slot, day.slots[sIdx+1])?.duration_min || 0) + ' min'"></span>
                         </span>
                         <span class="sep">·</span>
-                        <span class="dist" x-text="travelBetween(slot, day.slots[sIdx+1]).distance_km + ' km'"></span>
+                        <span class="dist" x-text="(travelBetween(slot, day.slots[sIdx+1])?.distance_km || 0) + ' km'"></span>
                       </div>
                     </template>
                   </a>
@@ -5703,9 +6925,19 @@ textarea:focus-visible {
           </div>
           <div class="v5b-day-budget" x-show="dayBudgetEstimate(day.id) > 0">
             <span>Estimado del día</span>
-            <strong>€<span x-text="dayBudgetEstimate(day.id).toLocaleString('es')"></span></strong>
+            <strong>€<span x-text="dayBudgetEstimate(day.id).toLocaleString(data.meta?.locale || 'es')"></span></strong>
           </div>
           <button class="v5b-add-slot" @click="addSlot(dayIdx)">+ Agregar slot</button>
+          <div class="v5b-day-template-row">
+            <button class="v5b-day-tmpl-btn" @click="openApplyTemplatePicker(day.id)" title="Aplicar un template guardado a este día">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Aplicar template
+            </button>
+            <button class="v5b-day-tmpl-btn" @click="openSaveTemplateForm(day.id)" :disabled="!day.slots || day.slots.length === 0" :title="day.slots && day.slots.length > 0 ? 'Guardar la estructura de este día como template' : 'Necesita al menos 1 slot'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+              Guardar como template
+            </button>
+          </div>
           <button class="v5b-day-delete" @click="deleteDay(dayIdx)">Eliminar día ✕</button>
         </div>
       </article>
@@ -5756,7 +6988,7 @@ textarea:focus-visible {
     <div class="v5c-bhero">
       <div class="v5c-bhero-label">Ingreso bruto</div>
       <div class="v5c-bhero-value" x-text="formatMoney(convertAmount(data.meta.ticketUSD * data.meta.payingPax, 'USD', data.meta.viewCurrency), data.meta.viewCurrency)"></div>
-      <div class="v5c-bhero-statement"><strong x-text="data.meta.payingPax"></strong> pagantes × <strong>US$<span x-text="data.meta.ticketUSD.toLocaleString('es')"></span></strong></div>
+      <div class="v5c-bhero-statement"><strong x-text="data.meta.payingPax"></strong> pagantes × <strong>US$<span x-text="data.meta.ticketUSD.toLocaleString(data.meta?.locale || 'es')"></span></strong></div>
     </div>
     <div class="v5c-bhero margin">
       <div class="v5c-bhero-label">Margen bruto</div>
@@ -5853,7 +7085,13 @@ textarea:focus-visible {
       <h1>Directorio de <em>proveedores</em></h1>
       <p class="lead">Restaurantes, bodegas, truffle hunt, transfers, servicios. Tap en cualquier card para abrir.</p>
     </div>
-    <button class="btn" @click="addProvider()">+ Agregar proveedor</button>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-ghost" @click="openLibraryImport()" title="Importar proveedores guardados en la biblioteca del operador">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: -2px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Importar de biblioteca
+      </button>
+      <button class="btn" @click="addProvider()">+ Agregar proveedor</button>
+    </div>
   </div>
 
   <!-- Bulk Places scan banner — only visible when there are providers without coords -->
@@ -5868,6 +7106,20 @@ textarea:focus-visible {
       </div>
     </div>
     <button class="btn" @click="openPlacesScan()">Barrer ahora →</button>
+  </div>
+
+  <!-- Bulk Library promote banner — only visible when there are unlinked providers -->
+  <div class="v5c-places-scan-banner v5c-library-promote-banner" x-show="providersUnlinkedToLibrary.length > 0">
+    <div class="v5c-psb-icon">📚</div>
+    <div class="v5c-psb-body">
+      <div class="v5c-psb-title">
+        <strong x-text="providersUnlinkedToLibrary.length"></strong> proveedores sin biblioteca
+      </div>
+      <div class="v5c-psb-meta">
+        Promové todos a la biblioteca del operador con un click · quedan disponibles para reusar en cualquier viaje futuro. Los datos quedan canonical y se pueden sincronizar entre viajes.
+      </div>
+    </div>
+    <button class="btn" @click="bulkPromoteToLibrary()">Promover todos →</button>
   </div>
 
   <div class="v5b-toolbar">
@@ -6358,8 +7610,8 @@ textarea:focus-visible {
     </main><!-- /.v5-content -->
   </div><!-- /.v5-shell -->
 
-  <!-- ====== V5 BOTTOM NAV (mobile) ====== -->
-  <nav class="v5-bottomnav" aria-label="Navegación inferior">
+  <!-- ====== V5 BOTTOM NAV (mobile, TRIP VIEW only) ====== -->
+  <nav class="v5-bottomnav" aria-label="Navegación inferior" x-show="currentView === 'trip'" x-cloak>
     <button class="v5-bottomnav-item" :class="{active: tab === 'today'}" @click="tab = 'today'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
       <span>Hoy</span>
@@ -6726,6 +7978,32 @@ textarea:focus-visible {
           </div>
         </header>
         <div class="v5-drawer-body">
+          <!-- Library link indicator + action -->
+          <div class="v5b-detail-section v5b-library-section" x-show="drawerProvider.library_id">
+            <div class="v5b-lib-status linked">
+              <span class="v5b-lib-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </span>
+              <div class="v5b-lib-body">
+                <strong>Vinculado a la biblioteca</strong>
+                <span>Los cambios en nombre, contacto y coordenadas se sincronizan cuando elegís actualizar la biblioteca.</span>
+              </div>
+              <button class="btn btn-ghost btn-sm" @click="updateLibraryFromProvider(drawerProvider)" title="Subir los cambios de este proveedor a la biblioteca">↑ Sync</button>
+              <button class="btn btn-ghost btn-sm" @click="unlinkFromLibrary(drawerProvider)" title="Desvincular sin borrar de la biblioteca">⤫</button>
+            </div>
+          </div>
+          <div class="v5b-detail-section v5b-library-section" x-show="!drawerProvider.library_id">
+            <div class="v5b-lib-status unlinked">
+              <span class="v5b-lib-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </span>
+              <div class="v5b-lib-body">
+                <strong>No está en la biblioteca</strong>
+                <span>Guardalo para reusarlo en futuros viajes. Cada operador tiene su biblioteca.</span>
+              </div>
+              <button class="btn btn-sm" @click="promoteToLibrary(drawerProvider)">↑ Promover</button>
+            </div>
+          </div>
           <!-- Google Places auto-fill · top priority for new providers -->
           <div class="v5b-detail-section v5b-places-section">
             <h4>🔍 Buscar en Google Maps</h4>
@@ -7257,6 +8535,147 @@ textarea:focus-visible {
     </div>
   </template>
 
+  <!-- ====== CLONE TRIP MODAL ====== -->
+  <template x-if="cloneForm.open">
+    <div>
+      <div class="v5-drawer-overlay" @click="closeCloneForm()"></div>
+      <aside class="v5-modal v5-modal-clone" role="dialog" aria-label="Clonar viaje">
+        <header class="v5-modal-header">
+          <h2 class="v5-modal-title">Clonar <em>viaje</em></h2>
+          <button class="v5-drawer-close" @click="closeCloneForm()" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </header>
+        <div class="v5-modal-body">
+          <p class="hint">Desde <strong x-text="cloneForm.source?.title || ''"></strong>. Se copia la curaduría (proveedores, slots, basecamp, taxonomía). Se resetean status, fechas y log.</p>
+          <div class="v5-newform-fields" style="margin-top: 16px;">
+            <label class="v5-newform-field full">
+              <span>Título del nuevo viaje</span>
+              <input type="text" x-model="cloneForm.title" maxlength="100">
+            </label>
+            <label class="v5-newform-field">
+              <span>Inicio</span>
+              <input type="date" x-model="cloneForm.start_date">
+            </label>
+            <label class="v5-newform-field">
+              <span>Fin</span>
+              <input type="date" x-model="cloneForm.end_date">
+            </label>
+          </div>
+          <div class="v5-clone-options">
+            <label class="v5-clone-option">
+              <input type="checkbox" x-model="cloneForm.include_providers">
+              <div>
+                <strong>Conservar proveedores</strong>
+                <span>Mantiene la base de proveedores curada (recomendado).</span>
+              </div>
+            </label>
+            <label class="v5-clone-option">
+              <input type="checkbox" x-model="cloneForm.include_slots" :disabled="!cloneForm.include_providers && cloneForm.include_slots">
+              <div>
+                <strong>Conservar slots del itinerario</strong>
+                <span>Copia el plan de cada día. Si está apagado, los días arrancan vacíos.</span>
+              </div>
+            </label>
+            <label class="v5-clone-option">
+              <input type="checkbox" x-model="cloneForm.reset_costs">
+              <div>
+                <strong>Resetear costos</strong>
+                <span>Pone en 0 los costos de proveedores y los items del presupuesto. Útil cuando el pricing del año nuevo todavía no llegó.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+        <footer class="v5-modal-foot">
+          <button class="btn btn-ghost" @click="closeCloneForm()" :disabled="cloneForm.saving">Cancelar</button>
+          <button class="btn" @click="runCloneTrip()" :disabled="cloneForm.saving">
+            <span x-show="!cloneForm.saving">Clonar →</span>
+            <span x-show="cloneForm.saving">Clonando…</span>
+          </button>
+        </footer>
+      </aside>
+    </div>
+  </template>
+
+  <!-- ====== SAVE DAY AS TEMPLATE MODAL ====== -->
+  <template x-if="saveTemplateForm.open">
+    <div>
+      <div class="v5-drawer-overlay" @click="closeSaveTemplateForm()"></div>
+      <aside class="v5-modal v5-modal-template" role="dialog" aria-label="Guardar como template">
+        <header class="v5-modal-header">
+          <h2 class="v5-modal-title">Guardar día como <em>template</em></h2>
+          <button class="v5-drawer-close" @click="closeSaveTemplateForm()" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </header>
+        <div class="v5-modal-body">
+          <p class="hint">Lo guardás a nivel operador. Cualquier viaje futuro del mismo tipo lo va a poder aplicar.</p>
+          <div class="v5-newform-fields" style="margin-top: 16px;">
+            <label class="v5-newform-field full">
+              <span>Nombre</span>
+              <input type="text" x-model="saveTemplateForm.name" placeholder="Ej: Jornada de tartufaia + cena">
+            </label>
+            <label class="v5-newform-field full">
+              <span>Descripción (opcional)</span>
+              <input type="text" x-model="saveTemplateForm.description" placeholder="Cuándo usar este template">
+            </label>
+          </div>
+          <label class="v5-clone-option" style="margin-top: 16px;">
+            <input type="checkbox" x-model="saveTemplateForm.include_provider_refs">
+            <div>
+              <strong>Incluir referencias a proveedores</strong>
+              <span>Solo útil si vas a aplicarlo en el mismo viaje. Por default se guardan títulos+horarios sin atar a proveedores.</span>
+            </div>
+          </label>
+        </div>
+        <footer class="v5-modal-foot">
+          <button class="btn btn-ghost" @click="closeSaveTemplateForm()" :disabled="saveTemplateForm.saving">Cancelar</button>
+          <button class="btn" @click="saveDayAsTemplate()" :disabled="saveTemplateForm.saving">
+            <span x-show="!saveTemplateForm.saving">Guardar template →</span>
+            <span x-show="saveTemplateForm.saving">Guardando…</span>
+          </button>
+        </footer>
+      </aside>
+    </div>
+  </template>
+
+  <!-- ====== APPLY TEMPLATE PICKER MODAL ====== -->
+  <template x-if="applyTemplatePicker.open">
+    <div>
+      <div class="v5-drawer-overlay" @click="closeApplyTemplatePicker()"></div>
+      <aside class="v5-modal v5-modal-template-picker" role="dialog" aria-label="Aplicar template">
+        <header class="v5-modal-header">
+          <h2 class="v5-modal-title">Aplicar <em>template</em></h2>
+          <button class="v5-drawer-close" @click="closeApplyTemplatePicker()" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </header>
+        <div class="v5-modal-body">
+          <p class="hint" x-show="!applyTemplatePicker.loading && applyTemplatePicker.templates.length === 0">
+            Aún no hay templates guardados. Desde cualquier día del itinerario podés guardar su estructura como template para reusar en próximos viajes.
+          </p>
+          <p class="hint" x-show="applyTemplatePicker.loading">Cargando templates…</p>
+          <div class="v5-template-list" x-show="applyTemplatePicker.templates.length > 0">
+            <template x-for="t in applyTemplatePicker.templates" :key="t.id">
+              <article class="v5-template-card">
+                <div class="v5-template-card-body" @click="applyTemplate(t.id)">
+                  <h3 x-text="t.name"></h3>
+                  <p x-show="t.description" x-text="t.description"></p>
+                  <div class="v5-template-meta">
+                    <span x-text="(t.data?.slots?.length || 0) + ' slots'"></span>
+                    <span x-show="t.category" x-text="'· ' + t.category"></span>
+                    <span x-show="t.created_by" x-text="'· por ' + t.created_by"></span>
+                  </div>
+                </div>
+                <button class="v5-template-delete" @click="deleteTemplate(t.id)" aria-label="Eliminar">×</button>
+              </article>
+            </template>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </template>
+
   <!-- ====== V5 TOAST STACK ====== -->
   <div class="v5-toast-stack" aria-live="polite" aria-atomic="true">
     <template x-for="t in toasts" :key="t.id">
@@ -7321,25 +8740,173 @@ const LOCATION_COORDS = {
   "Langhe/Monferrato": { lat: 44.6866, lon: 8.0311 }
 };
 
+// === TRIP CATEGORY PRESETS ===
+// Each preset is the default config for a category of trip. Used by the
+// "Nuevo viaje" wizard (Turno 5) to pre-fill the meta when creating a trip.
+// The user can override anything after creation.
+const TRIP_CATEGORY_PRESETS = {
+  gastro: {
+    label: 'Gastronómico · enoturismo',
+    description: 'Bodegas, restaurantes Michelin, experiencias culinarias',
+    providerTypes: [
+      { key: 'restaurant', label: 'Restaurantes',  color: '#b8512e', glyph: '●' },
+      { key: 'winery',     label: 'Bodegas',       color: '#6e1a1f', glyph: '◆' },
+      { key: 'activity',   label: 'Experiencias',  color: '#3c6b3c', glyph: '✦' },
+      { key: 'transfer',   label: 'Transfers',     color: '#5a6378', glyph: '→' },
+      { key: 'service',    label: 'Servicios',     color: '#3a5a8b', glyph: '◇' },
+      { key: 'villa',      label: 'Villa',         color: '#6e1a1f', glyph: '★' }
+    ],
+    dayColorPalette: ['#b8512e', '#6e1a1f', '#3c6b3c', '#3a5a8b', '#b8893a', '#5a6378', '#8b6914'],
+    basecampType: 'villa', basecampLabel: 'La villa'
+  },
+  ski: {
+    label: 'Esquí · alta montaña',
+    description: 'Chalets, ski schools, mountain restaurants, spas',
+    providerTypes: [
+      { key: 'chalet',              label: 'Chalets',             color: '#2c5f8d', glyph: '★' },
+      { key: 'ski_school',          label: 'Ski schools',         color: '#4a5d7e', glyph: '↗' },
+      { key: 'mountain_restaurant', label: 'Mountain restaurants', color: '#b8512e', glyph: '●' },
+      { key: 'spa',                 label: 'Spas & wellness',     color: '#7a4d3a', glyph: '◆' },
+      { key: 'apres_ski',           label: 'Après-ski',           color: '#9b6b3c', glyph: '✦' },
+      { key: 'transfer',            label: 'Transfers',           color: '#5a6378', glyph: '→' }
+    ],
+    dayColorPalette: ['#2c5f8d', '#7a4d3a', '#4a5d7e', '#b8893a', '#5a6378', '#3c6b3c', '#9b6b3c'],
+    basecampType: 'chalet', basecampLabel: 'El chalet'
+  },
+  sport: {
+    label: 'Sport · evento deportivo',
+    description: 'Estadios, hoteles, fan zones, partidos como anclas',
+    providerTypes: [
+      { key: 'stadium',           label: 'Estadios',            color: '#1f5a3a', glyph: '◉' },
+      { key: 'hotel',             label: 'Hoteles',             color: '#3a5a8b', glyph: '★' },
+      { key: 'restaurant',        label: 'Restaurantes',        color: '#b8512e', glyph: '●' },
+      { key: 'fan_zone',          label: 'Fan zones',           color: '#b8893a', glyph: '✦' },
+      { key: 'transfer',          label: 'Transfers',           color: '#5a6378', glyph: '→' },
+      { key: 'service',           label: 'Servicios',           color: '#3a5a8b', glyph: '◇' }
+    ],
+    dayColorPalette: ['#1f5a3a', '#3a5a8b', '#b8512e', '#b8893a', '#6e1a1f', '#5a6378', '#3c6b3c'],
+    basecampType: 'hotel', basecampLabel: 'El hotel'
+  },
+  urban: {
+    label: 'Urbano · ciudad · cultura',
+    description: 'Hoteles, restaurantes, museos, experiencias urbanas',
+    providerTypes: [
+      { key: 'hotel',      label: 'Hoteles',       color: '#3a5a8b', glyph: '★' },
+      { key: 'restaurant', label: 'Restaurantes',  color: '#b8512e', glyph: '●' },
+      { key: 'gallery',    label: 'Galerías',      color: '#6e1a1f', glyph: '◆' },
+      { key: 'activity',   label: 'Experiencias',  color: '#3c6b3c', glyph: '✦' },
+      { key: 'bar',        label: 'Bares · clubs', color: '#b8893a', glyph: '◇' },
+      { key: 'transfer',   label: 'Transfers',     color: '#5a6378', glyph: '→' }
+    ],
+    dayColorPalette: ['#3a5a8b', '#b8512e', '#6e1a1f', '#b8893a', '#3c6b3c', '#5a6378', '#8b6914'],
+    basecampType: 'hotel', basecampLabel: 'El hotel'
+  },
+  nature: {
+    label: 'Naturaleza · expediciones',
+    description: 'Lodges, guías, safaris, trekking, lugares remotos',
+    providerTypes: [
+      { key: 'lodge',     label: 'Lodges',         color: '#3c6b3c', glyph: '★' },
+      { key: 'guide',     label: 'Guías',          color: '#8b6914', glyph: '◆' },
+      { key: 'activity',  label: 'Actividades',    color: '#1f5a3a', glyph: '✦' },
+      { key: 'wildlife',  label: 'Wildlife',       color: '#7a4d3a', glyph: '▲' },
+      { key: 'transfer',  label: 'Transfers',      color: '#5a6378', glyph: '→' },
+      { key: 'service',   label: 'Servicios',      color: '#3a5a8b', glyph: '◇' }
+    ],
+    dayColorPalette: ['#3c6b3c', '#8b6914', '#7a4d3a', '#1f5a3a', '#5a6378', '#3a5a8b', '#b8893a'],
+    basecampType: 'lodge', basecampLabel: 'El lodge'
+  }
+};
+
+// === META CONTRACT (the shape of data.meta) ===
+// All Piemonte-specific behavior has been moved into this object. To create a new
+// trip, populate these fields (the wizard in Turno 5 does it via UI; programmatically
+// you can use TRIP_CATEGORY_PRESETS to get sensible defaults):
+//
+//   tripName, tripShortLabel, region, shortPeriod, country  — display strings
+//   startDate, endDate, nights                              — dates
+//   pax, payingPax, paxComposition, ticketUSD               — economics
+//   language, locale                                        — formatting
+//   baseCurrency, viewCurrency, fx                          — money
+//   basecamp { label, type, name, shortName, address, cost, status, coords, timezone }
+//   mapCenter { lat, lng }, mapZoom                         — map defaults
+//   providerTypes[] { key, label, color, glyph }            — taxonomy
+//   dayColorPalette[]                                       — day routes
+//   weatherClimatology[] { tmax, tmin, rain, code }         — fallback when forecast unavailable
+//   heroImages[]                                            — hero background photos
+
 const DEFAULT_DATA = {
   meta: {
+    // Identity
     tripName: "Piemonte / Le Langhe — Oct 2026",
+    tripShortLabel: "Piemonte",
+    region: "Piemonte",
+    shortPeriod: "Oct 2026",
+    country: "Italia",
+    // Dates
     startDate: "2026-10-19",
     endDate: "2026-10-25",
     nights: 6,
+    // People
     pax: 10,
     payingPax: 8,
     paxComposition: "4 parejas + 2 hosts",
+    // Money
     ticketUSD: 9000,
     eurUsdRate: 1.09,
-    fx: { EUR: 1, USD: 1.09, ARS: 1180 },
+    baseCurrency: "EUR",
     viewCurrency: 'EUR',
+    fx: { EUR: 1, USD: 1.09, ARS: 1180 },
+    // Localization
+    language: "es",
+    locale: "es",
+    // Basecamp (anchor of the trip — villa, chalet, hotel, etc.)
+    basecamp: {
+      label: "La villa",         // UI label: "La villa", "El chalet", "El hotel"
+      type: "villa",             // category for icon/styling
+      name: "Villa Castiglione Tinella",
+      shortName: "Castiglione Tinella",  // location/town name without type prefix
+      address: "Str. Marini 7, 12053 Castiglione Tinella CN",
+      cost: 5022,
+      status: "Pagada",
+      coords: { lat: 44.7337, lon: 8.1922 },
+      timezone: "Europe/Rome"
+    },
+    // Backwards-compat alias (legacy code may still reference data.meta.villa)
     villa: {
       name: "Villa Castiglione Tinella",
       address: "Str. Marini 7, 12053 Castiglione Tinella CN",
       cost: 5022,
       status: "Pagada"
-    }
+    },
+    // Map defaults (centered on the trip region)
+    mapCenter: { lat: 44.7, lng: 8.0 },
+    mapZoom: 11,
+    // Provider taxonomy: types relevant to this trip, with colors and glyphs.
+    // Each trip can customize this — wineries don't make sense in St. Moritz,
+    // ski schools don't make sense in Piemonte.
+    providerTypes: [
+      { key: 'restaurant', label: 'Restaurantes', color: '#b8512e', glyph: '●' },
+      { key: 'winery',     label: 'Bodegas',      color: '#6e1a1f', glyph: '◆' },
+      { key: 'truffle',    label: 'Truffle hunt', color: '#8b6914', glyph: '▲' },
+      { key: 'activity',   label: 'Experiencias', color: '#3c6b3c', glyph: '✦' },
+      { key: 'transfer',   label: 'Transfers',    color: '#5a6378', glyph: '→' },
+      { key: 'service',    label: 'Servicios',    color: '#3a5a8b', glyph: '◇' },
+      { key: 'villa',      label: 'Villa',        color: '#6e1a1f', glyph: '★' }
+    ],
+    // Day route palette: colors assigned to each day's slots+polyline on the map.
+    // Cycled if more days than colors.
+    dayColorPalette: ['#b8512e', '#6e1a1f', '#3c6b3c', '#3a5a8b', '#b8893a', '#5a6378', '#8b6914'],
+    // Climatology fallback for weather widget when trip is >16 days away.
+    // Per-day historical averages. Piemonte/Langhe late October from ARPA Piemonte data.
+    weatherClimatology: [
+      { tmax: 18, tmin: 9, rain: 1.8, code: 2 },
+      { tmax: 18, tmin: 9, rain: 2.1, code: 3 },
+      { tmax: 17, tmin: 8, rain: 2.5, code: 3 },
+      { tmax: 17, tmin: 8, rain: 2.4, code: 61 },
+      { tmax: 16, tmin: 7, rain: 2.0, code: 2 },
+      { tmax: 16, tmin: 7, rain: 1.6, code: 1 },
+      { tmax: 15, tmin: 6, rain: 1.4, code: 1 }
+    ]
   },
   itinerary: [
     {
@@ -7554,7 +9121,68 @@ function app() {
     // === CONFIG ===
     SUPABASE_URL: 'https://pptldpjwggrnbkvppolu.supabase.co',
     SUPABASE_KEY: 'sb_publishable_6Xs9DoveG6nvB8FK1q_RAw_apQCmTr_',
-    TRIP_ID: 'piemonte-ba-twt-2026',
+    OPERATOR_SLUG: 'blisniuk-amanov',  // for now, single operator. Multi-operator routing in later phase.
+    TRIP_ID: '',  // populated from URL hash on init; empty = home view
+    // === ROUTING STATE ===
+    currentView: 'loading',  // 'loading' | 'home' | 'trip' | 'not-found'
+    operator: null,           // operators row, populated on init from Supabase
+    tripList: [],             // all trips for the operator, used by home view
+    tripListLoading: false,
+    newTripForm: {
+      open: false,
+      category: 'gastro',
+      title: '',
+      start_date: '',
+      end_date: '',
+      pax: 2,
+      region: '',
+      country: '',
+      basecamp_name: '',
+      basecamp_address: '',
+      base_currency: 'EUR',
+      saving: false
+    },
+    // Card menu open state (one menu open at a time on home)
+    cardMenuOpen: null,  // trip.id of open menu, or null
+    // Clone wizard state
+    cloneForm: {
+      open: false,
+      source: null,        // full source trip row (with data fetched on open)
+      title: '',
+      start_date: '',
+      end_date: '',
+      include_providers: true,
+      include_slots: true,
+      reset_costs: false,
+      saving: false
+    },
+    // Template (save current day) state
+    saveTemplateForm: {
+      open: false,
+      dayId: null,
+      name: '',
+      description: '',
+      include_provider_refs: false,  // by default, save just slot titles+times (portable across trips)
+      saving: false
+    },
+    // Apply template picker state
+    applyTemplatePicker: {
+      open: false,
+      dayId: null,
+      templates: [],
+      loading: false
+    },
+    operatorTemplates: [],  // cached list, loaded on demand
+    // === LIBRARY state ===
+    library: [],          // operator-level providers, loaded from providers_library
+    libraryLoading: false,
+    librarySearch: '',
+    libraryFilter: 'all',  // 'all' or provider type
+    libraryImport: {
+      open: false,
+      selectedIds: new Set(),
+      loading: false
+    },
 
     // === STATE ===
     tab: 'today',
@@ -7608,6 +9236,10 @@ function app() {
     celebrateStamp: '',
     lastUpdatedBy: null,
     lastUpdatedAt: null,
+    // tripRow: holds the trip's row from Supabase (denormalized cols + meta).
+    // Populated on loadFromCloud. Used by the home page (Turno 4) to list trips
+    // without re-fetching each full data JSON.
+    tripRow: null,
     _now: Date.now(),
     _client: null,
     _channel: null,
@@ -7621,23 +9253,1189 @@ function app() {
     confirmState: { open: false, title: '', body: '', confirmLabel: 'Sí', cancelLabel: 'Cancelar', danger: false, resolver: null },
     toasts: [],
     _toastId: 0,
-    heroImages: [
-      // Curated Unsplash · Piemonte / Langhe / vineyards / Italian harvest
-      // (these are stable Unsplash photo IDs; opacity-blended over the gradient so a load failure is invisible)
-      'https://images.unsplash.com/photo-1568712562-1bf48c5e91dd?w=1800&q=80&auto=format&fit=crop', // vineyard sunset
-      'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1800&q=80&auto=format&fit=crop', // rolling hills vineyard
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=80&auto=format&fit=crop', // mountain landscape
-      'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=1800&q=80&auto=format&fit=crop'  // italian pasta close-up
-    ],
+    // Hero images: shown in the Hoy tab as background. Per-trip override via
+    // data.meta.heroImages takes priority. Otherwise we pick a category-themed set
+    // based on the trip's detected category (gastro/ski/sport/urban/nature).
+    // Fallback: gastro (vineyards) — matches the original Piemonte aesthetic.
+    _heroImagesByCategory: {
+      gastro: [
+        'https://images.unsplash.com/photo-1568712562-1bf48c5e91dd?w=1800&q=80&auto=format&fit=crop',  // vineyard sunset
+        'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1800&q=80&auto=format&fit=crop',  // rolling hills vineyard
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=80&auto=format&fit=crop',// mountain landscape
+        'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=1800&q=80&auto=format&fit=crop' // italian pasta
+      ],
+      ski: [
+        'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=1800&q=80&auto=format&fit=crop', // snowy alps panorama
+        'https://images.unsplash.com/photo-1605540436563-5bca919ae766?w=1800&q=80&auto=format&fit=crop',// chalet wood interior
+        'https://images.unsplash.com/photo-1542202229-7d93c33f5d07?w=1800&q=80&auto=format&fit=crop', // ski slope sunset
+        'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?w=1800&q=80&auto=format&fit=crop' // snowy peaks
+      ],
+      sport: [
+        'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=1800&q=80&auto=format&fit=crop', // stadium lights night
+        'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1800&q=80&auto=format&fit=crop', // soccer field
+        'https://images.unsplash.com/photo-1543351611-58f69d7c1781?w=1800&q=80&auto=format&fit=crop',   // crowd celebrating
+        'https://images.unsplash.com/photo-1556056504-5c7696c4c28d?w=1800&q=80&auto=format&fit=crop'    // city night
+      ],
+      urban: [
+        'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=1800&q=80&auto=format&fit=crop', // city skyline at dusk
+        'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1800&q=80&auto=format&fit=crop', // dense city street
+        'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=1800&q=80&auto=format&fit=crop', // intimate cafe
+        'https://images.unsplash.com/photo-1485518882345-15568b007407?w=1800&q=80&auto=format&fit=crop'  // urban night lights
+      ],
+      nature: [
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=80&auto=format&fit=crop', // mountain landscape
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1800&q=80&auto=format&fit=crop', // alpine lake
+        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1800&q=80&auto=format&fit=crop', // forest
+        'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1800&q=80&auto=format&fit=crop'  // misty mountains
+      ]
+    },
+    get heroImages() {
+      const fromMeta = this.data?.meta?.heroImages;
+      if (Array.isArray(fromMeta) && fromMeta.length > 0) return fromMeta;
+      // Auto-pick based on detected trip category (or fall back to gastro defaults)
+      const category = this._detectTripCategory() || 'gastro';
+      return this._heroImagesByCategory[category] || this._heroImagesByCategory.gastro;
+    },
 
-    providerTypes: [
-      { key: 'restaurant', label: 'Restaurantes' },
-      { key: 'winery', label: 'Bodegas' },
-      { key: 'truffle', label: 'Truffle hunt' },
-      { key: 'activity', label: 'Experiencias' },
-      { key: 'transfer', label: 'Transfers' },
-      { key: 'service', label: 'Servicios' }
-    ],
+    // providerTypes is now per-trip and lives in data.meta.providerTypes.
+    // The getter falls back to a sane default during early init before data loads.
+    get providerTypes() {
+      const fromMeta = this.data?.meta?.providerTypes;
+      if (Array.isArray(fromMeta) && fromMeta.length > 0) return fromMeta;
+      return [
+        { key: 'restaurant', label: 'Restaurantes', color: '#b8512e', glyph: '●' },
+        { key: 'winery',     label: 'Bodegas',      color: '#6e1a1f', glyph: '◆' },
+        { key: 'truffle',    label: 'Truffle hunt', color: '#8b6914', glyph: '▲' },
+        { key: 'activity',   label: 'Experiencias', color: '#3c6b3c', glyph: '✦' },
+        { key: 'transfer',   label: 'Transfers',    color: '#5a6378', glyph: '→' },
+        { key: 'service',    label: 'Servicios',    color: '#3a5a8b', glyph: '◇' },
+        { key: 'villa',      label: 'Villa',        color: '#6e1a1f', glyph: '★' }
+      ];
+    },
+
+    // === DENORMALIZED TRIP COLUMNS (Supabase) ===
+    // Derive the columns of the trips row from data.meta. Kept in sync on every
+    // save so the home page can list trips without deserializing each full data JSON.
+    // Status auto-derives from dates unless already set to a non-default by the user.
+    _tripDenormFromMeta() {
+      const m = this.data?.meta || {};
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const start = m.startDate ? new Date(m.startDate + 'T00:00:00') : null;
+      const end = m.endDate ? new Date(m.endDate + 'T00:00:00') : null;
+      let status = 'planning';
+      if (end && end < today) status = 'past';
+      else if (start && end && start <= today && today <= end) status = 'active';
+      else if (start) {
+        const daysToStart = Math.round((start - today) / (24 * 60 * 60 * 1000));
+        if (daysToStart < 30) status = 'confirmed';
+      }
+      return {
+        title: m.tripName || this.TRIP_ID || 'Sin título',
+        start_date: m.startDate || null,
+        end_date: m.endDate || null,
+        region_label: m.region || m.tripShortLabel || null,
+        pax_count: Number.isFinite(m.pax) ? m.pax : null,
+        status
+      };
+    },
+
+    // Validate the trip meta shape. Logs warnings to console for missing critical fields.
+    // Non-blocking — the app continues running even if validation warns.
+    _validateMeta() {
+      const m = this.data?.meta;
+      if (!m) { console.warn('[meta] missing entirely'); return; }
+      const required = ['tripName', 'startDate', 'endDate', 'pax', 'language', 'locale', 'baseCurrency'];
+      const missing = required.filter(k => m[k] === undefined || m[k] === '' || m[k] === null);
+      if (missing.length > 0) {
+        console.warn('[meta] missing required fields:', missing);
+      }
+      if (!m.basecamp || !m.basecamp.label || !m.basecamp.name) {
+        console.warn('[meta] basecamp incomplete · the Hoy tab will show empty fields');
+      }
+      if (!Array.isArray(m.providerTypes) || m.providerTypes.length === 0) {
+        console.warn('[meta] providerTypes empty · all providers will show as untyped');
+      }
+      if (!Array.isArray(m.dayColorPalette) || m.dayColorPalette.length === 0) {
+        console.warn('[meta] dayColorPalette empty · map day routes will use defaults');
+      }
+      if (!m.basecamp?.coords) {
+        console.warn('[meta] basecamp.coords missing · weather widget cannot fetch forecast');
+      }
+    },
+
+    // === ROUTING ===
+    // Hash-based routing. URL formats:
+    //   #/              → home (list of trips)
+    //   #/{trip-slug}/  → trip app (e.g. #/piemonte-ba-twt-2026/)
+    //   (no hash)       → home
+    // Slug-only — operator scoping comes from OPERATOR_SLUG constant for now;
+    // multi-operator URLs (#/{operator}/{trip}/) are a later-phase concern.
+    _parseRoute() {
+      const h = (window.location.hash || '').replace(/^#\/?/, '').replace(/\/$/, '');
+      if (!h) return { view: 'home', tripSlug: null };
+      if (h === 'library') return { view: 'library', tripSlug: null };
+      // Sanitize: only allow slug-safe chars (lowercase, digits, hyphen)
+      const safe = h.match(/^[a-z0-9-]+$/);
+      if (!safe) return { view: 'home', tripSlug: null };
+      return { view: 'trip', tripSlug: h };
+    },
+    navigateToTrip(slug) {
+      if (!slug) return this.navigateToHome();
+      const target = '#/' + slug + '/';
+      if (window.location.hash === target) return;
+      window.location.hash = target;
+    },
+    navigateToHome() {
+      if (window.location.hash === '#/' || window.location.hash === '') return;
+      window.location.hash = '#/';
+    },
+    navigateToLibrary() {
+      if (window.location.hash === '#/library/' || window.location.hash === '#/library') return;
+      window.location.hash = '#/library/';
+    },
+    async _onRouteChange() {
+      const route = this._parseRoute();
+      // Tear down trip-specific subscriptions before changing view
+      this._teardownTripChannels();
+      if (route.view === 'home') {
+        this.currentView = 'home';
+        this.TRIP_ID = '';
+        document.title = (this.operator?.name || 'Blisniuk & Amanov') + ' · Operaciones';
+        await this.loadTripList();
+      } else if (route.view === 'library') {
+        this.currentView = 'library';
+        this.TRIP_ID = '';
+        document.title = (this.operator?.name || 'Blisniuk & Amanov') + ' · Biblioteca';
+        await this.loadLibrary();
+      } else {
+        // Trip view
+        this.TRIP_ID = route.tripSlug;
+        this.currentView = 'trip';
+        await this._enterTripView();
+      }
+    },
+    _teardownTripChannels() {
+      ['_channel', '_commentsChannel', '_snapshotsChannel', '_changesLogChannel'].forEach(k => {
+        if (this[k]) {
+          try { this._client.removeChannel(this[k]); } catch (e) {}
+          this[k] = null;
+        }
+      });
+    },
+
+    // === OPERATOR + TRIP LIST (for home view) ===
+    async loadOperator() {
+      if (!this._client) return;
+      try {
+        const { data, error } = await this._client
+          .from('operators')
+          .select('*')
+          .eq('slug', this.OPERATOR_SLUG)
+          .maybeSingle();
+        if (error) throw error;
+        this.operator = data;
+      } catch (e) {
+        console.warn('Operator load failed:', e);
+        this.operator = { slug: this.OPERATOR_SLUG, name: 'Blisniuk & Amanov', brand_config: {} };
+      }
+    },
+    async loadTripList() {
+      if (!this._client || !this.operator?.id) return;
+      this.tripListLoading = true;
+      try {
+        // Select only the denormalized columns — no `data` blob, much cheaper for listing
+        const { data, error } = await this._client
+          .from('trips')
+          .select('id, title, status, start_date, end_date, region_label, pax_count, cover_image_url, archived_at, created_at, updated_at')
+          .eq('operator_id', this.operator.id)
+          .order('start_date', { ascending: true });
+        if (error) throw error;
+        this.tripList = data || [];
+      } catch (e) {
+        console.warn('Trip list load failed:', e);
+        this.tripList = [];
+      } finally {
+        this.tripListLoading = false;
+      }
+    },
+    // Group trips by status for the home view
+    get tripsByStatus() {
+      const groups = { active: [], confirmed: [], planning: [], draft: [], past: [], archived: [] };
+      this.tripList.forEach(t => {
+        const k = t.status || 'planning';
+        if (groups[k]) groups[k].push(t);
+        else groups.planning.push(t);
+      });
+      return groups;
+    },
+    // Compute days-until or days-since for a trip card label
+    tripCardCountdown(t) {
+      if (!t.start_date) return '';
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const start = new Date(t.start_date + 'T00:00:00');
+      const end = t.end_date ? new Date(t.end_date + 'T00:00:00') : start;
+      const oneDay = 24 * 60 * 60 * 1000;
+      if (end < today) {
+        const daysSince = Math.round((today - end) / oneDay);
+        return daysSince === 0 ? 'terminó hoy' : `terminó hace ${daysSince}d`;
+      }
+      if (start <= today && today <= end) return 'en curso';
+      const daysUntil = Math.round((start - today) / oneDay);
+      if (daysUntil === 0) return 'arranca hoy';
+      if (daysUntil === 1) return 'mañana';
+      return `en ${daysUntil} días`;
+    },
+    // Pretty-print date range for a trip card (e.g., "19 → 25 oct 2026")
+    tripCardDates(t) {
+      if (!t.start_date || !t.end_date) return '';
+      try {
+        const locale = this.operator?.brand_config?.language_default || 'es';
+        const s = new Date(t.start_date + 'T00:00:00');
+        const e = new Date(t.end_date + 'T00:00:00');
+        const sameMonth = s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear();
+        const sameYear = s.getFullYear() === e.getFullYear();
+        if (sameMonth) {
+          const monthYear = e.toLocaleDateString(locale, { month: 'short', year: 'numeric' });
+          return `${s.getDate()} → ${e.getDate()} ${monthYear}`;
+        }
+        if (sameYear) {
+          const sStr = s.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+          const eStr = e.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+          return `${sStr} → ${eStr}`;
+        }
+        const sStr = s.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+        const eStr = e.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+        return `${sStr} → ${eStr}`;
+      } catch (e) { return ''; }
+    },
+    statusLabel(status) {
+      return ({
+        active: 'En curso',
+        confirmed: 'Confirmado',
+        planning: 'Planificando',
+        draft: 'Borrador',
+        past: 'Terminado',
+        archived: 'Archivado'
+      })[status] || status;
+    },
+    // === NEW TRIP (minimal form for Turno 4; full wizard with category presets in Turno 5) ===
+    // === NEW TRIP WIZARD (Turno 5: rich form using TRIP_CATEGORY_PRESETS) ===
+    // USD-anchored exchange rates table. Used to compute cross-rates when the user
+    // picks any base currency for a new trip. Approximate, updateable from inside
+    // the trip later. Source: rough mid-market rates as of build.
+    _USD_RATES: {
+      USD: 1, EUR: 0.93, CHF: 0.88, GBP: 0.78, ARS: 1180,
+      MXN: 17.5, CAD: 1.38, JPY: 155, BRL: 5.5, CLP: 950, UYU: 40
+    },
+    // Map common country names (es + en) to ISO 4217 currency codes.
+    // Used to auto-pick the base currency when the user types a country.
+    _COUNTRY_TO_CCY: {
+      'italia': 'EUR', 'italy': 'EUR',
+      'francia': 'EUR', 'france': 'EUR',
+      'españa': 'EUR', 'spain': 'EUR',
+      'portugal': 'EUR', 'alemania': 'EUR', 'germany': 'EUR',
+      'austria': 'EUR', 'países bajos': 'EUR', 'netherlands': 'EUR',
+      'grecia': 'EUR', 'greece': 'EUR', 'bélgica': 'EUR', 'belgium': 'EUR',
+      'suiza': 'CHF', 'switzerland': 'CHF',
+      'reino unido': 'GBP', 'uk': 'GBP', 'united kingdom': 'GBP', 'inglaterra': 'GBP',
+      'estados unidos': 'USD', 'usa': 'USD', 'united states': 'USD', 'eeuu': 'USD',
+      'méxico': 'MXN', 'mexico': 'MXN',
+      'canadá': 'CAD', 'canada': 'CAD',
+      'argentina': 'ARS',
+      'uruguay': 'UYU',
+      'chile': 'CLP',
+      'brasil': 'BRL', 'brazil': 'BRL',
+      'japón': 'JPY', 'japan': 'JPY'
+    },
+    _currencyForCountry(country) {
+      if (!country) return null;
+      return this._COUNTRY_TO_CCY[country.trim().toLowerCase()] || null;
+    },
+    _fxRelativeTo(base) {
+      const rates = this._USD_RATES;
+      const baseRate = rates[base] || 1;
+      const out = {};
+      for (const cur in rates) {
+        // 1 base = X target  →  target = rates[target] / rates[base]
+        const rate = rates[cur] / baseRate;
+        // Round to sensible precision: 4 decimals for small numbers, integers for ARS-scale
+        out[cur] = rate > 100 ? Math.round(rate) : Math.round(rate * 10000) / 10000;
+      }
+      return out;
+    },
+    // When the user types/changes the country, suggest a default currency
+    onCountryBlur() {
+      const ccy = this._currencyForCountry(this.newTripForm.country);
+      if (ccy) this.newTripForm.base_currency = ccy;
+    },
+    // Preview block: show what the chosen preset will configure
+    get selectedPreset() {
+      return TRIP_CATEGORY_PRESETS[this.newTripForm.category] || TRIP_CATEGORY_PRESETS.gastro;
+    },
+    get presetPaletteColors() {
+      return this.selectedPreset.dayColorPalette || [];
+    },
+
+    openNewTripForm() {
+      this.newTripForm = {
+        open: true,
+        category: 'gastro',
+        title: '',
+        start_date: '',
+        end_date: '',
+        pax: 2,
+        region: '',
+        country: '',
+        basecamp_name: '',
+        basecamp_address: '',
+        base_currency: 'EUR',
+        saving: false
+      };
+    },
+    closeNewTripForm() { this.newTripForm.open = false; },
+    async createNewTrip() {
+      const f = this.newTripForm;
+      if (!f.title.trim() || !f.start_date || !f.end_date) {
+        this.toast('Completá título y fechas', 'error');
+        return;
+      }
+      if (new Date(f.end_date) < new Date(f.start_date)) {
+        this.toast('La fecha fin tiene que ser después del inicio', 'error');
+        return;
+      }
+      f.saving = true;
+      // Build a slug from title + year (avoid duplication if title already contains the year)
+      const baseSlug = (f.title || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+      const year = new Date(f.start_date).getFullYear();
+      const slug = baseSlug.endsWith('-' + year) || baseSlug.endsWith(String(year))
+        ? baseSlug
+        : `${baseSlug}-${year}`;
+      // Check slug doesn't collide
+      const { data: existing } = await this._client
+        .from('trips').select('id').eq('id', slug).maybeSingle();
+      if (existing) {
+        this.toast('Ya existe un viaje con ese nombre y año', 'error');
+        f.saving = false;
+        return;
+      }
+      // Apply the chosen category preset
+      const preset = TRIP_CATEGORY_PRESETS[f.category] || TRIP_CATEGORY_PRESETS.gastro;
+      const baseCcy = f.base_currency || 'EUR';
+      const fx = this._fxRelativeTo(baseCcy);
+      // Build meta from form + preset
+      const startD = new Date(f.start_date + 'T00:00:00');
+      const endD = new Date(f.end_date + 'T00:00:00');
+      const nights = Math.max(0, Math.round((endD - startD) / (24 * 60 * 60 * 1000)));
+      const monthsEs = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      const shortPeriod = monthsEs[startD.getMonth()] + ' ' + startD.getFullYear();
+      // Derive a short version of basecamp name (e.g., "Chalet Suvretta" → "Suvretta")
+      const bcName = f.basecamp_name.trim();
+      const bcShort = bcName ? bcName.split(/\s+/).slice(-2).join(' ') : '';
+      // Derive a short label (first significant word) for the trip
+      const tripShortLabel = f.title.trim().split(/[\s\-—\/·]+/).filter(Boolean)[0] || f.title.trim();
+      const newData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      newData.meta = {
+        ...newData.meta,
+        tripName: f.title.trim(),
+        tripShortLabel,
+        region: f.region.trim() || f.title.trim(),
+        shortPeriod,
+        country: f.country.trim(),
+        startDate: f.start_date,
+        endDate: f.end_date,
+        nights,
+        pax: parseInt(f.pax, 10) || 2,
+        payingPax: parseInt(f.pax, 10) || 2,
+        paxComposition: '',
+        ticketUSD: 0,
+        language: this.operator?.brand_config?.language_default || 'es',
+        locale: this.operator?.brand_config?.language_default || 'es',
+        baseCurrency: baseCcy,
+        viewCurrency: baseCcy,
+        category: f.category,  // store the wizard's category choice for stable detection
+        fx,
+        basecamp: {
+          label: preset.basecampLabel,
+          type: preset.basecampType,
+          name: bcName,
+          shortName: bcShort,
+          address: f.basecamp_address.trim(),
+          cost: 0,
+          status: '',
+          coords: null,
+          timezone: ''
+        },
+        providerTypes: preset.providerTypes,
+        dayColorPalette: preset.dayColorPalette,
+        weatherClimatology: [],
+        heroImages: []
+      };
+      // Empty itinerary days (one per trip day)
+      newData.itinerary = [];
+      const cur = new Date(startD);
+      const weekdays = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+      let dayNum = 1;
+      while (cur <= endD) {
+        const iso = cur.toISOString().slice(0, 10);
+        newData.itinerary.push({
+          id: 'd' + dayNum,
+          dayNumber: dayNum,
+          date: iso,
+          weekday: weekdays[cur.getDay()],
+          title: '',
+          status: 'pending',
+          slots: []
+        });
+        cur.setDate(cur.getDate() + 1);
+        dayNum++;
+      }
+      newData.providers = [];
+      newData.actions = [];
+      newData.budget = [];
+      newData.changes = [];
+      try {
+        // Insert with denormalized columns populated
+        const denorm = {
+          operator_id: this.operator.id,
+          title: newData.meta.tripName,
+          start_date: f.start_date,
+          end_date: f.end_date,
+          region_label: newData.meta.region,
+          pax_count: parseInt(f.pax, 10) || 2,
+          status: 'planning'
+        };
+        const { error } = await this._client.from('trips').insert({
+          id: slug,
+          data: newData,
+          updated_by: this.identity || 'sistema',
+          ...denorm
+        });
+        if (error) throw error;
+        this.toast(`✓ "${newData.meta.tripName}" creado`, 'success');
+        // Refresh trip list and navigate into the new trip
+        await this.loadTripList();
+        this.closeNewTripForm();
+        this.navigateToTrip(slug);
+      } catch (e) {
+        console.error('Create trip failed:', e);
+        this.toast('Error creando el viaje: ' + (e.message || ''), 'error');
+      } finally {
+        f.saving = false;
+      }
+    },
+
+    // === CLONE TRIP ===
+    // Duplicates an existing trip as a starting skeleton for a new one. The clone
+    // preserves the operator's curatorial work (providers, slot titles, basecamp
+    // config, providerType taxonomy) while resetting status, dates, and identifying
+    // identifiers (slug, updated_by, updated_at). Snapshots/comments/changes log
+    // are NOT cloned — they belong to the source trip.
+    async openCloneForm(tripId) {
+      this.cardMenuOpen = null;
+      // Fetch the full source trip data (we need 'data' jsonb, not just denorm columns)
+      try {
+        const { data, error } = await this._client
+          .from('trips').select('*').eq('id', tripId).maybeSingle();
+        if (error) throw error;
+        if (!data) {
+          this.toast('No se pudo cargar el viaje original', 'error');
+          return;
+        }
+        // Default new dates: same duration, starting one year after the source
+        const srcStart = data.start_date ? new Date(data.start_date + 'T00:00:00') : new Date();
+        const srcEnd = data.end_date ? new Date(data.end_date + 'T00:00:00') : new Date();
+        const newStart = new Date(srcStart); newStart.setFullYear(newStart.getFullYear() + 1);
+        const newEnd = new Date(srcEnd); newEnd.setFullYear(newEnd.getFullYear() + 1);
+        const toISO = (d) => d.toISOString().slice(0, 10);
+        this.cloneForm = {
+          open: true,
+          source: data,
+          title: (data.title || data.id) + ' — copia',
+          start_date: toISO(newStart),
+          end_date: toISO(newEnd),
+          include_providers: true,
+          include_slots: true,
+          reset_costs: false,
+          saving: false
+        };
+      } catch (e) {
+        console.error('Clone load failed:', e);
+        this.toast('Error cargando el original', 'error');
+      }
+    },
+    closeCloneForm() { this.cloneForm.open = false; },
+    async runCloneTrip() {
+      const f = this.cloneForm;
+      if (!f.source || !f.title.trim() || !f.start_date || !f.end_date) {
+        this.toast('Faltan datos', 'error');
+        return;
+      }
+      if (new Date(f.end_date) < new Date(f.start_date)) {
+        this.toast('La fecha fin tiene que ser después del inicio', 'error');
+        return;
+      }
+      f.saving = true;
+      // Build slug
+      const baseSlug = (f.title || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+      const year = new Date(f.start_date).getFullYear();
+      const slug = baseSlug.endsWith('-' + year) || baseSlug.endsWith(String(year))
+        ? baseSlug
+        : `${baseSlug}-${year}`;
+      // Check slug doesn't collide
+      const { data: existing } = await this._client
+        .from('trips').select('id').eq('id', slug).maybeSingle();
+      if (existing) {
+        this.toast('Ya existe un viaje con ese nombre y año', 'error');
+        f.saving = false;
+        return;
+      }
+      // Deep clone the source data
+      const newData = JSON.parse(JSON.stringify(f.source.data));
+      // Reset trip-level metadata
+      const startD = new Date(f.start_date + 'T00:00:00');
+      const endD = new Date(f.end_date + 'T00:00:00');
+      const nights = Math.max(0, Math.round((endD - startD) / (24 * 60 * 60 * 1000)));
+      const monthsEs = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      const shortPeriod = monthsEs[startD.getMonth()] + ' ' + startD.getFullYear();
+      newData.meta = {
+        ...newData.meta,
+        tripName: f.title.trim(),
+        startDate: f.start_date,
+        endDate: f.end_date,
+        nights,
+        shortPeriod
+      };
+      // Re-shape the itinerary: keep day count from source, re-assign dates from new range
+      const sourceItinerary = newData.itinerary || [];
+      const newItinerary = [];
+      const weekdays = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+      const sourceDayCount = sourceItinerary.length;
+      const newDayCount = Math.max(0, Math.round((endD - startD) / (24 * 60 * 60 * 1000))) + 1;
+      const cur = new Date(startD);
+      let i = 0;
+      while (cur <= endD) {
+        const iso = cur.toISOString().slice(0, 10);
+        if (i < sourceItinerary.length) {
+          // Copy source day (with optional slot stripping)
+          const srcDay = sourceItinerary[i];
+          const cloned = {
+            ...srcDay,
+            id: 'd' + (i + 1),
+            dayNumber: i + 1,
+            date: iso,
+            weekday: weekdays[cur.getDay()],
+            status: 'pending',  // reset status
+            slots: f.include_slots
+              ? (srcDay.slots || []).map(s => ({
+                  ...s,
+                  id: 's' + Date.now() + Math.floor(Math.random() * 10000) + i + '-' + Math.floor(Math.random() * 10000),
+                  status: 'pending',
+                  // Strip provider refs if user opted out of providers
+                  providerId: f.include_providers ? s.providerId : null
+                }))
+              : []
+          };
+          newItinerary.push(cloned);
+        } else {
+          // Source had fewer days — pad with empty
+          newItinerary.push({
+            id: 'd' + (i + 1),
+            dayNumber: i + 1,
+            date: iso,
+            weekday: weekdays[cur.getDay()],
+            title: '',
+            status: 'pending',
+            slots: []
+          });
+        }
+        cur.setDate(cur.getDate() + 1);
+        i++;
+      }
+      newData.itinerary = newItinerary;
+      // Providers: keep ids stable (slots already reference them) but optionally reset their costs
+      if (!f.include_providers) {
+        newData.providers = [];
+        // If providers stripped, slot.providerId already nulled above
+      } else if (f.reset_costs) {
+        newData.providers = (newData.providers || []).map(p => ({
+          ...p,
+          cost: 0,
+          status: 'pending',
+          confirmed: false,
+          deposit: 0,
+          balance: 0
+        }));
+      }
+      // Reset budget amounts if requested (preserve item structure)
+      if (f.reset_costs) {
+        newData.budget = (newData.budget || []).map(b => ({ ...b, amount: 0 }));
+      }
+      // Wipe trip-instance-specific data
+      newData.actions = (newData.actions || []).map(a => ({ ...a, completed: false, done: false }));
+      newData.changes = [];  // not used at data layer, lives in 'changes' table per trip
+      try {
+        const denorm = {
+          operator_id: this.operator.id,
+          title: newData.meta.tripName,
+          start_date: f.start_date,
+          end_date: f.end_date,
+          region_label: newData.meta.region,
+          pax_count: newData.meta.pax || 2,
+          status: 'planning'
+        };
+        const { error } = await this._client.from('trips').insert({
+          id: slug,
+          data: newData,
+          updated_by: this.identity || 'sistema',
+          ...denorm
+        });
+        if (error) throw error;
+        this.toast(`✓ Clonado como "${newData.meta.tripName}"`, 'success');
+        await this.loadTripList();
+        this.closeCloneForm();
+        this.navigateToTrip(slug);
+      } catch (e) {
+        console.error('Clone trip failed:', e);
+        this.toast('Error clonando: ' + (e.message || ''), 'error');
+      } finally {
+        f.saving = false;
+      }
+    },
+
+    // === ARCHIVE TRIP ===
+    async archiveTrip(tripId) {
+      const trip = this.tripList.find(t => t.id === tripId);
+      if (!trip) return;
+      this.cardMenuOpen = null;
+      const ok = await this.askConfirm({
+        title: '¿Archivar "' + trip.title + '"?',
+        body: 'Se va a mover al grupo "Archivados" en la home. Podés desarchivar después.',
+        confirmLabel: 'Archivar'
+      });
+      if (!ok) return;
+      try {
+        await this._client.from('trips').update({
+          status: 'archived',
+          archived_at: new Date().toISOString()
+        }).eq('id', tripId);
+        await this.loadTripList();
+        this.toast('Archivado', 'success');
+      } catch (e) {
+        console.error('Archive failed:', e);
+        this.toast('Error archivando', 'error');
+      }
+    },
+    async unarchiveTrip(tripId) {
+      this.cardMenuOpen = null;
+      try {
+        // Recompute status from dates
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const trip = this.tripList.find(t => t.id === tripId);
+        if (!trip) return;
+        const start = trip.start_date ? new Date(trip.start_date + 'T00:00:00') : null;
+        const end = trip.end_date ? new Date(trip.end_date + 'T00:00:00') : null;
+        let newStatus = 'planning';
+        if (end && end < today) newStatus = 'past';
+        else if (start && end && start <= today && today <= end) newStatus = 'active';
+        else if (start) {
+          const daysToStart = Math.round((start - today) / (24 * 60 * 60 * 1000));
+          if (daysToStart < 30) newStatus = 'confirmed';
+        }
+        await this._client.from('trips').update({
+          status: newStatus,
+          archived_at: null
+        }).eq('id', tripId);
+        await this.loadTripList();
+        this.toast('Desarchivado', 'success');
+      } catch (e) {
+        console.error('Unarchive failed:', e);
+        this.toast('Error', 'error');
+      }
+    },
+
+    // === DAY TEMPLATES ===
+    // Save the current day's structure as a reusable template. Stored at the
+    // operator level so any trip of the same operator can apply it.
+    openSaveTemplateForm(dayId) {
+      const day = this.data.itinerary.find(d => d.id === dayId);
+      if (!day) return;
+      const defaultName = day.title ? `Día: ${day.title}` : `Día ${day.dayNumber || ''}`;
+      this.saveTemplateForm = {
+        open: true,
+        dayId,
+        name: defaultName.trim(),
+        description: '',
+        include_provider_refs: false,
+        saving: false
+      };
+    },
+    closeSaveTemplateForm() { this.saveTemplateForm.open = false; },
+    async saveDayAsTemplate() {
+      const f = this.saveTemplateForm;
+      const day = this.data.itinerary.find(d => d.id === f.dayId);
+      if (!day) return;
+      if (!f.name.trim()) {
+        this.toast('Dale un nombre al template', 'error');
+        return;
+      }
+      f.saving = true;
+      // Build template payload: slot titles, times, durations, providerType hint.
+      // By default we strip provider IDs (they don't make sense across trips); 
+      // user can opt in to keep the refs (only useful when applying to same trip).
+      const slots = (day.slots || []).map(s => ({
+        title: s.title || '',
+        timeStart: s.timeStart || s.time || '',
+        timeEnd: s.timeEnd || '',
+        type: s.type || (s.providerId
+          ? (this.data.providers.find(p => p.id === s.providerId)?.type || null)
+          : null),
+        notes: s.notes || '',
+        providerId: f.include_provider_refs ? (s.providerId || null) : null
+      }));
+      const payload = {
+        operator_id: this.operator.id,
+        kind: 'day',
+        name: f.name.trim(),
+        description: f.description.trim() || null,
+        category: this._detectTripCategory(),
+        source_trip_id: this.TRIP_ID,
+        created_by: this.identity || 'sistema',
+        data: {
+          dayTitle: day.title || '',
+          slots
+        }
+      };
+      try {
+        const { error } = await this._client.from('templates').insert(payload);
+        if (error) throw error;
+        this.toast(`✓ Template "${payload.name}" guardado`, 'success');
+        this.closeSaveTemplateForm();
+      } catch (e) {
+        console.error('Save template failed:', e);
+        this.toast('Error guardando: ' + (e.message || ''), 'error');
+      } finally {
+        f.saving = false;
+      }
+    },
+    // Infer the trip's category by comparing providerTypes to TRIP_CATEGORY_PRESETS.
+    // Fuzzy match: returns the preset with the highest overlap (≥60% of preset types
+    // present in the trip). Used to label templates, filter by category when applying,
+    // and pick hero images per trip.
+    _detectTripCategory() {
+      // First: explicit override from meta (set by the wizard when creating new trips)
+      if (this.data?.meta?.category) return this.data.meta.category;
+      const myTypes = new Set((this.data?.meta?.providerTypes || []).map(t => t.key));
+      if (myTypes.size === 0) return null;
+      let bestCategory = null;
+      let bestScore = 0;
+      for (const cat in TRIP_CATEGORY_PRESETS) {
+        const presetKeys = TRIP_CATEGORY_PRESETS[cat].providerTypes.map(t => t.key);
+        const matches = presetKeys.filter(k => myTypes.has(k)).length;
+        const score = matches / presetKeys.length;
+        if (score > bestScore && score >= 0.6) {
+          bestScore = score;
+          bestCategory = cat;
+        }
+      }
+      return bestCategory;
+    },
+    async openApplyTemplatePicker(dayId) {
+      this.applyTemplatePicker = { open: true, dayId, templates: [], loading: true };
+      try {
+        const myCategory = this._detectTripCategory();
+        const query = this._client
+          .from('templates')
+          .select('*')
+          .eq('operator_id', this.operator.id)
+          .eq('kind', 'day')
+          .order('created_at', { ascending: false });
+        // Filter by category if detectable (universal templates with null category always shown)
+        const { data, error } = await query;
+        if (error) throw error;
+        // Show templates matching this trip's category OR universal (null category)
+        const filtered = (data || []).filter(t => !t.category || t.category === myCategory);
+        this.applyTemplatePicker.templates = filtered;
+      } catch (e) {
+        console.error('Load templates failed:', e);
+        this.toast('Error cargando templates', 'error');
+      } finally {
+        this.applyTemplatePicker.loading = false;
+      }
+    },
+    closeApplyTemplatePicker() { this.applyTemplatePicker.open = false; },
+    async applyTemplate(templateId) {
+      const tmpl = this.applyTemplatePicker.templates.find(t => t.id === templateId);
+      const day = this.data.itinerary.find(d => d.id === this.applyTemplatePicker.dayId);
+      if (!tmpl || !day) return;
+      const ok = await this.askConfirm({
+        title: 'Aplicar template?',
+        body: day.slots && day.slots.length > 0
+          ? `Vas a reemplazar los ${day.slots.length} slots de este día con los ${tmpl.data.slots.length} del template "${tmpl.name}".`
+          : `Vas a agregar ${tmpl.data.slots.length} slots desde "${tmpl.name}".`,
+        confirmLabel: 'Aplicar'
+      });
+      if (!ok) return;
+      // Apply: replace slots with template's. Generate new slot IDs to avoid collisions.
+      const now = Date.now();
+      day.slots = (tmpl.data.slots || []).map((s, idx) => ({
+        id: 's' + now + '-' + idx + '-' + Math.floor(Math.random() * 100000),
+        title: s.title || '',
+        timeStart: s.timeStart || '',
+        timeEnd: s.timeEnd || '',
+        notes: s.notes || '',
+        type: s.type || null,
+        providerId: s.providerId || null,  // usually null unless template was within-trip-only
+        status: 'pending'
+      }));
+      // Optionally apply day title if it was set
+      if (tmpl.data.dayTitle && !day.title) day.title = tmpl.data.dayTitle;
+      this.toast(`✓ "${tmpl.name}" aplicado`, 'success');
+      this.closeApplyTemplatePicker();
+    },
+    async deleteTemplate(templateId) {
+      const tmpl = this.applyTemplatePicker.templates.find(t => t.id === templateId);
+      if (!tmpl) return;
+      const ok = await this.askConfirm({
+        title: '¿Eliminar template?',
+        body: `"${tmpl.name}" se va a borrar y no se va a poder recuperar.`,
+        confirmLabel: 'Eliminar'
+      });
+      if (!ok) return;
+      try {
+        await this._client.from('templates').delete().eq('id', templateId);
+        this.applyTemplatePicker.templates = this.applyTemplatePicker.templates.filter(t => t.id !== templateId);
+        this.toast('Borrado', 'success');
+      } catch (e) {
+        console.error('Delete template failed:', e);
+        this.toast('Error', 'error');
+      }
+    },
+
+    // === PROVIDERS LIBRARY ===
+    // Operator-level shared providers. A trip provider can be "linked" to a library
+    // row via library_id, which means its canonical info (name, type, contact, coords)
+    // lives in the library. Trip-specific data (cost, reservationStatus, notes for
+    // this group) stays in the trip provider.
+    async loadLibrary() {
+      if (!this._client || !this.operator?.id) return;
+      this.libraryLoading = true;
+      try {
+        const { data, error } = await this._client
+          .from('providers_library')
+          .select('*')
+          .eq('operator_id', this.operator.id)
+          .order('updated_at', { ascending: false });
+        if (error) throw error;
+        this.library = data || [];
+        // Augment each library row with a usage count: how many trips reference it
+        // via providers[].library_id. One query scanning all trips' data jsonb.
+        await this._enrichLibraryUsage();
+      } catch (e) {
+        console.warn('Library load failed:', e);
+        this.library = [];
+      } finally {
+        this.libraryLoading = false;
+      }
+    },
+    async _enrichLibraryUsage() {
+      if (this.library.length === 0) return;
+      try {
+        // Fetch every trip's providers jsonb (just the IDs) — relatively cheap with 2-10 trips
+        const { data, error } = await this._client
+          .from('trips')
+          .select('id, title, data')
+          .eq('operator_id', this.operator.id);
+        if (error) throw error;
+        // Build {library_id → [trip titles]} map
+        const usage = new Map();
+        (data || []).forEach(trip => {
+          const providers = trip.data?.providers || [];
+          providers.forEach(p => {
+            if (!p.library_id) return;
+            if (!usage.has(p.library_id)) usage.set(p.library_id, []);
+            const arr = usage.get(p.library_id);
+            if (!arr.includes(trip.title)) arr.push(trip.title);
+          });
+        });
+        // Mutate library entries in place (Alpine reactivity catches this)
+        this.library = this.library.map(l => ({
+          ...l,
+          _usage_count: (usage.get(l.id) || []).length,
+          _usage_trips: usage.get(l.id) || []
+        }));
+      } catch (e) {
+        console.warn('Library usage enrich failed:', e);
+      }
+    },
+    get filteredLibrary() {
+      const q = (this.librarySearch || '').trim().toLowerCase();
+      return this.library.filter(p => {
+        if (this.libraryFilter !== 'all' && p.type !== this.libraryFilter) return false;
+        if (!q) return true;
+        const haystack = [p.name, p.type, p.contact?.address, p.contact?.phone, p.contact?.web]
+          .filter(Boolean).join(' ').toLowerCase();
+        return haystack.includes(q);
+      });
+    },
+    // Types present in the library, for filter chips
+    get libraryTypes() {
+      const types = new Map();
+      this.library.forEach(p => {
+        if (p.type) types.set(p.type, (types.get(p.type) || 0) + 1);
+      });
+      return Array.from(types.entries()).map(([key, count]) => ({ key, count }));
+    },
+    // === PROMOTE: save a trip provider to the library ===
+    async promoteToLibrary(provider) {
+      if (!this._client || !this.operator?.id) {
+        this.toast('No conectado a la nube', 'error');
+        return;
+      }
+      return await this._promoteOne(provider);
+    },
+    // Internal: shared logic so bulk + single use the same code path.
+    // Returns true on success, false on skip/error.
+    async _promoteOne(provider, options = {}) {
+      const silent = options.silent === true;
+      if (provider.library_id) return false;  // already linked
+      const name = (provider.name || '').trim();
+      if (!name) {
+        if (!silent) this.toast('El proveedor necesita un nombre antes de promover', 'error');
+        return false;
+      }
+      const libId = 'lib_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      const payload = {
+        id: libId,
+        operator_id: this.operator.id,
+        name,
+        type: provider.type || null,
+        latitude: provider.latitude || null,
+        longitude: provider.longitude || null,
+        contact: {
+          phone: provider.phone || '',
+          email: provider.email || '',
+          web: provider.web || '',
+          address: provider.location || provider.address || ''
+        },
+        details: {
+          michelin: provider.michelin || 0,
+          priceRange: provider.priceRange || null,
+          closingDays: provider.closingDays || null,
+          notes: provider.notes || '',
+          mapUrl: provider.mapUrl || null,
+          googlePlaceId: provider.googlePlaceId || null
+        }
+      };
+      try {
+        const { error } = await this._client.from('providers_library').insert(payload);
+        if (error) throw error;
+        provider.library_id = libId;
+        if (!silent) {
+          this.save();
+          this.toast(`✓ "${name}" en la biblioteca`, 'success');
+          this.logEvent && this.logEvent('provider.library_promoted', `promovió "${name}" a la biblioteca`, { provider_id: provider.id, library_id: libId });
+        }
+        return true;
+      } catch (e) {
+        console.error('Promote failed:', e);
+        if (!silent) this.toast('Error promoviendo · ' + (e.message || ''), 'error');
+        return false;
+      }
+    },
+    get providersUnlinkedToLibrary() {
+      return (this.data?.providers || []).filter(p => !p.library_id && (p.name || '').trim());
+    },
+    async bulkPromoteToLibrary() {
+      const candidates = this.providersUnlinkedToLibrary;
+      if (candidates.length === 0) {
+        this.toast('Todos ya están en la biblioteca', 'info');
+        return;
+      }
+      const ok = await this.askConfirm({
+        title: `¿Promover ${candidates.length} proveedores?`,
+        body: `Los ${candidates.length} proveedores de este viaje que aún no están en la biblioteca se van a guardar todos juntos. Cada uno mantiene su info canonical (nombre, tipo, contacto, coords).`,
+        confirmLabel: 'Promover todos'
+      });
+      if (!ok) return;
+      let ok_count = 0;
+      let fail_count = 0;
+      for (const p of candidates) {
+        const success = await this._promoteOne(p, { silent: true });
+        if (success) ok_count++;
+        else fail_count++;
+      }
+      this.save();
+      if (fail_count === 0) {
+        this.toast(`✓ ${ok_count} proveedores en la biblioteca`, 'success');
+      } else {
+        this.toast(`${ok_count} promovidos · ${fail_count} con error`, 'info');
+      }
+      this.logEvent && this.logEvent('provider.library_bulk_promoted', `promovió ${ok_count} proveedores a la biblioteca`, { count: ok_count });
+    },
+    // === SYNC: push current trip provider's canonical fields up to the library row ===
+    async updateLibraryFromProvider(provider) {
+      if (!provider.library_id) return;
+      const ok = await this.askConfirm({
+        title: '¿Subir cambios a la biblioteca?',
+        body: 'El nombre, tipo, contacto y coordenadas de este proveedor van a actualizar la biblioteca del operador. Todos los demás viajes que tengan este proveedor van a ver el cambio.',
+        confirmLabel: 'Sincronizar'
+      });
+      if (!ok) return;
+      try {
+        const patch = {
+          name: (provider.name || '').trim(),
+          type: provider.type || null,
+          latitude: provider.latitude || null,
+          longitude: provider.longitude || null,
+          contact: {
+            phone: provider.phone || '',
+            email: provider.email || '',
+            web: provider.web || '',
+            address: provider.location || provider.address || ''
+          },
+          details: {
+            michelin: provider.michelin || 0,
+            priceRange: provider.priceRange || null,
+            closingDays: provider.closingDays || null,
+            notes: provider.notes || '',
+            mapUrl: provider.mapUrl || null,
+            googlePlaceId: provider.googlePlaceId || null
+          },
+          updated_at: new Date().toISOString()
+        };
+        await this._client.from('providers_library').update(patch).eq('id', provider.library_id);
+        this.toast('Biblioteca actualizada', 'success');
+      } catch (e) {
+        console.error('Library sync failed:', e);
+        this.toast('Error sincronizando', 'error');
+      }
+    },
+    async unlinkFromLibrary(provider) {
+      const ok = await this.askConfirm({
+        title: '¿Desvincular de la biblioteca?',
+        body: 'Este proveedor queda independiente. La biblioteca no se borra · solo se rompe el link.',
+        confirmLabel: 'Desvincular'
+      });
+      if (!ok) return;
+      provider.library_id = null;
+      this.save();
+      this.toast('Desvinculado', 'success');
+    },
+    // === IMPORT: pick from library + add to current trip ===
+    async openLibraryImport() {
+      this.libraryImport = { open: true, selectedIds: new Set(), loading: true };
+      await this.loadLibrary();
+      this.libraryImport.loading = false;
+    },
+    closeLibraryImport() {
+      this.libraryImport.open = false;
+      this.libraryImport.selectedIds = new Set();
+    },
+    toggleLibrarySelection(id) {
+      const s = this.libraryImport.selectedIds;
+      if (s.has(id)) s.delete(id);
+      else s.add(id);
+      // Trigger reactivity (Sets aren't deeply tracked)
+      this.libraryImport.selectedIds = new Set(s);
+    },
+    isLibrarySelected(id) {
+      return this.libraryImport.selectedIds.has(id);
+    },
+    async runLibraryImport() {
+      const ids = Array.from(this.libraryImport.selectedIds);
+      if (ids.length === 0) {
+        this.toast('Seleccioná al menos uno', 'error');
+        return;
+      }
+      const selected = this.library.filter(l => ids.includes(l.id));
+      // Skip ones already linked in this trip (idempotent import)
+      const alreadyLinked = new Set((this.data.providers || []).map(p => p.library_id).filter(Boolean));
+      const toAdd = selected.filter(l => !alreadyLinked.has(l.id));
+      if (toAdd.length === 0) {
+        this.toast('Estos proveedores ya están en el viaje', 'info');
+        this.closeLibraryImport();
+        return;
+      }
+      const newProviders = toAdd.map(l => {
+        const c = l.contact || {};
+        const d = l.details || {};
+        return {
+          id: 'p' + Date.now() + Math.floor(Math.random() * 100000) + '_' + l.id.slice(-4),
+          library_id: l.id,
+          name: l.name,
+          type: l.type || 'service',
+          latitude: l.latitude,
+          longitude: l.longitude,
+          phone: c.phone || '',
+          email: c.email || '',
+          web: c.web || '',
+          location: c.address || '',
+          michelin: d.michelin || 0,
+          priceRange: d.priceRange || null,
+          closingDays: d.closingDays || null,
+          notes: d.notes || '',
+          mapUrl: d.mapUrl || null,
+          googlePlaceId: d.googlePlaceId || null,
+          cost: 0,
+          reservationStatus: 'pending',
+          confirmed: false
+        };
+      });
+      this.data.providers = [...(this.data.providers || []), ...newProviders];
+      this.save();
+      this.toast(`✓ ${newProviders.length} proveedor${newProviders.length === 1 ? '' : 'es'} importado${newProviders.length === 1 ? '' : 's'}`, 'success');
+      this.closeLibraryImport();
+    },
+
+    // === LOCALSTORAGE SCOPING ===
+    // Two scopes:
+    //   'trip' — per-trip preferences (map mode, history seen, offline data cache).
+    //            Prefixed with TRIP_ID so each trip has its own.
+    //   'user' — cross-trip preferences (theme, identity name).
+    //            Prefixed with 'bna:' (Blisniuk & Amanov operator scope).
+    // Legacy keys with 'piemonte-' prefix are migrated to scoped form on first init.
+    _storeKey(suffix, scope) {
+      if (scope === 'user') return 'bna:' + suffix;
+      return (this.TRIP_ID || 'unknown-trip') + ':' + suffix;
+    },
+    _migrateLocalStorageKeys() {
+      // One-time copy of legacy keys to new scoped keys. Idempotent — only copies
+      // if scoped key doesn't already exist. Old keys preserved for safety.
+      // Legacy keys all belong to piemonte-ba-twt-2026 since it was the only trip
+      // before multi-trip support was added.
+      const legacyTrip = 'piemonte-ba-twt-2026';
+      const migrateOne = (oldKey, newKey) => {
+        try {
+          const v = localStorage.getItem(oldKey);
+          if (v !== null && localStorage.getItem(newKey) === null) {
+            localStorage.setItem(newKey, v);
+          }
+        } catch (e) {}
+      };
+      // User-scope (cross-trip)
+      migrateOne('piemonte-theme',    'bna:theme');
+      migrateOne('piemonte-identity', 'bna:identity');
+      // Trip-scope (belong to the legacy Piemonte trip)
+      migrateOne('piemonte-history-seen', legacyTrip + ':history-seen');
+      migrateOne('piemonte-map-mode',     legacyTrip + ':map-mode');
+      migrateOne('piemonte-map-day',      legacyTrip + ':map-day');
+      migrateOne('piemonte-ba-twt',       legacyTrip + ':data-cache');
+      // Per-identity mentions-seen keys (dynamic naming)
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('piemonte-mentions-seen-')) {
+            const identity = k.slice('piemonte-mentions-seen-'.length);
+            const newKey = legacyTrip + ':mentions-seen:' + identity;
+            migrateOne(k, newKey);
+          }
+        }
+      } catch (e) { console.warn('Storage key migration skipped:', e); }
+    },
 
     // === INITIALIZATION ===
     async init() {
@@ -7645,16 +10443,14 @@ function app() {
       if (this._initialized) return;
       this._initialized = true;
 
+      // One-time migration of legacy 'piemonte-X' localStorage keys → scoped form
+      this._migrateLocalStorageKeys();
+
       // Load theme (was applied to <html> by inline pre-Alpine script)
       this.theme = document.documentElement.getAttribute('data-theme') || 'light';
 
-      // Load identity from localStorage
-      this.identity = localStorage.getItem('piemonte-identity');
-      // Load "seen" timestamps for reactive computeds
-      this._historySeenAt = parseInt(localStorage.getItem('piemonte-history-seen') || '0', 10);
-      if (this.identity) {
-        this._mentionsSeenAt = parseInt(localStorage.getItem('piemonte-mentions-seen-' + this.identity) || '0', 10);
-      }
+      // Load identity (user-scope, applies across trips)
+      this.identity = localStorage.getItem(this._storeKey('identity', 'user'));
 
       // Tick relative time every 30s
       setInterval(() => { this._now = Date.now(); }, 30000);
@@ -7673,52 +10469,62 @@ function app() {
         console.error('Supabase init failed:', e);
         this.syncStatus = 'offline';
         this.syncLabel = 'Sin sync';
-        this.loadFromLocal();
+        this.currentView = 'home';  // show home in offline mode (will be empty)
         return;
       }
 
-      // Load initial data from cloud (or seed if first run)
-      const loadOk = await this.loadFromCloud();
+      // Load the operator (B&A) for branding + trip listing
+      await this.loadOperator();
 
-      // Subscribe to real-time changes ONLY if load succeeded (table exists)
-      if (loadOk) {
-        this.subscribeToChanges();
-        // Comments: load + subscribe
-        await this.loadComments();
-        this.subscribeToComments();
-        // Snapshots + Changes log
-        await this.loadSnapshots();
-        this.subscribeToSnapshots();
-        await this.loadChanges();
-        this.subscribeToChangesLog();
+      // Listen for hash changes — fires when user navigates between home and trips
+      window.addEventListener('hashchange', () => { this._onRouteChange(); });
+
+      // Initial route dispatch
+      await this._onRouteChange();
+    },
+
+    // === ROUTE-AWARE TRIP LOAD ===
+    // Called from _onRouteChange when entering trip view. Loads the trip's data
+    // from Supabase + sets up real-time sync + fires weather/geocoding/travel-times.
+    async _enterTripView() {
+      // Load trip-scoped "seen" timestamps now that TRIP_ID is set
+      this._historySeenAt = parseInt(localStorage.getItem(this._storeKey('history-seen')) || '0', 10);
+      if (this.identity) {
+        this._mentionsSeenAt = parseInt(localStorage.getItem(this._storeKey('mentions-seen:' + this.identity)) || '0', 10);
       }
-
-      // Watch for local changes -> save to cloud
-      this.$watch('data', () => {
-        if (this.applyingRemote) return;
-        this.saveToCloud();
-      }, { deep: true });
-
-      // Ensure DEFAULT_DATA shape is migrated (safety net for offline mode)
-      this.data = this.migrateData(this.data);
-
-      // Fetch weather (non-blocking)
+      // Load trip data
+      const loadOk = await this.loadFromCloud();
+      if (!loadOk || this.currentView === 'not-found') return;
+      // Wire up the trip-level subscriptions and side-effects
+      this.subscribeToChanges();
+      await this.loadComments();
+      this.subscribeToComments();
+      await this.loadSnapshots();
+      this.subscribeToSnapshots();
+      await this.loadChanges();
+      this.subscribeToChangesLog();
+      // Watch for local changes -> save to cloud (only set up once per session)
+      if (!this._dataWatcherSet) {
+        this._dataWatcherSet = true;
+        this.$watch('data', () => {
+          if (this.applyingRemote || this.currentView !== 'trip') return;
+          this.saveToCloud();
+        }, { deep: true });
+      }
+      // Validate and apply title
+      this._validateMeta();
+      this._applyDocumentTitle();
+      // Background services
       this.fetchWeather();
-
-      // Background: fetch missing travel times via OSRM (non-blocking)
-      // Fires shortly after init so the first paint isn't blocked
       setTimeout(() => this.refreshAllTravelTimes(), 1500);
-
-      // One-shot: auto-geocode the villa via Google Places if it lacks coords.
-      // Cheap (1 API call), silent, only runs once per session.
       setTimeout(() => this._autoGeocodeVillaIfNeeded(), 3000);
     },
 
     // === IDENTITY ===
     setIdentity(name) {
       this.identity = name;
-      localStorage.setItem('piemonte-identity', name);
-      this._mentionsSeenAt = parseInt(localStorage.getItem('piemonte-mentions-seen-' + name) || '0', 10);
+      localStorage.setItem(this._storeKey('identity', 'user'), name);
+      this._mentionsSeenAt = parseInt(localStorage.getItem(this._storeKey('mentions-seen:' + name)) || '0', 10);
     },
     async switchIdentity() {
       const ok = await this.askConfirm({
@@ -7727,7 +10533,7 @@ function app() {
         confirmLabel: 'Cambiar',
       });
       if (ok) {
-        localStorage.removeItem('piemonte-identity');
+        localStorage.removeItem(this._storeKey('identity', 'user'));
         this.identity = null;
       }
     },
@@ -7736,7 +10542,7 @@ function app() {
     toggleTheme() {
       this.theme = (this.theme === 'dark') ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', this.theme);
-      try { localStorage.setItem('piemonte-theme', this.theme); } catch(e) {}
+      try { localStorage.setItem(this._storeKey('theme', 'user'), this.theme); } catch(e) {}
     },
 
     // === V5 · DRAWERS ===
@@ -7786,12 +10592,15 @@ function app() {
     },
     get heroEyebrow() {
       const d = this.daysUntilTrip;
-      if (d === 0) return 'In viaggio · Piemonte';
+      const label = this.data?.meta?.tripShortLabel || 'el viaje';
+      if (d === 0) return 'In viaggio · ' + label;
       if (d === 1) return 'Mañana · partida';
       if (d <= 7) return 'Última semana · alerta';
       if (d <= 30) return 'Último mes · cierre de cabos';
       if (d <= 90) return 'Sprint final · 90 días';
-      return 'Piemonte · Oct 2026';
+      const region = this.data?.meta?.region || label;
+      const period = this.data?.meta?.shortPeriod || '';
+      return period ? (region + ' · ' + period) : region;
     },
     get heroGreeting() {
       const h = new Date().getHours();
@@ -7850,34 +10659,40 @@ function app() {
           this.data = this.migrateData(row.data);
           this.lastUpdatedBy = row.updated_by;
           this.lastUpdatedAt = row.updated_at;
+          // Capture the trip row metadata (denormalized columns) for home page use.
+          // We strip 'data' since this.data already holds it (avoids duplication).
+          this.tripRow = { ...row };
+          delete this.tripRow.data;
+          this._applyDocumentTitle();
           this.$nextTick(() => { this.applyingRemote = false; });
           this.syncStatus = 'online';
           this.syncLabel = 'Sincronizado';
+          // If the row was created before Turno 3 (denormalized cols may be stale or null),
+          // sync them now so the home page lists this trip correctly.
+          const denorm = this._tripDenormFromMeta();
+          const needsBackfill =
+            row.title !== denorm.title ||
+            row.region_label !== denorm.region_label ||
+            row.pax_count !== denorm.pax_count;
+          if (needsBackfill) {
+            try {
+              await this._client.from('trips').update(denorm).eq('id', this.TRIP_ID);
+              Object.assign(this.tripRow, denorm);
+            } catch (e) { console.warn('Denorm backfill skipped:', e); }
+          }
+          return true;
         } else {
-          // First run — seed cloud with defaults (or local data if exists)
-          const local = localStorage.getItem('piemonte-ba-twt');
-          const seedData = this.migrateData(local ? JSON.parse(local) : JSON.parse(JSON.stringify(DEFAULT_DATA)));
-          const { error: insertError } = await this._client
-            .from('trips')
-            .insert({
-              id: this.TRIP_ID,
-              data: seedData,
-              updated_by: this.identity || 'sistema',
-              updated_at: new Date().toISOString()
-            });
-          if (insertError) throw insertError;
-          this.data = seedData;
-          this.lastUpdatedBy = this.identity || 'sistema';
-          this.lastUpdatedAt = new Date().toISOString();
-          this.syncStatus = 'online';
-          this.syncLabel = 'Inicializado';
+          // Trip not found at this slug. In multi-trip mode this is a navigation
+          // error — show a "not found" view rather than silently creating a trip.
+          this.currentView = 'not-found';
+          this.syncStatus = 'offline';
+          this.syncLabel = '';
+          return false;
         }
-        return true;
       } catch (e) {
         console.error('Load from cloud failed:', e);
         this.syncStatus = 'offline';
         this.syncLabel = 'Sin sync · solo local';
-        this.loadFromLocal();
         if (e.message && e.message.includes('schema cache')) {
           setTimeout(() => this.notify('⚠ La tabla "trips" no existe aún. Corré el SQL setup en Supabase.'), 1000);
         }
@@ -7887,7 +10702,7 @@ function app() {
 
     async saveToCloud() {
       // Always save local as fallback
-      try { localStorage.setItem('piemonte-ba-twt', JSON.stringify(this.data)); } catch (e) {}
+      try { localStorage.setItem(this._storeKey('data-cache'), JSON.stringify(this.data)); } catch (e) {}
 
       if (!this._client || !this.isOnline) {
         this.syncStatus = 'offline';
@@ -7901,12 +10716,17 @@ function app() {
       this.saveTimeout = setTimeout(async () => {
         try {
           const now = new Date().toISOString();
+          // Compute denormalized columns from data.meta. Stored separately from
+          // the JSON so the home page can list/filter trips cheaply without
+          // deserializing every full data blob.
+          const denorm = this._tripDenormFromMeta();
           const { error } = await this._client
             .from('trips')
             .update({
               data: this.data,
               updated_by: this.identity || 'anónimo',
-              updated_at: now
+              updated_at: now,
+              ...denorm
             })
             .eq('id', this.TRIP_ID);
 
@@ -7957,7 +10777,7 @@ function app() {
 
     loadFromLocal() {
       try {
-        const stored = localStorage.getItem('piemonte-ba-twt');
+        const stored = localStorage.getItem(this._storeKey('data-cache'));
         if (stored) {
           const parsed = JSON.parse(stored);
           this.applyingRemote = true;
@@ -8319,13 +11139,22 @@ function app() {
         ensureTravelChipClass();
         const el = document.getElementById('trip-map');
         if (!el) return;
-        // Centro inicial: villa o primer slot resolvible del primer día
-        const villa = this.data.providers.find(p => /villa/i.test(p.name || '') && p.latitude && p.longitude);
-        let center = { lat: 44.66, lng: 8.0 };
-        if (villa) center = { lat: villa.latitude, lng: villa.longitude };
+        // Centro inicial: basecamp si tiene coords, sino el centro de la región del trip (meta.mapCenter)
+        const bcType = this.data.meta?.basecamp?.type || 'villa';
+        const bcName = this.data.meta?.basecamp?.name || '';
+        const basecampProvider = this.data.providers.find(p =>
+          p.latitude && p.longitude &&
+          (p.type === bcType ||
+           (bcName && p.name && p.name.toLowerCase().includes(bcName.toLowerCase().slice(0, 6))))
+        );
+        const fallback = this.data.meta?.mapCenter || { lat: 44.66, lng: 8.0 };
+        let center = basecampProvider
+          ? { lat: basecampProvider.latitude, lng: basecampProvider.longitude }
+          : fallback;
+        const zoom = this.data.meta?.mapZoom || 11;
         this._gmap = new Map(el, {
           center,
-          zoom: 11,
+          zoom,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: true,
@@ -8335,8 +11164,8 @@ function app() {
         });
         // Restore last viewed mode/day from localStorage (default: day I)
         try {
-          const savedMode = localStorage.getItem('piemonte-map-mode');
-          const savedDay = parseInt(localStorage.getItem('piemonte-map-day') || '0', 10);
+          const savedMode = localStorage.getItem(this._storeKey('map-mode'));
+          const savedDay = parseInt(localStorage.getItem(this._storeKey('map-day')) || '0', 10);
           if (savedMode === 'overview') {
             this.mapMode = 'overview';
           } else {
@@ -8379,8 +11208,8 @@ function app() {
       this.mapBottomSheet = null;
       // Persist so reopening the tab returns to the same day
       try {
-        localStorage.setItem('piemonte-map-mode', mode);
-        if (mode === 'day') localStorage.setItem('piemonte-map-day', String(this.mapSelectedDay));
+        localStorage.setItem(this._storeKey('map-mode'), mode);
+        if (mode === 'day') localStorage.setItem(this._storeKey('map-day'), String(this.mapSelectedDay));
       } catch(e) {}
       if (this._gmap) this._renderMapForCurrentMode();
     },
@@ -8421,9 +11250,9 @@ function app() {
         positioned.push({ slot, sIdx, lat: c.lat, lng: c.lon });
       });
       if (positioned.length === 0) {
-        // No coords for any slot — pan to villa fallback
-        const villa = this.data.providers.find(p => /villa/i.test(p.name || '') && p.latitude && p.longitude);
-        if (villa) this._gmap.setCenter({ lat: villa.latitude, lng: villa.longitude });
+        // No coords for any slot — pan to basecamp fallback
+        const basecamp = this.findBasecampProvider();
+        if (basecamp) this._gmap.setCenter({ lat: basecamp.latitude, lng: basecamp.longitude });
         return;
       }
       // Markers
@@ -8485,25 +11314,24 @@ function app() {
     // === OVERVIEW MODE: all providers as type-colored pins ===
     _renderMapOverview() {
       const bounds = new google.maps.LatLngBounds();
-      const villa = this.data.providers.find(p =>
-        (p.type === 'villa' || /villa/i.test(p.name || '')) && p.latitude && p.longitude
-      );
+      const basecamp = this.findBasecampProvider();
+      const basecampColor = this.layerColor(this.data.meta?.basecamp?.type || 'villa');
       const overviewMarkers = [];  // for clusterer
-      if (villa) {
+      if (basecamp) {
         const marker = new google.maps.Marker({
-          position: { lat: villa.latitude, lng: villa.longitude },
-          icon: { url: this._svgStarPin('#6e1a1f'), scaledSize: new google.maps.Size(44, 56), anchor: new google.maps.Point(22, 54) },
-          title: villa.name,
+          position: { lat: basecamp.latitude, lng: basecamp.longitude },
+          icon: { url: this._svgStarPin(basecampColor), scaledSize: new google.maps.Size(44, 56), anchor: new google.maps.Point(22, 54) },
+          title: basecamp.name,
           zIndex: 200
         });
-        marker.addListener('click', () => this.openProviderDrawer(villa.id));
+        marker.addListener('click', () => this.openProviderDrawer(basecamp.id));
         marker.setMap(this._gmap);
         this._gmapMarkers.push(marker);
-        bounds.extend({ lat: villa.latitude, lng: villa.longitude });
+        bounds.extend({ lat: basecamp.latitude, lng: basecamp.longitude });
       }
       // Other providers respecting layer toggles — collected for the clusterer
       this.data.providers.forEach(p => {
-        if (p === villa) return;
+        if (p === basecamp) return;
         const c = this.providerCoords(p);
         if (!c) return;
         if (this.mapLayers[p.type] === false) return;
@@ -8579,18 +11407,11 @@ function app() {
     },
 
     _svgNumberedPin(num, color, typeKey) {
-      // Map provider type → a single-char glyph that renders reliably in SVG
-      // (emojis don't render in SVG <text> in some browsers; using glyphs/letters)
-      const glyphs = {
-        winery: '◆',       // diamond → bottle
-        restaurant: '●',   // dot → plate
-        truffle: '▲',      // triangle → mound
-        activity: '✦',     // sparkle → experience
-        transfer: '→',     // arrow → motion
-        service: '◇',      // hollow diamond
-        villa: '★'
-      };
-      const glyph = glyphs[typeKey] || '';
+      // Glyph for the type comes from data.meta.providerTypes — per-trip config.
+      // Falls back to '' if type unknown or providerTypes empty.
+      const types = this.providerTypes;
+      const found = types.find(t => t.key === typeKey);
+      const glyph = found?.glyph || '';
       const numText = String(num);
       const fontSize = numText.length > 1 ? 13 : 16;
       const numY = glyph ? 22 : 26;
@@ -8684,13 +11505,22 @@ function app() {
     openManualPin(providerId) {
       const provider = this.data.providers.find(p => p.id === providerId);
       if (!provider) return;
-      // Seed with existing coords if any, else villa, else Piemonte center
+      // Seed with existing coords if any, else basecamp, else trip's mapCenter
       let lat = provider.latitude || null;
       let lon = provider.longitude || null;
       if (!lat || !lon) {
-        const villa = this.data.providers.find(p => /villa/i.test(p.name || '') && p.latitude && p.longitude);
-        if (villa) { lat = villa.latitude; lon = villa.longitude; }
-        else { lat = 44.66; lon = 8.0; }
+        const bcType = this.data.meta?.basecamp?.type || 'villa';
+        const bcName = this.data.meta?.basecamp?.name || '';
+        const basecamp = this.data.providers.find(p =>
+          p.latitude && p.longitude &&
+          (p.type === bcType ||
+           (bcName && p.name && p.name.toLowerCase().includes(bcName.toLowerCase().slice(0, 6))))
+        );
+        if (basecamp) { lat = basecamp.latitude; lon = basecamp.longitude; }
+        else {
+          const fallback = this.data.meta?.mapCenter || { lat: 44.66, lng: 8.0 };
+          lat = fallback.lat; lon = fallback.lng;
+        }
       }
       this.manualPin = {
         open: true,
@@ -9088,7 +11918,7 @@ function app() {
       const cur = currency || this.data.meta?.viewCurrency || 'EUR';
       const n = Math.round(Number(amount) || 0);
       const symbol = { EUR: '€', USD: 'US$', ARS: 'AR$' }[cur] || cur + ' ';
-      return symbol + n.toLocaleString('es');
+      return symbol + n.toLocaleString(this.data?.meta?.locale || 'es');
     },
     budgetItemInView(item) {
       // Amount of one budget item in the currently selected view currency
@@ -9584,7 +12414,9 @@ function app() {
     async _scanOneProvider(PlaceClass, provider) {
       const queryParts = [provider.name];
       if (provider.location) queryParts.push(provider.location);
-      queryParts.push('Piemonte', 'Italy');
+      // Bias search to the trip's region/country
+      if (this.data.meta?.region) queryParts.push(this.data.meta.region);
+      if (this.data.meta?.country) queryParts.push(this.data.meta.country);
       const textQuery = queryParts.filter(Boolean).join(' ');
       const base = {
         providerId: provider.id,
@@ -9734,12 +12566,20 @@ function app() {
       this.slotAC.providerMatches = [];
       try {
         const PlaceClass = await this._getPlaceClass();
+        // Bias query to trip's region/country
+        const regionParts = [];
+        if (this.data.meta?.region) regionParts.push(this.data.meta.region);
+        if (this.data.meta?.country) regionParts.push(this.data.meta.country);
+        const fullQuery = [query, ...regionParts].join(' ');
+        // Language for Places API (it = Italian, de = German for Saint Moritz, en = English)
+        const placesLang = this.data.meta?.language === 'es' ? 'it'  // default to local language for region
+                         : (this.data.meta?.language || 'en');
         const { places } = await PlaceClass.searchByText({
-          textQuery: query + ' Piemonte Italy',
+          textQuery: fullQuery,
           fields: ['displayName', 'formattedAddress', 'location',
                    'internationalPhoneNumber', 'nationalPhoneNumber',
                    'websiteURI', 'googleMapsURI', 'regularOpeningHours', 'id'],
-          language: 'it',
+          language: placesLang,
           maxResultCount: 4
         });
         this.slotAC.googleResults = places || [];
@@ -9817,21 +12657,26 @@ function app() {
       this.refreshAllTravelTimes && this.refreshAllTravelTimes();
     },
 
-    // === SILENT VILLA AUTO-GEOCODE ON FIRST LOAD ===
-    // If the villa provider exists but lacks coords, and we have an address
-    // in data.meta.villa.address, do a one-shot Place search to geocode it.
-    // Fires once per session. Cheap (1 API call).
+    // === SILENT BASECAMP AUTO-GEOCODE ON FIRST LOAD ===
+    // If the basecamp provider exists but lacks coords, and we have an address
+    // in data.meta.basecamp.address, do a one-shot Place search to geocode it.
+    // Fires once per session. Cheap (1 API call). Works for any trip type
+    // (villa, chalet, hotel) — keys off basecamp.type/label rather than "villa".
     _villaGeocodeAttempted: false,
     async _autoGeocodeVillaIfNeeded() {
       if (this._villaGeocodeAttempted) return;
       this._villaGeocodeAttempted = true;
-      // Find a villa provider missing coords
-      const villaProvider = this.data.providers.find(p =>
-        (p.type === 'villa' || /villa/i.test(p.name || '')) &&
-        !(p.latitude && p.longitude)
-      );
-      if (!villaProvider) return;
-      const address = this.data.meta?.villa?.address;
+      const bcType = this.data.meta?.basecamp?.type || 'villa';
+      const bcName = this.data.meta?.basecamp?.name || '';
+      // Find a basecamp-type provider missing coords (by type or name match)
+      const basecampProvider = this.data.providers.find(p => {
+        if (p.latitude && p.longitude) return false;
+        if (p.type === bcType) return true;
+        if (bcName && p.name && p.name.toLowerCase().includes(bcName.toLowerCase().slice(0, 6))) return true;
+        return false;
+      });
+      if (!basecampProvider) return;
+      const address = this.data.meta?.basecamp?.address || this.data.meta?.villa?.address;
       if (!address) return;
       try {
         const PlaceClass = await this._getPlaceClass();
@@ -9845,17 +12690,19 @@ function app() {
         const lat = typeof found.location.lat === 'function' ? found.location.lat() : found.location.lat;
         const lon = typeof found.location.lng === 'function' ? found.location.lng() : found.location.lng;
         if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
-        villaProvider.latitude = lat;
-        villaProvider.longitude = lon;
-        if (!villaProvider.location) villaProvider.location = found.formattedAddress || address;
-        if (!villaProvider.mapUrl) villaProvider.mapUrl = found.googleMapsURI || '';
+        basecampProvider.latitude = lat;
+        basecampProvider.longitude = lon;
+        if (!basecampProvider.location) basecampProvider.location = found.formattedAddress || address;
+        if (!basecampProvider.mapUrl) basecampProvider.mapUrl = found.googleMapsURI || '';
+        // Also update meta.basecamp.coords so weather/map fallback gets accurate seed
+        if (this.data.meta.basecamp) this.data.meta.basecamp.coords = { lat, lon };
         this.save();
-        this.logEvent('villa.auto_geocoded',
-          `Villa geocodificada automáticamente desde dirección`,
-          { provider_id: villaProvider.id });
+        this.logEvent('basecamp.auto_geocoded',
+          `Basecamp geocodificada automáticamente desde dirección`,
+          { provider_id: basecampProvider.id });
         this.refreshAllTravelTimes && this.refreshAllTravelTimes();
       } catch (e) {
-        console.warn('Villa auto-geocode failed:', e);
+        console.warn('Basecamp auto-geocode failed:', e);
       }
     },
 
@@ -9922,6 +12769,97 @@ function app() {
     // === DATA MIGRATION (fix #7 backward compat) ===
     migrateData(d) {
       if (!d) return d;
+      // === META MIGRATION: add generic config fields with sensible defaults ===
+      // Existing trips may not have the new generic-trip fields. Add them safely.
+      if (!d.meta) d.meta = {};
+      const m = d.meta;
+      // Identity defaults
+      if (!m.tripShortLabel) m.tripShortLabel = (m.tripName || 'Viaje').split(/[\/—-]/)[0].trim();
+      if (!m.region) m.region = m.tripShortLabel;
+      if (!m.shortPeriod) {
+        // Derive from startDate, e.g. "2026-10-19" → "Oct 2026"
+        if (m.startDate) {
+          const dt = new Date(m.startDate + 'T00:00:00');
+          const monthsEs = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+          m.shortPeriod = monthsEs[dt.getMonth()] + ' ' + dt.getFullYear();
+        } else m.shortPeriod = '';
+      }
+      if (!m.country) m.country = '';
+      // Localization
+      if (!m.language) m.language = 'es';
+      if (!m.locale) m.locale = 'es';
+      // Money
+      if (!m.baseCurrency) m.baseCurrency = m.viewCurrency || 'EUR';
+      // Basecamp: migrate from old "villa" field if present
+      if (!m.basecamp) {
+        const v = m.villa || {};
+        m.basecamp = {
+          label: 'La villa',
+          type: 'villa',
+          name: v.name || '',
+          shortName: (v.name || '').replace(/^(Villa|Chalet|Hotel|Casa)\s+/i, ''),
+          address: v.address || '',
+          cost: v.cost || 0,
+          status: v.status || '',
+          coords: { lat: 44.7337, lon: 8.1922 },  // Piemonte default; new trips set their own
+          timezone: 'Europe/Rome'
+        };
+      }
+      // Ensure villa alias exists so legacy code paths still find data
+      if (!m.villa && m.basecamp) {
+        m.villa = {
+          name: m.basecamp.name,
+          address: m.basecamp.address,
+          cost: m.basecamp.cost,
+          status: m.basecamp.status
+        };
+      }
+      // Map defaults
+      if (!m.mapCenter) m.mapCenter = { lat: m.basecamp?.coords?.lat || 44.7, lng: m.basecamp?.coords?.lon || 8.0 };
+      if (!m.mapZoom) m.mapZoom = 11;
+      // Provider taxonomy: default to the Piemonte set if missing
+      if (!Array.isArray(m.providerTypes) || m.providerTypes.length === 0) {
+        m.providerTypes = [
+          { key: 'restaurant', label: 'Restaurantes', color: '#b8512e', glyph: '●' },
+          { key: 'winery',     label: 'Bodegas',      color: '#6e1a1f', glyph: '◆' },
+          { key: 'truffle',    label: 'Truffle hunt', color: '#8b6914', glyph: '▲' },
+          { key: 'activity',   label: 'Experiencias', color: '#3c6b3c', glyph: '✦' },
+          { key: 'transfer',   label: 'Transfers',    color: '#5a6378', glyph: '→' },
+          { key: 'service',    label: 'Servicios',    color: '#3a5a8b', glyph: '◇' },
+          { key: 'villa',      label: 'Villa',        color: '#6e1a1f', glyph: '★' }
+        ];
+      } else {
+        // Ensure each type has color and glyph (older data might only have key+label)
+        m.providerTypes.forEach(t => {
+          if (!t.color) t.color = '#8b7868';
+          if (!t.glyph) t.glyph = '';
+        });
+      }
+      // Day color palette
+      if (!Array.isArray(m.dayColorPalette) || m.dayColorPalette.length === 0) {
+        m.dayColorPalette = ['#b8512e', '#6e1a1f', '#3c6b3c', '#3a5a8b', '#b8893a', '#5a6378', '#8b6914'];
+      }
+      // Weather climatology fallback (used when trip is >16 days away from forecast window).
+      // Only seed for trips that already have Piemonte/Langhe basecamp coords; other trips
+      // need to configure their own climatology or accept "forecast unavailable" message.
+      if (!Array.isArray(m.weatherClimatology)) {
+        const lat = m.basecamp?.coords?.lat || 0;
+        const lon = m.basecamp?.coords?.lon || 0;
+        const isPiemonte = lat > 44.3 && lat < 45.2 && lon > 7.5 && lon < 8.5;
+        if (isPiemonte) {
+          m.weatherClimatology = [
+            { tmax: 18, tmin: 9, rain: 1.8, code: 2 },
+            { tmax: 18, tmin: 9, rain: 2.1, code: 3 },
+            { tmax: 17, tmin: 8, rain: 2.5, code: 3 },
+            { tmax: 17, tmin: 8, rain: 2.4, code: 61 },
+            { tmax: 16, tmin: 7, rain: 2.0, code: 2 },
+            { tmax: 16, tmin: 7, rain: 1.6, code: 1 },
+            { tmax: 15, tmin: 6, rain: 1.4, code: 1 }
+          ];
+        } else {
+          m.weatherClimatology = [];
+        }
+      }
       // Slots: time → timeStart, timeEnd, providerId (auto-link by title)
       if (Array.isArray(d.itinerary)) {
         d.itinerary.forEach(day => {
@@ -9997,7 +12935,11 @@ function app() {
     async fetchWeather() {
       this.weather.loading = true;
       this.weather.error = null;
-      const lat = 44.7337, lon = 8.1922;
+      // Coords come from the trip's basecamp (per-trip config)
+      const bc = this.data?.meta?.basecamp || {};
+      const lat = bc.coords?.lat || 44.7337;
+      const lon = bc.coords?.lon || 8.1922;
+      const tz = bc.timezone || 'Europe/Rome';
       const start = this.data.meta.startDate;
       const end = this.data.meta.endDate;
       if (!start || !end) { this.weather.loading = false; return; }
@@ -10007,7 +12949,7 @@ function app() {
       try {
         if (daysUntil <= 16) {
           // Forecast available
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Europe%2FRome&start_date=${start}&end_date=${end}`;
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=${encodeURIComponent(tz)}&start_date=${start}&end_date=${end}`;
           const r = await fetch(url);
           if (!r.ok) throw new Error('forecast unavailable');
           const j = await r.json();
@@ -10020,17 +12962,16 @@ function app() {
             code: j.daily.weather_code[i]
           }));
         } else {
-          // Climatology fallback — Piemonte / Langhe averages for late October
-          // Source: ARPA Piemonte climatological data, Oct 19-25 mean
-          const climate = [
-            { tmax: 18, tmin: 9, rain: 1.8, code: 2 },  // Oct 19 Mon
-            { tmax: 18, tmin: 9, rain: 2.1, code: 3 },  // Oct 20 Tue
-            { tmax: 17, tmin: 8, rain: 2.5, code: 3 },  // Oct 21 Wed
-            { tmax: 17, tmin: 8, rain: 2.4, code: 61 }, // Oct 22 Thu
-            { tmax: 16, tmin: 7, rain: 2.0, code: 2 },  // Oct 23 Fri
-            { tmax: 16, tmin: 7, rain: 1.6, code: 1 },  // Oct 24 Sat
-            { tmax: 15, tmin: 6, rain: 1.4, code: 1 }   // Oct 25 Sun
-          ];
+          // Climatology fallback — uses per-trip averages from data.meta.weatherClimatology.
+          // For Piemonte we ship a hardcoded Oct dataset; for other trips this needs to
+          // be configured (or left empty, in which case we show "forecast available later").
+          const climate = this.data.meta?.weatherClimatology || [];
+          if (!Array.isArray(climate) || climate.length === 0) {
+            this.weather.source = 'unavailable';
+            this.weather.days = [];
+            this.weather.error = 'Pronóstico disponible 16 días antes del viaje';
+            return;
+          }
           const days = [];
           const cur = new Date(start + 'T00:00:00');
           const endD = new Date(end + 'T00:00:00');
@@ -10104,7 +13045,7 @@ function app() {
 
     subscribeToComments() {
       if (!this._client) return;
-      this._client
+      this._commentsChannel = this._client
         .channel('comments-' + this.TRIP_ID)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments', filter: `trip_id=eq.${this.TRIP_ID}` }, (payload) => {
           if (!this.comments.some(c => c.id === payload.new.id)) {
@@ -10218,14 +13159,17 @@ function app() {
         return `${y}${m}${d}T${pad(h)}${pad(mi)}00`;
       };
       const escape = s => (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+      const tz = this.data.meta?.basecamp?.timezone || 'Europe/Rome';
+      const tripLabel = this.data.meta?.tripName || 'Viaje';
+      const tripSlug = this.TRIP_ID || 'trip';
       const lines = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
-        'PRODID:-//BA x TWT//Piemonte//ES',
+        'PRODID:-//Blisniuk & Amanov//' + tripSlug + '//ES',
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
-        'X-WR-CALNAME:Piemonte BA x TWT Oct 2026',
-        'X-WR-TIMEZONE:Europe/Rome'
+        'X-WR-CALNAME:' + tripLabel,
+        'X-WR-TIMEZONE:' + tz
       ];
       this.data.itinerary.forEach(day => {
         if (!day.date) return;
@@ -10239,10 +13183,10 @@ function app() {
             : new Date(startDate.getTime() + 60 * 60 * 1000);
           const endStr = `${endDate.getFullYear()}${pad(endDate.getMonth()+1)}${pad(endDate.getDate())}T${pad(endDate.getHours())}${pad(endDate.getMinutes())}00`;
           lines.push('BEGIN:VEVENT');
-          lines.push(`UID:${slot.id}@piemonte-ba-twt-2026`);
+          lines.push(`UID:${slot.id}@${tripSlug}`);
           lines.push(`DTSTAMP:${start}Z`);
-          lines.push(`DTSTART;TZID=Europe/Rome:${start}`);
-          lines.push(`DTEND;TZID=Europe/Rome:${endStr}`);
+          lines.push(`DTSTART;TZID=${tz}:${start}`);
+          lines.push(`DTEND;TZID=${tz}:${endStr}`);
           lines.push(`SUMMARY:${escape(slot.title)}`);
           if (slot.description) lines.push(`DESCRIPTION:${escape(slot.description + (slot.verdict ? '\n\n' + slot.verdict : ''))}`);
           lines.push('END:VEVENT');
@@ -10278,7 +13222,7 @@ function app() {
 
     subscribeToSnapshots() {
       if (!this._client) return;
-      this._client.channel('snapshots-' + this.TRIP_ID)
+      this._snapshotsChannel = this._client.channel('snapshots-' + this.TRIP_ID)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'snapshots', filter: `trip_id=eq.${this.TRIP_ID}` }, (p) => {
           if (!this.snapshots.some(s => s.id === p.new.id)) {
             this.snapshots = [p.new, ...this.snapshots];
@@ -10364,7 +13308,7 @@ function app() {
 
     subscribeToChangesLog() {
       if (!this._client) return;
-      this._client.channel('changes-log-' + this.TRIP_ID)
+      this._changesLogChannel = this._client.channel('changes-log-' + this.TRIP_ID)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'changes', filter: `trip_id=eq.${this.TRIP_ID}` }, (p) => {
           if (!this.changes.some(c => c.id === p.new.id)) {
             this.changes = [p.new, ...this.changes];
@@ -10426,7 +13370,7 @@ function app() {
 
     markHistorySeen() {
       const now = Date.now();
-      localStorage.setItem('piemonte-history-seen', String(now));
+      localStorage.setItem(this._storeKey('history-seen'), String(now));
       this._historySeenAt = now;
     },
 
@@ -10535,14 +13479,14 @@ function app() {
     markMentionsRead() {
       if (!this.identity) return;
       const now = Date.now();
-      localStorage.setItem('piemonte-mentions-seen-' + this.identity, String(now));
+      localStorage.setItem(this._storeKey('mentions-seen:' + this.identity), String(now));
       this._mentionsSeenAt = now; // Reactivo
     },
 
     formatFullDate(iso) {
       if (!iso) return '';
       const d = new Date(iso);
-      return d.toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return d.toLocaleDateString(this.data?.meta?.locale || 'es', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     },
 
     // === V5B · HELPERS ===
@@ -10662,19 +13606,19 @@ function app() {
     },
 
     // === V5C · MAP HELPERS ===
+    // Color for a provider type, sourced from data.meta.providerTypes (per-trip config)
     layerColor(type) {
-      return ({
-        villa: '#6e1a1f',
-        restaurant: '#b8512e',
-        winery: '#6e1a1f',
-        truffle: '#8b6914',
-        activity: '#3c6b3c',
-        transfer: '#5a6378',
-        service: '#3a5a8b'
-      })[type] || '#8b7868';
+      const types = this.providerTypes;
+      const found = types.find(t => t.key === type);
+      return found?.color || '#8b7868';
     },
+    // Color for the route polyline of day idx, sourced from data.meta.dayColorPalette
     dayRouteColor(idx) {
-      return this.dayColors[idx % this.dayColors.length];
+      const palette = this.data?.meta?.dayColorPalette;
+      const safe = (Array.isArray(palette) && palette.length > 0)
+        ? palette
+        : this.dayColors;
+      return safe[idx % safe.length];
     },
     get mappedProviders() {
       return this.data.providers.filter(p => this.providerCoords(p) && this.mapLayers[p.type] !== false);
@@ -10859,11 +13803,33 @@ function app() {
     },
 
     // === HELPERS ===
+    // Find the trip's basecamp provider (villa, chalet, hotel, etc.) by type or name.
+    // Works for any trip — uses data.meta.basecamp.type and .name as the lookup signal.
+    findBasecampProvider() {
+      const bcType = this.data.meta?.basecamp?.type || 'villa';
+      const bcName = this.data.meta?.basecamp?.name || '';
+      const nameSlice = bcName.toLowerCase().slice(0, 6);
+      return this.data.providers.find(p =>
+        p.latitude && p.longitude &&
+        (p.type === bcType ||
+         (nameSlice && p.name && p.name.toLowerCase().includes(nameSlice)))
+      );
+    },
+    _applyDocumentTitle() {
+      const m = this.data?.meta || {};
+      const parts = [];
+      if (m.tripShortLabel) parts.push(m.tripShortLabel);
+      if (m.shortPeriod) parts.push(m.shortPeriod);
+      parts.push('Operaciones');
+      document.title = 'BA × TWT · ' + parts.join(' · ');
+    },
     formatDate(iso) {
       if (!iso) return '';
-      const d = new Date(iso);
-      const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+      const d = new Date(iso + (iso.length === 10 ? 'T00:00:00' : ''));
+      if (isNaN(d.getTime())) return '';
+      const locale = this.data?.meta?.locale || 'es';
+      // toLocaleDateString gives natural month names for the locale (e.g. "19 oct 2026" / "Oct 19, 2026")
+      return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
     }
   };
 }
