@@ -6104,6 +6104,389 @@ textarea:focus-visible {
   line-height: 1.4;
 }
 .btn-sm { padding: 5px 10px; font-size: 12px; }
+/* ===== META EDITOR DRAWER ===== */
+.v5-meta-editor {
+  max-width: 720px;
+}
+.v5-meta-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+  width: 100%;
+}
+.v5-meta-field > span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.v5-meta-field input,
+.v5-meta-field select {
+  padding: 9px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-1);
+  transition: border-color 0.12s ease;
+  width: 100%;
+}
+.v5-meta-field input:focus,
+.v5-meta-field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-1);
+}
+.v5-meta-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.v5-meta-geo {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-top: 6px;
+}
+.v5-meta-geo-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  flex: 1;
+}
+.v5-meta-geo .btn { white-space: nowrap; margin-bottom: 14px; }
+
+/* FX rates preview grid */
+.v5-meta-fx-preview {
+  background: var(--surface-0);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-top: 8px;
+}
+.v5-meta-fx-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.v5-meta-fx-head > span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.v5-meta-fx-head strong { color: var(--text-1); }
+.v5-meta-fx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.v5-meta-fx-row {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  gap: 6px;
+  align-items: center;
+}
+.v5-meta-fx-ccy {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.04em;
+}
+.v5-meta-fx-row input {
+  padding: 5px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-1);
+  color: var(--text-1);
+  width: 100%;
+}
+.v5-meta-fx-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.v5-meta-footer-hint {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: color-mix(in oklab, var(--ok, #3c6b3c) 8%, var(--surface-0));
+  border: 1px solid color-mix(in oklab, var(--ok, #3c6b3c) 25%, var(--line));
+  border-radius: var(--radius-md);
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+/* ===== LOGIN VIEW ===== */
+.v5-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: var(--surface-0);
+}
+.v5-login-inner {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 40px 36px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+.v5-login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 32px;
+}
+.v5-login-mark {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-1);
+}
+.v5-login-mark em {
+  font-style: italic;
+  color: var(--accent);
+}
+.v5-login-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.v5-login-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 28px;
+  padding: 4px;
+  background: var(--surface-0);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.v5-login-tabs button {
+  flex: 1;
+  padding: 8px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.v5-login-tabs button.active {
+  background: var(--surface-1);
+  color: var(--text-1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.v5-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.v5-login-title {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.v5-login-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+.v5-login-sub {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--text-3);
+  margin-top: -4px;
+  margin-bottom: 8px;
+}
+.v5-login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.v5-login-field > span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.v5-login-field input {
+  padding: 11px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-1);
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.v5-login-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-1);
+}
+.v5-login-btn {
+  margin-top: 10px;
+  padding: 12px 20px;
+  font-size: 14px;
+}
+.v5-login-msg {
+  margin-top: 16px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.v5-login-error {
+  background: color-mix(in oklab, #6e1a1f 12%, transparent);
+  color: #6e1a1f;
+  border: 1px solid color-mix(in oklab, #6e1a1f 30%, transparent);
+}
+.v5-login-info {
+  background: color-mix(in oklab, var(--ok, #3c6b3c) 10%, transparent);
+  color: var(--ok, #3c6b3c);
+  border: 1px solid color-mix(in oklab, var(--ok, #3c6b3c) 30%, transparent);
+}
+
+/* ===== TRIP MEMBERS (in meta editor) ===== */
+.v5-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.v5-member-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+.v5-member-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.v5-member-avatar.me {
+  background: linear-gradient(135deg, var(--accent), color-mix(in oklab, var(--accent) 70%, black));
+}
+.v5-member-body {
+  flex: 1;
+  min-width: 0;
+}
+.v5-member-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.v5-member-self-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.v5-member-pending-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--surface-0);
+  border: 1px dashed var(--line);
+  color: var(--text-3);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.v5-member-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+.v5-member-remove {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.v5-member-remove svg { width: 12px; height: 12px; }
+.v5-member-remove:hover {
+  background: color-mix(in oklab, #6e1a1f 14%, transparent);
+  border-color: #6e1a1f;
+  color: #6e1a1f;
+}
+
+/* Identity menu: add email + logout styling */
+.v5-identity-menu-header {
+  padding: 10px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-1);
+  border-bottom: 1px solid var(--line);
+  line-height: 1.3;
+}
+.v5-identity-email {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-3);
+  margin-top: 2px;
+  display: block;
+}
+.v5-identity-logout {
+  color: #6e1a1f !important;
+}
+.v5-identity-logout:hover {
+  background: color-mix(in oklab, #6e1a1f 8%, transparent) !important;
+}
 
 </style>
 
@@ -6116,7 +6499,7 @@ textarea:focus-visible {
 <div class="app" x-data="app()" x-init="init()" x-cloak>
 
   <!-- ====== V5 TOPBAR (siempre visible) ====== -->
-  <header class="v5-topbar" data-v5-shell>
+  <header class="v5-topbar" data-v5-shell x-show="currentView !== 'login'">
     <div class="v5-topbar-brand">
       <button class="v5-icon-btn" @click="navigateToHome()" style="margin-left: -8px;" title="Volver a la home">
         <span class="v5-topbar-brand-mark">BA × <em>TWT</em></span>
@@ -6145,21 +6528,97 @@ textarea:focus-visible {
           <span class="v5-avatar-name" x-text="identity || 'Sin identidad'"></span>
         </button>
         <div class="v5-identity-menu" x-show="identityMenuOpen" x-cloak x-transition.opacity>
-          <button class="v5-identity-menu-item" :class="{active: identity === 'Brian'}" @click="setIdentity('Brian'); identityMenuOpen = false">
-            <span class="v5-avatar-circle brian">B</span> Brian
-          </button>
-          <button class="v5-identity-menu-item" :class="{active: identity === 'Federico'}" @click="setIdentity('Federico'); identityMenuOpen = false">
-            <span class="v5-avatar-circle federico">F</span> Federico
-          </button>
+          <div class="v5-identity-menu-header" x-show="authUser">
+            <strong x-text="identity"></strong><br>
+            <span class="v5-identity-email" x-text="authUser?.email"></span>
+          </div>
           <div class="v5-identity-menu-divider" x-show="lastUpdatedBy"></div>
           <div class="v5-last-edit" x-show="lastUpdatedBy">
             Última edición · <strong x-text="lastUpdatedBy"></strong><br>
             <span x-text="relativeTime(lastUpdatedAt) + ' · ' + syncLabel"></span>
           </div>
+          <div class="v5-identity-menu-divider"></div>
+          <button class="v5-identity-menu-item v5-identity-logout" @click="identityMenuOpen = false; signOut()">
+            ⏻ Cerrar sesión
+          </button>
         </div>
       </div>
     </div>
   </header>
+
+  <!-- ====== LOGIN VIEW (auth gate) ====== -->
+  <main class="v5-login" x-show="currentView === 'login'" x-cloak>
+    <div class="v5-login-inner">
+      <div class="v5-login-brand">
+        <span class="v5-login-mark">BA × <em>TWT</em></span>
+        <span class="v5-login-tag">Luxury as access, never excess</span>
+      </div>
+
+      <!-- Tab switcher -->
+      <div class="v5-login-tabs">
+        <button :class="{active: authView === 'signin'}" @click="authView = 'signin'; authForm.error = ''; authForm.info = ''">Ingresar</button>
+        <button :class="{active: authView === 'signup'}" @click="authView = 'signup'; authForm.error = ''; authForm.info = ''">Crear cuenta</button>
+        <button :class="{active: authView === 'forgot'}" @click="authView = 'forgot'; authForm.error = ''; authForm.info = ''">Olvidé</button>
+      </div>
+
+      <!-- SIGN IN -->
+      <form class="v5-login-form" x-show="authView === 'signin'" @submit.prevent="signIn()">
+        <h1 class="v5-login-title">Bienvenido <em>de vuelta</em>.</h1>
+        <p class="v5-login-sub">Ingresá para ver tus viajes.</p>
+        <label class="v5-login-field">
+          <span>Email</span>
+          <input type="email" autocomplete="email" x-model="authForm.email" required>
+        </label>
+        <label class="v5-login-field">
+          <span>Contraseña</span>
+          <input type="password" autocomplete="current-password" x-model="authForm.password" required>
+        </label>
+        <button type="submit" class="btn v5-login-btn" :disabled="authForm.submitting">
+          <span x-show="!authForm.submitting">Ingresar →</span>
+          <span x-show="authForm.submitting">Ingresando…</span>
+        </button>
+      </form>
+
+      <!-- SIGN UP -->
+      <form class="v5-login-form" x-show="authView === 'signup'" @submit.prevent="signUp()">
+        <h1 class="v5-login-title">Crear <em>cuenta</em>.</h1>
+        <p class="v5-login-sub">Para que tengas tus propios viajes y compartas los que quieras.</p>
+        <label class="v5-login-field">
+          <span>Tu nombre</span>
+          <input type="text" autocomplete="name" x-model="authForm.displayName" placeholder="Ej: Brian, Federico" required>
+        </label>
+        <label class="v5-login-field">
+          <span>Email</span>
+          <input type="email" autocomplete="email" x-model="authForm.email" required>
+        </label>
+        <label class="v5-login-field">
+          <span>Contraseña · al menos 8 caracteres</span>
+          <input type="password" autocomplete="new-password" x-model="authForm.password" minlength="8" required>
+        </label>
+        <button type="submit" class="btn v5-login-btn" :disabled="authForm.submitting">
+          <span x-show="!authForm.submitting">Crear cuenta →</span>
+          <span x-show="authForm.submitting">Creando…</span>
+        </button>
+      </form>
+
+      <!-- FORGOT -->
+      <form class="v5-login-form" x-show="authView === 'forgot'" @submit.prevent="sendPasswordReset()">
+        <h1 class="v5-login-title">Resetear <em>contraseña</em>.</h1>
+        <p class="v5-login-sub">Te mandamos un mail con el link para crear una nueva.</p>
+        <label class="v5-login-field">
+          <span>Email</span>
+          <input type="email" autocomplete="email" x-model="authForm.email" required>
+        </label>
+        <button type="submit" class="btn v5-login-btn" :disabled="authForm.submitting">
+          <span x-show="!authForm.submitting">Enviar mail →</span>
+          <span x-show="authForm.submitting">Enviando…</span>
+        </button>
+      </form>
+
+      <div class="v5-login-msg v5-login-error" x-show="authForm.error" x-text="authForm.error"></div>
+      <div class="v5-login-msg v5-login-info" x-show="authForm.info" x-text="authForm.info"></div>
+    </div>
+  </main>
 
   <!-- ====== HOME VIEW (lista de viajes del operador) ====== -->
   <main class="v5-home" x-show="currentView === 'home'" x-cloak>
@@ -6534,6 +6993,10 @@ textarea:focus-visible {
       <button class="v5-nav-item" :class="{active: tab === 'budget'}" @click="tab = 'budget'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         <span>Presupuesto</span>
+      </button>
+      <button class="v5-nav-item" @click="openMetaEditor()" :class="{active: metaEditorOpen}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Configuración</span>
       </button>
       <button class="v5-nav-item" :class="{active: tab === 'backup'}" @click="tab = 'backup'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -7712,6 +8175,11 @@ textarea:focus-visible {
               <span class="v5-more-label">Backup</span>
               <span class="v5-more-meta" x-text="snapshots.length + ' snapshots'"></span>
             </button>
+            <button class="v5-more-tile" :class="{active: metaEditorOpen}" @click="moreDrawerOpen = false; openMetaEditor()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span class="v5-more-label">Configuración</span>
+              <span class="v5-more-meta">meta del viaje</span>
+            </button>
             <button class="v5-more-tile" @click="toggleTheme(); moreDrawerOpen = false">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
               <span class="v5-more-label" x-text="theme === 'dark' ? 'Modo claro' : 'Modo oscuro'"></span>
@@ -8676,6 +9144,280 @@ textarea:focus-visible {
     </div>
   </template>
 
+  <!-- ====== META EDITOR DRAWER (configuración del viaje) ====== -->
+  <template x-if="metaEditorOpen">
+    <div>
+      <div class="v5-drawer-overlay" @click="closeMetaEditor()"></div>
+      <aside class="v5-drawer v5-meta-editor" role="dialog" aria-label="Configuración del viaje">
+        <header class="v5-drawer-header">
+          <div style="flex: 1;">
+            <div class="v5b-detail-eyebrow"><span class="pill">META</span></div>
+            <h2 style="font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400; letter-spacing: -0.015em;">Configuración <em style="color: var(--accent); font-style: italic;">del viaje</em></h2>
+          </div>
+          <button class="v5-drawer-close" @click="closeMetaEditor()" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </header>
+        <div class="v5-drawer-body">
+          <!-- Section: Identidad -->
+          <div class="v5b-detail-section">
+            <h4>Identidad</h4>
+            <label class="v5-meta-field">
+              <span>Título del viaje</span>
+              <input type="text" x-model="data.meta.tripName" maxlength="120">
+            </label>
+            <div class="v5-meta-row">
+              <label class="v5-meta-field">
+                <span>Etiqueta corta</span>
+                <input type="text" x-model="data.meta.tripShortLabel" maxlength="40" placeholder="Ej: Piemonte">
+              </label>
+              <label class="v5-meta-field">
+                <span>Período</span>
+                <input type="text" x-model="data.meta.shortPeriod" maxlength="40" placeholder="Ej: Oct 2026">
+              </label>
+            </div>
+            <div class="v5-meta-row">
+              <label class="v5-meta-field">
+                <span>Región</span>
+                <input type="text" x-model="data.meta.region" placeholder="Ej: Piemonte">
+              </label>
+              <label class="v5-meta-field">
+                <span>País</span>
+                <input type="text" x-model="data.meta.country" placeholder="Ej: Italia">
+              </label>
+            </div>
+            <label class="v5-meta-field">
+              <span>Categoría · define hero images y templates aplicables</span>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <select x-model="data.meta.category" style="flex: 1;">
+                  <option value="">(sin categoría)</option>
+                  <option value="gastro">Gastronómico · enoturismo</option>
+                  <option value="ski">Esquí · alta montaña</option>
+                  <option value="sport">Sport · evento deportivo</option>
+                  <option value="urban">Urbano · ciudad · cultura</option>
+                  <option value="nature">Naturaleza · expediciones</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" @click="applyCategoryPreset()" :disabled="!data.meta.category" title="Aplica los providerTypes y paleta del preset elegido">↺ Aplicar preset</button>
+              </div>
+            </label>
+          </div>
+
+          <!-- Section: Fechas + grupo -->
+          <div class="v5b-detail-section">
+            <h4>Fechas + grupo</h4>
+            <div class="v5-meta-row">
+              <label class="v5-meta-field">
+                <span>Inicio</span>
+                <input type="date" x-model="data.meta.startDate">
+              </label>
+              <label class="v5-meta-field">
+                <span>Fin</span>
+                <input type="date" x-model="data.meta.endDate">
+              </label>
+            </div>
+            <div class="v5-meta-row">
+              <label class="v5-meta-field">
+                <span>Noches</span>
+                <input type="number" x-model.number="data.meta.nights" min="0" max="365">
+              </label>
+              <label class="v5-meta-field">
+                <span>Pax total</span>
+                <input type="number" x-model.number="data.meta.pax" min="1" max="100">
+              </label>
+              <label class="v5-meta-field">
+                <span>Pax que paga</span>
+                <input type="number" x-model.number="data.meta.payingPax" min="0" max="100">
+              </label>
+            </div>
+            <label class="v5-meta-field">
+              <span>Composición del grupo (opcional)</span>
+              <input type="text" x-model="data.meta.paxComposition" placeholder="Ej: 6 adultos + 2 chicos">
+            </label>
+            <label class="v5-meta-field">
+              <span>Ticket por pax (USD) · para márgenes</span>
+              <input type="number" x-model.number="data.meta.ticketUSD" min="0" step="100">
+            </label>
+          </div>
+
+          <!-- Section: Basecamp -->
+          <div class="v5b-detail-section">
+            <h4>Basecamp</h4>
+            <p style="font-style: italic; color: var(--text-3); font-size: 12.5px; margin-bottom: 10px;">La base operativa del viaje · villa, chalet, hotel, lodge, motorhome, lo que sea.</p>
+            <div class="v5-meta-row">
+              <label class="v5-meta-field">
+                <span>Etiqueta (display)</span>
+                <input type="text" x-model="data.meta.basecamp.label" placeholder="Ej: La villa, El chalet">
+              </label>
+              <label class="v5-meta-field">
+                <span>Tipo (taxonomía interna)</span>
+                <input type="text" x-model="data.meta.basecamp.type" placeholder="villa | chalet | hotel | lodge | motorhome…">
+              </label>
+            </div>
+            <div class="v5-meta-row">
+              <label class="v5-meta-field">
+                <span>Nombre completo</span>
+                <input type="text" x-model="data.meta.basecamp.name" placeholder="Ej: Villa Castiglione Tinella">
+              </label>
+              <label class="v5-meta-field">
+                <span>Nombre corto</span>
+                <input type="text" x-model="data.meta.basecamp.shortName" placeholder="Ej: Castiglione Tinella">
+              </label>
+            </div>
+            <label class="v5-meta-field">
+              <span>Dirección</span>
+              <input type="text" x-model="data.meta.basecamp.address">
+            </label>
+            <div class="v5-meta-row">
+              <label class="v5-meta-field">
+                <span>Costo</span>
+                <input type="number" x-model.number="data.meta.basecamp.cost" min="0">
+              </label>
+              <label class="v5-meta-field">
+                <span>Estado</span>
+                <input type="text" x-model="data.meta.basecamp.status" placeholder="Ej: Reservado, Pago anticipado">
+              </label>
+            </div>
+            <label class="v5-meta-field">
+              <span>Timezone (IANA, ej: Europe/Rome · America/New_York)</span>
+              <input type="text" x-model="data.meta.basecamp.timezone" placeholder="Europe/Rome">
+            </label>
+            <div class="v5-meta-geo">
+              <div class="v5-meta-geo-fields">
+                <label class="v5-meta-field">
+                  <span>Latitud</span>
+                  <input type="number" x-model.number="data.meta.basecamp.coords.lat" step="0.00001">
+                </label>
+                <label class="v5-meta-field">
+                  <span>Longitud</span>
+                  <input type="number" x-model.number="data.meta.basecamp.coords.lon" step="0.00001">
+                </label>
+              </div>
+              <button class="btn btn-sm" @click="regeocodeBasecamp()" :disabled="metaEditorRegeoLoading || !data.meta.basecamp.address">
+                <span x-show="!metaEditorRegeoLoading">↻ Geocodear de la dirección</span>
+                <span x-show="metaEditorRegeoLoading">Buscando…</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Section: Moneda + idioma -->
+          <div class="v5b-detail-section">
+            <h4>Moneda + idioma</h4>
+            <div class="v5-meta-row">
+              <label class="v5-meta-field">
+                <span>Moneda base · en la que se cargan costos</span>
+                <select x-model="data.meta.baseCurrency">
+                  <option value="EUR">EUR · euro</option>
+                  <option value="USD">USD · dólar</option>
+                  <option value="CHF">CHF · franco suizo</option>
+                  <option value="GBP">GBP · libra</option>
+                  <option value="ARS">ARS · peso argentino</option>
+                  <option value="MXN">MXN · peso mexicano</option>
+                  <option value="CAD">CAD · dólar canadiense</option>
+                  <option value="BRL">BRL · real</option>
+                  <option value="CLP">CLP · peso chileno</option>
+                  <option value="UYU">UYU · peso uruguayo</option>
+                  <option value="JPY">JPY · yen</option>
+                </select>
+              </label>
+              <label class="v5-meta-field">
+                <span>Moneda de vista · en la que ves los totales</span>
+                <select x-model="data.meta.viewCurrency">
+                  <option value="EUR">EUR · euro</option>
+                  <option value="USD">USD · dólar</option>
+                  <option value="CHF">CHF · franco suizo</option>
+                  <option value="GBP">GBP · libra</option>
+                  <option value="ARS">ARS · peso argentino</option>
+                  <option value="MXN">MXN · peso mexicano</option>
+                  <option value="CAD">CAD · dólar canadiense</option>
+                  <option value="BRL">BRL · real</option>
+                  <option value="CLP">CLP · peso chileno</option>
+                  <option value="UYU">UYU · peso uruguayo</option>
+                  <option value="JPY">JPY · yen</option>
+                </select>
+              </label>
+            </div>
+            <div class="v5-meta-fx-preview">
+              <div class="v5-meta-fx-head">
+                <span>Tasas FX actuales (relativas a <strong x-text="data.meta.baseCurrency"></strong>)</span>
+                <button class="btn btn-ghost btn-sm" @click="recomputeFxFromBase()">↻ Recalcular desde tabla mid-market</button>
+              </div>
+              <div class="v5-meta-fx-grid">
+                <template x-for="(rate, ccy) in (data.meta.fx || {})" :key="ccy">
+                  <div class="v5-meta-fx-row">
+                    <span class="v5-meta-fx-ccy" x-text="ccy"></span>
+                    <input type="number" :value="rate" @change="data.meta.fx[ccy] = parseFloat($event.target.value)" step="0.0001">
+                  </div>
+                </template>
+              </div>
+            </div>
+            <div class="v5-meta-row" style="margin-top: 14px;">
+              <label class="v5-meta-field">
+                <span>Idioma</span>
+                <input type="text" x-model="data.meta.language" placeholder="es | en | it | de | fr">
+              </label>
+              <label class="v5-meta-field">
+                <span>Locale (para fechas/números)</span>
+                <input type="text" x-model="data.meta.locale" placeholder="es | en-US | it | de-CH">
+              </label>
+            </div>
+          </div>
+
+          <!-- Section: Miembros (compartir el viaje) -->
+          <div class="v5b-detail-section">
+            <h4>Miembros del viaje</h4>
+            <p style="font-style: italic; color: var(--text-3); font-size: 12.5px; margin-bottom: 12px;">
+              Solo las personas listadas acá ven este viaje cuando ingresan a la app. Agregá por email — si el usuario ya tiene cuenta se vincula al toque, si no, queda invitado y se le activa cuando ingrese con ese mail.
+            </p>
+            <div class="v5-members-list" x-show="tripMembers.length > 0">
+              <template x-for="m in tripMembers" :key="m.id">
+                <div class="v5-member-row">
+                  <span class="v5-member-avatar" :class="m.user_id === authUser?.id ? 'me' : ''">
+                    <span x-text="(m.invited_email || 'U').substring(0, 1).toUpperCase()"></span>
+                  </span>
+                  <div class="v5-member-body">
+                    <div class="v5-member-name">
+                      <span x-show="m.user_id === authUser?.id" x-text="identity"></span>
+                      <span x-show="m.user_id && m.user_id !== authUser?.id">Miembro · <code style="font-family: 'JetBrains Mono', monospace; font-size: 10px;" x-text="m.user_id.substring(0, 8)"></code></span>
+                      <span x-show="!m.user_id && m.invited_email" x-text="m.invited_email"></span>
+                      <span class="v5-member-self-tag" x-show="m.user_id === authUser?.id">vos</span>
+                      <span class="v5-member-pending-tag" x-show="!m.user_id">invitado pendiente</span>
+                    </div>
+                    <div class="v5-member-meta">
+                      <span x-text="m.role"></span>
+                      <span> · agregado </span>
+                      <span x-text="relativeTime(m.joined_at)"></span>
+                    </div>
+                  </div>
+                  <button class="v5-member-remove" @click="removeMember(m.id)" :title="m.user_id === authUser?.id ? 'Quitarme del viaje' : 'Quitar este miembro'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              </template>
+            </div>
+            <div style="margin-top: 12px;">
+              <div style="display: flex; gap: 8px; align-items: stretch;">
+                <input type="email" x-model="addMemberForm.email" placeholder="email@ejemplo.com" @keydown.enter.prevent="addMemberByEmail()" style="flex: 1; padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
+                <button class="btn btn-sm" @click="addMemberByEmail()" :disabled="addMemberForm.submitting || !addMemberForm.email">
+                  <span x-show="!addMemberForm.submitting">+ Agregar</span>
+                  <span x-show="addMemberForm.submitting">…</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="v5-meta-footer-hint">
+            <span>✓ Los cambios se guardan automáticamente · cerrá cuando termines.</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </template>
+
+  <!-- placeholder ::: members are inline above -->
+  <template x-if="false">
+    <div></div>
+  </template>
+
   <!-- ====== V5 TOAST STACK ====== -->
   <div class="v5-toast-stack" aria-live="polite" aria-atomic="true">
     <template x-for="t in toasts" :key="t.id">
@@ -8688,16 +9430,7 @@ textarea:focus-visible {
 
   <!-- Identity Modal -->
 
-  <div class="identity-overlay" x-show="!identity" x-cloak>
-    <div class="identity-modal">
-      <h2>¿Quién <em>sos</em>?</h2>
-      <p>Elegí tu identidad para esta sesión. Aparecerá junto a cada edición y permite saber quién cambió qué.</p>
-      <div class="identity-choices">
-        <button class="identity-btn" @click="setIdentity('Brian')">Brian</button>
-        <button class="identity-btn" @click="setIdentity('Federico')">Federico</button>
-      </div>
-    </div>
-  </div>
+  <!-- Legacy identity picker removed — auth flow handles identity now. -->
 
 </div>
 
@@ -9183,6 +9916,31 @@ function app() {
       selectedIds: new Set(),
       loading: false
     },
+    // Meta editor drawer state
+    metaEditorOpen: false,
+    metaEditorRegeoLoading: false,
+    // === AUTH state ===
+    // authSession is the Supabase session object (null when logged out).
+    // authUser is the resolved user (auth.users row) with email + metadata.
+    authSession: null,
+    authUser: null,
+    authLoading: true,  // true while we resolve initial session on app start
+    authView: 'signin',  // 'signin' | 'signup' | 'forgot'
+    authForm: {
+      email: '',
+      password: '',
+      displayName: '',
+      submitting: false,
+      error: '',
+      info: ''
+    },
+    // Members of the current trip (for the share UI in the meta editor)
+    tripMembers: [],
+    tripMembersLoading: false,
+    addMemberForm: {
+      email: '',
+      submitting: false
+    },
 
     // === STATE ===
     tab: 'today',
@@ -9394,6 +10152,11 @@ function app() {
       window.location.hash = '#/library/';
     },
     async _onRouteChange() {
+      // Gate: if not authenticated, force login view (ignore the hash for now)
+      if (!this.authSession) {
+        this.currentView = 'login';
+        return;
+      }
       const route = this._parseRoute();
       // Tear down trip-specific subscriptions before changing view
       this._teardownTripChannels();
@@ -10391,6 +11154,98 @@ function app() {
       this.closeLibraryImport();
     },
 
+    // === META EDITOR (drawer "Configuración del viaje") ===
+    // Trip-level meta fields (tripName, region, basecamp, currency, category, etc.)
+    // are editable here without going to SQL. Each x-model field auto-saves via the
+    // existing deep $watch on data.
+    openMetaEditor() {
+      // Defensive: ensure nested objects exist before x-model binds to them
+      if (!this.data.meta.basecamp) {
+        this.data.meta.basecamp = { label: '', type: '', name: '', shortName: '', address: '', cost: 0, status: '', coords: { lat: null, lon: null }, timezone: '' };
+      }
+      if (!this.data.meta.basecamp.coords) {
+        this.data.meta.basecamp.coords = { lat: null, lon: null };
+      }
+      if (!this.data.meta.fx || Object.keys(this.data.meta.fx).length === 0) {
+        this.data.meta.fx = this._fxRelativeTo(this.data.meta.baseCurrency || 'EUR');
+      }
+      this.metaEditorOpen = true;
+      document.body.style.overflow = 'hidden';
+      // Load the trip's members in the background
+      this.loadTripMembers();
+    },
+    closeMetaEditor() {
+      this.metaEditorOpen = false;
+      document.body.style.overflow = '';
+    },
+    // Re-geocode the basecamp address using Google Places. Called when the user
+    // updates the address and wants new coords without leaving the editor.
+    async regeocodeBasecamp() {
+      const addr = (this.data.meta?.basecamp?.address || '').trim();
+      if (!addr) {
+        this.toast('Cargá una dirección antes de geocodear', 'error');
+        return;
+      }
+      this.metaEditorRegeoLoading = true;
+      try {
+        const PlaceClass = await this._getPlaceClass();
+        const region = this.data.meta?.region || '';
+        const country = this.data.meta?.country || '';
+        const textQuery = [addr, region, country].filter(Boolean).join(' ');
+        const { places } = await PlaceClass.searchByText({
+          textQuery,
+          fields: ['formattedAddress', 'location', 'id'],
+          language: this.data.meta?.language || 'es',
+          maxResultCount: 1
+        });
+        if (places && places[0] && places[0].location) {
+          this.data.meta.basecamp.coords = {
+            lat: places[0].location.lat(),
+            lon: places[0].location.lng()
+          };
+          // Also update mapCenter so the map re-centers on next render
+          this.data.meta.mapCenter = {
+            lat: places[0].location.lat(),
+            lng: places[0].location.lng()
+          };
+          this.toast('✓ Coordenadas actualizadas', 'success');
+        } else {
+          this.toast('No se encontró la dirección', 'error');
+        }
+      } catch (e) {
+        console.error('Re-geocode failed:', e);
+        this.toast('Error geocodeando: ' + (e.message || ''), 'error');
+      } finally {
+        this.metaEditorRegeoLoading = false;
+      }
+    },
+    // When the user picks a different category, optionally apply the preset's
+    // providerTypes/palette/basecamp config. Asks confirmation to avoid wiping
+    // the operator's customizations by accident.
+    async applyCategoryPreset() {
+      const cat = this.data.meta?.category;
+      if (!cat || !TRIP_CATEGORY_PRESETS[cat]) return;
+      const preset = TRIP_CATEGORY_PRESETS[cat];
+      const ok = await this.askConfirm({
+        title: '¿Aplicar preset de la categoría?',
+        body: `Vas a reemplazar los providerTypes (${this.data.meta.providerTypes.length} actuales → ${preset.providerTypes.length} del preset), la paleta del mapa, y los defaults del basecamp (label="${preset.basecampLabel}", type="${preset.basecampType}"). El resto del meta (nombre, fechas, providers, etc.) queda intacto. Solo afecta este viaje.`,
+        confirmLabel: 'Aplicar preset'
+      });
+      if (!ok) return;
+      this.data.meta.providerTypes = JSON.parse(JSON.stringify(preset.providerTypes));
+      this.data.meta.dayColorPalette = [...preset.dayColorPalette];
+      this.data.meta.basecamp.label = preset.basecampLabel;
+      this.data.meta.basecamp.type = preset.basecampType;
+      this.toast(`✓ Preset "${cat}" aplicado`, 'success');
+    },
+    // Recompute FX rates from the USD-anchored table relative to current baseCurrency.
+    // Used when user changes baseCurrency or wants fresh rates without manual editing.
+    recomputeFxFromBase() {
+      const base = this.data.meta?.baseCurrency || 'EUR';
+      this.data.meta.fx = this._fxRelativeTo(base);
+      this.toast('✓ Tasas FX recalculadas', 'success');
+    },
+
     // === LOCALSTORAGE SCOPING ===
     // Two scopes:
     //   'trip' — per-trip preferences (map mode, history seen, offline data cache).
@@ -10473,6 +11328,35 @@ function app() {
         return;
       }
 
+      // === AUTH bootstrap ===
+      // Check for an existing session. If present, use the authed user as identity.
+      // If absent, redirect to the login view.
+      try {
+        const { data: { session } } = await this._client.auth.getSession();
+        this._setAuthSession(session);
+      } catch (e) {
+        console.warn('Auth getSession failed:', e);
+      }
+      this.authLoading = false;
+
+      // Listen for sign-in / sign-out / token-refresh events
+      this._client.auth.onAuthStateChange((event, session) => {
+        const prevUserId = this.authUser?.id || null;
+        this._setAuthSession(session);
+        const newUserId = this.authUser?.id || null;
+        // When user actually changes (login or logout), re-dispatch the route
+        if (prevUserId !== newUserId) {
+          this._onRouteChange();
+        }
+      });
+
+      // If not authed, show the login view and stop here. Routing/data loading
+      // happens after sign-in (the onAuthStateChange handler re-fires this flow).
+      if (!this.authSession) {
+        this.currentView = 'login';
+        return;
+      }
+
       // Load the operator (B&A) for branding + trip listing
       await this.loadOperator();
 
@@ -10481,6 +11365,219 @@ function app() {
 
       // Initial route dispatch
       await this._onRouteChange();
+    },
+
+    // Resolve a Supabase session into authUser + identity. Called on init,
+    // on signIn/signUp success, and from onAuthStateChange.
+    _setAuthSession(session) {
+      this.authSession = session;
+      this.authUser = session?.user || null;
+      if (this.authUser) {
+        // Identity for display: prefer user_metadata.display_name, fall back to email's local part
+        const displayName = this.authUser.user_metadata?.display_name
+                         || this.authUser.email?.split('@')[0]
+                         || 'Usuario';
+        this.identity = displayName;
+        // Don't persist authed identity to localStorage — auth session is the source of truth
+      } else {
+        this.identity = null;
+      }
+    },
+
+    // === AUTH actions ===
+    async signIn() {
+      const f = this.authForm;
+      if (!f.email.trim() || !f.password) {
+        f.error = 'Completá email y contraseña';
+        return;
+      }
+      f.submitting = true;
+      f.error = '';
+      f.info = '';
+      try {
+        const { error } = await this._client.auth.signInWithPassword({
+          email: f.email.trim().toLowerCase(),
+          password: f.password
+        });
+        if (error) throw error;
+        // onAuthStateChange will handle the redirect
+      } catch (e) {
+        f.error = e.message?.includes('Invalid login')
+          ? 'Email o contraseña incorrectos.'
+          : (e.message || 'Error al ingresar');
+      } finally {
+        f.submitting = false;
+      }
+    },
+    async signUp() {
+      const f = this.authForm;
+      if (!f.email.trim() || !f.password || !f.displayName.trim()) {
+        f.error = 'Completá nombre, email y contraseña';
+        return;
+      }
+      if (f.password.length < 8) {
+        f.error = 'La contraseña tiene que tener al menos 8 caracteres';
+        return;
+      }
+      f.submitting = true;
+      f.error = '';
+      f.info = '';
+      try {
+        const { data, error } = await this._client.auth.signUp({
+          email: f.email.trim().toLowerCase(),
+          password: f.password,
+          options: {
+            data: {
+              display_name: f.displayName.trim()
+            }
+          }
+        });
+        if (error) throw error;
+        // If email confirmation is required (default in Supabase), session is null
+        // and the user needs to verify via email. Otherwise they're auto-signed-in.
+        if (!data.session) {
+          f.info = 'Te enviamos un mail para confirmar la cuenta. Después ingresá normalmente.';
+          this.authView = 'signin';
+          f.password = '';
+        }
+        // onAuthStateChange handles redirect if session exists
+      } catch (e) {
+        f.error = e.message || 'Error al crear cuenta';
+      } finally {
+        f.submitting = false;
+      }
+    },
+    async signOut() {
+      try {
+        await this._client.auth.signOut();
+        // onAuthStateChange will redirect to login view
+        this.toast('Sesión cerrada', 'info');
+      } catch (e) {
+        console.error('Sign out failed:', e);
+      }
+    },
+    async sendPasswordReset() {
+      const f = this.authForm;
+      if (!f.email.trim()) {
+        f.error = 'Email es requerido';
+        return;
+      }
+      f.submitting = true;
+      f.error = '';
+      try {
+        const { error } = await this._client.auth.resetPasswordForEmail(f.email.trim().toLowerCase());
+        if (error) throw error;
+        f.info = 'Te enviamos un mail con el link para resetear la contraseña.';
+      } catch (e) {
+        f.error = e.message || 'Error';
+      } finally {
+        f.submitting = false;
+      }
+    },
+
+    // === TRIP MEMBERS ===
+    // List, add, remove members of the current trip. Used by the share section
+    // in the meta editor.
+    async loadTripMembers() {
+      if (!this.TRIP_ID || !this._client) return;
+      this.tripMembersLoading = true;
+      try {
+        // Fetch memberships with embedded user info via auth.users join
+        const { data, error } = await this._client
+          .from('trip_members')
+          .select('id, user_id, role, joined_at, invited_email')
+          .eq('trip_id', this.TRIP_ID);
+        if (error) throw error;
+        // For each member, also fetch their email + display_name from auth.users.
+        // auth schema isn't directly queryable from the client, so we rely on the
+        // member's own row in `auth.users` being readable. Workaround: store the
+        // user info we already know (current user is in auth.uid()), and for
+        // other members just show invited_email or "Sin nombre".
+        // For now show whoever we have via direct user_id reference; richer UX next iteration.
+        this.tripMembers = data || [];
+      } catch (e) {
+        console.warn('loadTripMembers failed:', e);
+        this.tripMembers = [];
+      } finally {
+        this.tripMembersLoading = false;
+      }
+    },
+    async addMemberByEmail() {
+      const f = this.addMemberForm;
+      const email = f.email.trim().toLowerCase();
+      if (!email || !email.includes('@')) {
+        this.toast('Email inválido', 'error');
+        return;
+      }
+      f.submitting = true;
+      try {
+        // Look up the user by email via an RPC (we'll create one) or via a profiles
+        // table. Since we don't have a profiles table, we use a workaround: invite
+        // by email — store invited_email and the user gets matched on their next sign-in.
+        // For now, the simplest path: try to find a user_id via RPC, fall back to
+        // invited_email-only row if not found.
+        const { data: userIdData, error: rpcErr } = await this._client.rpc('lookup_user_id_by_email', { p_email: email });
+        if (rpcErr) {
+          // RPC doesn't exist yet — fall back to invited_email-only
+          console.warn('lookup_user_id_by_email RPC not available, using invited_email only');
+        }
+        const userId = userIdData || null;
+        // Check if already a member
+        if (userId) {
+          const existing = this.tripMembers.find(m => m.user_id === userId);
+          if (existing) {
+            this.toast('Ya es miembro de este viaje', 'info');
+            f.submitting = false;
+            return;
+          }
+        }
+        const payload = {
+          trip_id: this.TRIP_ID,
+          user_id: userId,
+          invited_email: userId ? null : email,
+          role: 'operator'
+        };
+        const { error } = await this._client.from('trip_members').insert(payload);
+        if (error) throw error;
+        this.toast(userId ? `✓ Agregado al viaje` : `✓ Invitado · va a ver el viaje al ingresar con ${email}`, 'success');
+        f.email = '';
+        await this.loadTripMembers();
+        this.logEvent && this.logEvent('member.added', `agregó miembro ${email}`, { email, user_id: userId });
+      } catch (e) {
+        console.error('addMember failed:', e);
+        this.toast('Error agregando: ' + (e.message || ''), 'error');
+      } finally {
+        f.submitting = false;
+      }
+    },
+    async removeMember(memberId) {
+      const m = this.tripMembers.find(mm => mm.id === memberId);
+      if (!m) return;
+      // Don't allow removing yourself if you're the only member (would lock you out)
+      if (m.user_id === this.authUser?.id && this.tripMembers.length === 1) {
+        this.toast('No podés quitarte si sos el único miembro', 'error');
+        return;
+      }
+      const ok = await this.askConfirm({
+        title: '¿Quitar miembro?',
+        body: m.user_id === this.authUser?.id
+          ? 'Te vas a quitar a vos mismo de este viaje. Vas a perder el acceso inmediatamente.'
+          : 'Esa persona deja de tener acceso a este viaje. Podés volver a invitar después.',
+        confirmLabel: 'Quitar'
+      });
+      if (!ok) return;
+      try {
+        await this._client.from('trip_members').delete().eq('id', memberId);
+        this.toast('Miembro quitado', 'info');
+        await this.loadTripMembers();
+        // If we just removed ourselves, go home (no longer have access)
+        if (m.user_id === this.authUser?.id) {
+          this.navigateToHome();
+        }
+      } catch (e) {
+        console.error('removeMember failed:', e);
+        this.toast('Error: ' + (e.message || ''), 'error');
+      }
     },
 
     // === ROUTE-AWARE TRIP LOAD ===
