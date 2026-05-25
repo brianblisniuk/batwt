@@ -7848,7 +7848,7 @@ textarea:focus-visible {
           <div class="v5b-day-titlewrap" @click.stop>
             <div class="v5b-day-eyebrow">
               <span class="dot" :style="`background: var(--${day.status === 'ok' ? 'ok' : day.status === 'warn' ? 'warn' : day.status === 'critical' ? 'bad' : 'info'})`"></span>
-              <input type="date" class="v5b-day-date-input" x-model="day.date" @blur="save()">
+              <input type="date" class="v5b-day-date-input" :value="day.date" @change="setDayDate(day, $event.target.value, $event.target)">
               <span x-text="day.weekday"></span>
             </div>
             <input type="text" class="v5b-day-title-input" x-model="day.title" @blur="save()" placeholder="Título del día...">
@@ -12691,15 +12691,70 @@ function app() {
     addDay() {
       const newDay = {
         id: 'd' + Date.now(),
-        dayNumber: this.data.itinerary.length + 1,
+        dayNumber: this.data.itinerary.length + 1,  // legacy field, kept for backcompat
         date: '',
         weekday: '',
         title: 'Nuevo día',
         status: 'info',
         slots: []
       };
-      this.data.itinerary.push(newDay);
+      // Insert at the START so the new day is visible at the top of the
+      // itinerary. As soon as the user sets a date, setDayDate re-sorts it
+      // into its chronological position.
+      this.data.itinerary.unshift(newDay);
       this.logEvent('itinerary.day_added', `agregó un día al itinerario`, { day_id: newDay.id });
+      this.save();
+    },
+    // Called from the day-date input on change. Validates that no other day in
+    // the trip already has the same date, auto-computes the Spanish weekday,
+    // and re-sorts the itinerary chronologically.
+    setDayDate(day, newDate, inputEl) {
+      // Empty clear
+      if (!newDate) {
+        day.date = '';
+        day.weekday = '';
+        this.save();
+        return;
+      }
+      // Duplicate check — exclude the day itself
+      const conflict = this.data.itinerary.find(d => d.id !== day.id && d.date === newDate);
+      if (conflict) {
+        const conflictIdx = this.data.itinerary.indexOf(conflict);
+        const label = conflict.title && conflict.title !== 'Nuevo día' ? `"${conflict.title}"` : `día ${conflictIdx + 1}`;
+        this.toast(`Ya existe un día con la fecha ${newDate}: ${label}`, 'error');
+        // Revert the input to the previous value (the model wasn't touched
+        // because we use :value not x-model on this input)
+        if (inputEl) inputEl.value = day.date || '';
+        return;
+      }
+      // Accept: set date and auto-compute weekday in Spanish
+      day.date = newDate;
+      day.weekday = this._weekdayFromIsoDate(newDate);
+      // Resort the itinerary so the day floats to its right position
+      this._resortItinerary();
+      this.save();
+    },
+    _weekdayFromIsoDate(iso) {
+      try {
+        // Parse as local date (no timezone surprises with YYYY-MM-DD strings)
+        const [y, m, d] = iso.split('-').map(n => parseInt(n, 10));
+        const dt = new Date(y, m - 1, d);
+        const wd = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+        return wd[dt.getDay()];
+      } catch (e) {
+        return '';
+      }
+    },
+    // Sort itinerary chronologically by date. Days without a date go to the
+    // top so newly-added empty days remain visible until the user dates them.
+    _resortItinerary() {
+      this.data.itinerary.sort((a, b) => {
+        // Empty dates come FIRST (so new undated days are visible at top)
+        if (!a.date && !b.date) return 0;
+        if (!a.date) return -1;
+        if (!b.date) return 1;
+        return a.date.localeCompare(b.date);
+      });
     },
     async deleteDay(idx) {
       const day = this.data.itinerary[idx];
