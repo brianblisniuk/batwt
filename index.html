@@ -7041,7 +7041,7 @@ textarea:focus-visible {
 <body>
 
 <!-- Google Maps Platform · Places + Maps. Key restringida a https://batwt.netlify.app/* -->
-<gmpx-api-loader key="AIzaSyCUeZyKs2jjtKLNIwHq9V7Caw2bW_ehEDE" solution-channel="GMP_GE_placepicker_v2"></gmpx-api-loader>
+<gmpx-api-loader key="AIzaSyCUeZyKs2jjtKLNIwHq9V7Caw2bW_ehEDE" solution-channel="GMP_GE_placepicker_v2" language="es"></gmpx-api-loader>
 
 <div class="app" x-data="app()" x-init="init()" x-cloak>
 
@@ -9265,6 +9265,11 @@ textarea:focus-visible {
                 <input type="text" x-model="drawerProvider.mapUrl" @blur="save()" placeholder="https://maps.google.com/... o https://maps.apple.com/...">
                 <span x-show="drawerProvider.mapUrl && !parseMapUrl(drawerProvider.mapUrl)" style="font-size: 10px; color: var(--bad); margin-top: 4px;">⚠ No pude extraer coordenadas de ese link</span>
                 <span x-show="drawerProvider.mapUrl && parseMapUrl(drawerProvider.mapUrl)" style="font-size: 10px; color: var(--olive-deep); margin-top: 4px;" x-text="'✓ ' + parseMapUrl(drawerProvider.mapUrl).lat.toFixed(4) + ', ' + parseMapUrl(drawerProvider.mapUrl).lon.toFixed(4)"></span>
+              </div>
+              <div class="v5b-field" style="grid-column: 1 / -1;">
+                <span class="lbl">Duración típica · minutos</span>
+                <input type="number" min="0" step="15" x-model.number="drawerProvider.duration_min" @blur="save()" placeholder="ej: 90 (cata corta) · 180 (cooking class) · 120 (cena)">
+                <span style="font-size: 10px; color: var(--text-3); margin-top: 4px;">Se usa para detectar conflictos en slots sin hora de fin explícita. Vacío = asume 60 min.</span>
               </div>
               <div class="v5b-field" style="grid-column: 1 / -1;">
                 <span class="lbl">Días de cierre</span>
@@ -14148,39 +14153,72 @@ function app() {
       });
     },
 
+    // Helper: returns the slot's end time in minutes, inferred when timeEnd is absent.
+    // Priority: explicit timeEnd → provider.duration_min → 60 min fallback.
+    slotEndInferred(slot) {
+      const explicitEnd = this.parseTimeToMinutes(this.slotEnd(slot));
+      if (explicitEnd !== null) return { end: explicitEnd, inferred: false };
+      const start = this.parseTimeToMinutes(this.slotStart(slot));
+      if (start === null) return { end: null, inferred: false };
+      // Try the provider's typical duration. Falls back to 60 min.
+      const provider = this.slotProvider(slot);
+      const dur = (provider?.duration_min && provider.duration_min > 0) ? provider.duration_min : 60;
+      return { end: start + dur, inferred: true, duration_used: dur, from_provider: !!(provider?.duration_min) };
+    },
     slotIssues(day, slot) {
-      const out = { conflict: false, conflicts: [], rushed: false, freeHours: null, hasAny: false };
+      const out = { conflict: false, conflicts: [], rushed: false, freeHours: null, travelConflict: null, hasAny: false };
       if (!day || !slot) return out;
       const startA = this.parseTimeToMinutes(this.slotStart(slot));
-      const endA = this.parseTimeToMinutes(this.slotEnd(slot));
       if (startA === null) return out;
-      const intervalA = [startA, endA !== null ? endA : startA + 60]; // assume 1h if no end
-      // Check overlaps with other slots in same day
+      const endInfoA = this.slotEndInferred(slot);
+      const endA = endInfoA.end !== null ? endInfoA.end : startA + 60;
+      const intervalA = [startA, endA];
+      // === Pure schedule overlap with other slots in the same day ===
       for (const other of day.slots) {
         if (other.id === slot.id) continue;
         const startB = this.parseTimeToMinutes(this.slotStart(other));
         if (startB === null) continue;
-        const endB = this.parseTimeToMinutes(this.slotEnd(other));
-        const intervalB = [startB, endB !== null ? endB : startB + 60];
+        const endInfoB = this.slotEndInferred(other);
+        const endB = endInfoB.end !== null ? endInfoB.end : startB + 60;
+        const intervalB = [startB, endB];
         // Overlap: [aStart, aEnd) ∩ [bStart, bEnd) ≠ ∅
         if (intervalA[0] < intervalB[1] && intervalB[0] < intervalA[1]) {
           out.conflict = true;
           out.conflicts.push(other.title || this.slotStart(other) || 'otro slot');
         }
       }
-      // Check gap to NEXT slot (only for "rushed" / "free")
-      const sorted = [...day.slots].filter(s => this.parseTimeToMinutes(this.slotStart(s)) !== null)
+      // === Travel-aware gap to NEXT cronological slot ===
+      const sorted = [...day.slots]
+        .filter(s => this.parseTimeToMinutes(this.slotStart(s)) !== null)
         .sort((a, b) => this.parseTimeToMinutes(this.slotStart(a)) - this.parseTimeToMinutes(this.slotStart(b)));
       const myIdx = sorted.findIndex(s => s.id === slot.id);
       if (myIdx >= 0 && myIdx < sorted.length - 1) {
         const next = sorted[myIdx + 1];
         const nextStart = this.parseTimeToMinutes(this.slotStart(next));
-        const myEnd = endA !== null ? endA : startA + 60;
+        const myEnd = endA;
         const gap = nextStart - myEnd;
-        if (gap >= 0 && gap < 15) out.rushed = true;
-        // Daytime check: my end is between 09:00 and 19:00
-        else if (gap > 120 && myEnd >= 9 * 60 && myEnd <= 19 * 60) {
-          out.freeHours = Math.floor(gap / 60);
+        // Try real travel time from Directions API (cached); falls back null if no coords / no cache
+        const travel = this.travelBetween(slot, next);
+        const travelMin = (travel && !travel.same_location && Number.isFinite(travel.duration_min)) ? travel.duration_min : null;
+        if (travelMin !== null) {
+          // Travel-aware: factor in the real driving time between the two locations
+          const effectiveGap = gap - travelMin;
+          if (effectiveGap < 0) {
+            // Physically impossible to arrive on time
+            out.conflict = true;
+            out.travelConflict = { travel_min: travelMin, gap_min: gap, deficit_min: -effectiveGap, next_title: next.title };
+            out.conflicts.push(`no llegás a "${next.title || 'siguiente'}" (faltan ${-effectiveGap} min)`);
+          } else if (effectiveGap < 15) {
+            out.rushed = true;
+          } else if (effectiveGap > 120 && myEnd >= 9 * 60 && myEnd <= 19 * 60) {
+            out.freeHours = Math.floor(effectiveGap / 60);
+          }
+        } else {
+          // Fallback: pure schedule check (no coords or no Directions cache yet)
+          if (gap >= 0 && gap < 15) out.rushed = true;
+          else if (gap > 120 && myEnd >= 9 * 60 && myEnd <= 19 * 60) {
+            out.freeHours = Math.floor(gap / 60);
+          }
         }
       }
       out.hasAny = out.conflict || out.rushed || out.freeHours !== null;
@@ -14722,7 +14760,10 @@ function app() {
             'internationalPhoneNumber', 'nationalPhoneNumber',
             'websiteURI', 'googleMapsURI', 'regularOpeningHours', 'id'
           ],
-          language: 'it',
+          // Spanish locale + global region. Search matches across languages
+          // (Google Places autocompletes "Turin" → "Torino" regardless), but
+          // displayName / formattedAddress come back in the requested language.
+          language: 'es',
           maxResultCount: 1
         };
         const { places } = await PlaceClass.searchByText(request);
