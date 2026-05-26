@@ -1513,10 +1513,19 @@
         places.forEach(p => { if (p.name) m[p.name.toLowerCase().trim()] = p; });
         return m;
       }, [places]);
+      // Read slot title/description from the client layer when present, fall back
+      // to internal. Filter out slots explicitly hidden from clients.
+      const slotTitle = (slot) =>
+        slot.client?.title?.trim() || slot.internal?.title?.trim() || slot.title || '';
+      const slotDescription = (slot) =>
+        slot.client?.description?.trim() || slot.internal?.description?.trim() || slot.description || '';
+      const slotIsVisible = (slot) =>
+        slot.client?.visible !== false;  // defaults to true if undefined
       const slotPlace = (slot) => {
         if (slot.providerId) return places.find(p => p.id === slot.providerId) || null;
-        if (slot.title) {
-          const k = slot.title.toLowerCase().trim();
+        const title = slotTitle(slot);
+        if (title) {
+          const k = title.toLowerCase().trim();
           if (placesByName[k]) return placesByName[k];
           // Loose contains-match
           return places.find(p => p.name && (k.includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(k))) || null;
@@ -1547,7 +1556,8 @@
           <div style={{ overflowX: 'auto', padding: '12px 16px', background: P.surface, borderBottom: `1px solid ${P.border}` }}>
             <div style={{ display: 'flex', gap: 8 }}>
               {itinerary.map((d, i) => {
-                const hasMatch = matches?.some(m => m.match_date === d.date);
+                // Solo marcar con puntito rojo los días con partido de Argentina (highlight=true)
+                const hasMatch = matches?.some(m => m.match_date === d.date && m.highlight);
                 return (
                   <button key={d.id || i} onClick={() => setSelectedDay(i)} style={{
                     flexShrink: 0, padding: '8px 14px', borderRadius: 99,
@@ -1610,59 +1620,67 @@
               </div>
             )}
 
-            {slots.length === 0 && (
-              <div style={{ textAlign: 'center', padding: 40, color: P.textMuted, fontStyle: 'italic' }}>
-                Sin actividades cargadas para este día.
-              </div>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {slots.map((slot, idx) => {
-                const place = slotPlace(slot);
+            {(() => {
+              const visibleSlots = slots.filter(slotIsVisible);
+              if (visibleSlots.length === 0) {
                 return (
-                  <button key={slot.id || idx}
-                    onClick={() => place && openDetail(place)}
-                    disabled={!place}
-                    style={{
-                      background: P.surface, border: 'none', borderRadius: 14,
-                      padding: '14px 16px', textAlign: 'left',
-                      display: 'flex', alignItems: 'flex-start', gap: 12,
-                      cursor: place ? 'pointer' : 'default',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                  }}>
-                    <div style={{
-                      flexShrink: 0,
-                      width: 50, padding: '6px 0',
-                      textAlign: 'center',
-                      fontSize: 13, fontWeight: 700, color: P.primary,
-                    }}>
-                      {slot.timeStart || slot.time || '—'}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: 14.5, fontWeight: 600, color: P.text,
-                        lineHeight: 1.3,
-                      }}>
-                        {slot.title || 'Sin título'}
-                      </div>
-                      {place && place.name !== slot.title && (
-                        <div style={{ fontSize: 12, color: P.textMuted, marginTop: 2 }}>
-                          {place.name}
-                        </div>
-                      )}
-                      {slot.description && (
-                        <div style={{ fontSize: 12.5, color: P.textMuted, marginTop: 4, lineHeight: 1.4 }}>
-                          {slot.description}
-                        </div>
-                      )}
-                    </div>
-                    {place && (
-                      <Icon name="chevron-r" size={16} color={P.textDim}/>
-                    )}
-                  </button>
+                  <div style={{ textAlign: 'center', padding: 40, color: P.textMuted, fontStyle: 'italic' }}>
+                    Sin actividades para este día.
+                  </div>
                 );
-              })}
-            </div>
+              }
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {visibleSlots.map((slot, idx) => {
+                    const place = slotPlace(slot);
+                    const title = slotTitle(slot);
+                    const description = slotDescription(slot);
+                    return (
+                      <button key={slot.id || idx}
+                        onClick={() => place && openDetail(place)}
+                        disabled={!place}
+                        style={{
+                          background: P.surface, border: 'none', borderRadius: 14,
+                          padding: '14px 16px', textAlign: 'left',
+                          display: 'flex', alignItems: 'flex-start', gap: 12,
+                          cursor: place ? 'pointer' : 'default',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                      }}>
+                        <div style={{
+                          flexShrink: 0,
+                          width: 50, padding: '6px 0',
+                          textAlign: 'center',
+                          fontSize: 13, fontWeight: 700, color: P.primary,
+                        }}>
+                          {slot.timeStart || slot.time || '—'}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontSize: 14.5, fontWeight: 600, color: P.text,
+                            lineHeight: 1.3,
+                          }}>
+                            {title || 'Sin título'}
+                          </div>
+                          {place && place.name !== title && (
+                            <div style={{ fontSize: 12, color: P.textMuted, marginTop: 2 }}>
+                              {place.name}
+                            </div>
+                          )}
+                          {description && (
+                            <div style={{ fontSize: 12.5, color: P.textMuted, marginTop: 4, lineHeight: 1.4 }}>
+                              {description}
+                            </div>
+                          )}
+                        </div>
+                        {place && (
+                          <Icon name="chevron-r" size={16} color={P.textDim}/>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           <BottomNav active="trip" goto={goto}/>
