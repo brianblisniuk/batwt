@@ -37,13 +37,69 @@
       _default:   'pin',
     };
 
-    // === PARTIDOS (hardcoded para el Mundial específicamente) ===
-    // En v2 multi-trip esto vive en meta.events del trip.
-    const MATCHES = [
-      { id: 'm1', date: '16 JUN', dateISO: '2026-06-16', time: '20:00', team1: 'ARG', team2: 'ALG', city: 'Kansas City', stadium: 'Arrowhead Stadium', group: 'Grupo · Fecha 1', highlight: true,  lat: 39.0489, lng: -94.4839 },
-      { id: 'm2', date: '21 JUN', dateISO: '2026-06-21', time: '18:00', team1: 'ARG', team2: 'KSA', city: 'Kansas City', stadium: 'Arrowhead Stadium', group: 'Grupo · Fecha 2', highlight: false, lat: 39.0489, lng: -94.4839 },
-      { id: 'm3', date: '26 JUN', dateISO: '2026-06-26', time: '21:00', team1: 'ARG', team2: 'CRO', city: 'Kansas City', stadium: 'Arrowhead Stadium', group: 'Grupo · Fecha 3', highlight: true,  lat: 39.0489, lng: -94.4839 },
-    ];
+    // === PARTIDOS DEL MUNDIAL ==================================
+    // Cargados desde Supabase (tabla wc26_matches). Antes estaban hardcoded;
+    // ahora se cargan desde la DB y se cachean en localStorage para offline.
+    // useWorldCupMatches está definido más abajo (después de useLocalStorage).
+
+    // Códigos de equipo → nombres en español. Ampliamos a medida que se cargan
+    // los teams reales en la tabla.
+    const TEAM_NAMES = {
+      ARG: 'Argentina', BRA: 'Brasil', URU: 'Uruguay', CHI: 'Chile', COL: 'Colombia',
+      ECU: 'Ecuador', PAR: 'Paraguay', PER: 'Perú', VEN: 'Venezuela',
+      MEX: 'México', USA: 'Estados Unidos', CAN: 'Canadá', CRC: 'Costa Rica',
+      CUW: 'Curazao', HAI: 'Haití', PAN: 'Panamá', CPV: 'Cabo Verde',
+      ESP: 'España', POR: 'Portugal', FRA: 'Francia', ITA: 'Italia',
+      GER: 'Alemania', ENG: 'Inglaterra', SCO: 'Escocia', NED: 'Países Bajos', BEL: 'Bélgica',
+      CRO: 'Croacia', SUI: 'Suiza', DEN: 'Dinamarca', SWE: 'Suecia',
+      POL: 'Polonia', AUT: 'Austria', SRB: 'Serbia', TUR: 'Turquía',
+      CZE: 'República Checa', NOR: 'Noruega', BIH: 'Bosnia y Herzegovina',
+      MAR: 'Marruecos', SEN: 'Senegal', EGY: 'Egipto', ALG: 'Argelia',
+      NGA: 'Nigeria', TUN: 'Túnez', CIV: 'Costa de Marfil', CMR: 'Camerún',
+      GHA: 'Ghana', RSA: 'Sudáfrica', COD: 'RD Congo',
+      JPN: 'Japón', KOR: 'Corea del Sur', AUS: 'Australia', IRN: 'Irán',
+      KSA: 'Arabia Saudita', QAT: 'Catar', UZB: 'Uzbekistán', JOR: 'Jordania',
+      IRQ: 'Irak', NZL: 'Nueva Zelanda',
+      TBD: 'A definir',
+    };
+
+    // Códigos de equipo → emoji bandera. iOS y Android renderizan estas con
+    // los íconos nacionales nativos del SO (lindos y consistentes con el resto
+    // de la UI del teléfono). Zero dependencia de imágenes externas.
+    const TEAM_FLAGS = {
+      ARG: '🇦🇷', BRA: '🇧🇷', URU: '🇺🇾', CHI: '🇨🇱', COL: '🇨🇴',
+      ECU: '🇪🇨', PAR: '🇵🇾', PER: '🇵🇪', VEN: '🇻🇪',
+      MEX: '🇲🇽', USA: '🇺🇸', CAN: '🇨🇦', CRC: '🇨🇷',
+      CUW: '🇨🇼', HAI: '🇭🇹', PAN: '🇵🇦', CPV: '🇨🇻',
+      ESP: '🇪🇸', POR: '🇵🇹', FRA: '🇫🇷', ITA: '🇮🇹',
+      GER: '🇩🇪', ENG: '🏴\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}',
+      SCO: '🏴\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}',
+      NED: '🇳🇱', BEL: '🇧🇪',
+      CRO: '🇭🇷', SUI: '🇨🇭', DEN: '🇩🇰', SWE: '🇸🇪',
+      POL: '🇵🇱', AUT: '🇦🇹', SRB: '🇷🇸', TUR: '🇹🇷',
+      CZE: '🇨🇿', NOR: '🇳🇴', BIH: '🇧🇦',
+      MAR: '🇲🇦', SEN: '🇸🇳', EGY: '🇪🇬', ALG: '🇩🇿',
+      NGA: '🇳🇬', TUN: '🇹🇳', CIV: '🇨🇮', CMR: '🇨🇲',
+      GHA: '🇬🇭', RSA: '🇿🇦', COD: '🇨🇩',
+      JPN: '🇯🇵', KOR: '🇰🇷', AUS: '🇦🇺', IRN: '🇮🇷',
+      KSA: '🇸🇦', QAT: '🇶🇦', UZB: '🇺🇿', JOR: '🇯🇴',
+      IRQ: '🇮🇶', NZL: '🇳🇿',
+      TBD: '',
+    };
+
+    // Etapas del torneo → labels en español
+    const STAGE_LABELS = {
+      group: 'Fase de grupos',
+      r32:   'Dieciseisavos de final',
+      r16:   'Octavos de final',
+      qf:    'Cuartos de final',
+      sf:    'Semifinal',
+      tp:    'Tercer puesto',
+      final: 'Final',
+    };
+    const STAGE_SHORT = {
+      group: 'Grupo', r32: 'R32', r16: 'Octavos', qf: 'Cuartos', sf: 'Semis', tp: '3er puesto', final: 'Final',
+    };
 
     // === ICON COMPONENT (curated set, same vocabulary as B&A) ===
     function Icon({ name, size = 20, color = 'currentColor', stroke = 2, fill = false }) {
@@ -126,6 +182,70 @@
         });
       }, [key]);
       return [val, setAndSave];
+    }
+
+    // Load all World Cup 2026 matches from Supabase, ordered by datetime.
+    // Cached in localStorage for offline. Subscribes to realtime so when
+    // the operator updates scores or fills in TBD teams, it propagates.
+    function useWorldCupMatches() {
+      const [matches, setMatches] = useState(() => {
+        try {
+          const raw = localStorage.getItem('em-wc26-matches');
+          return raw ? JSON.parse(raw) : [];
+        } catch { return []; }
+      });
+      useEffect(() => {
+        let mounted = true;
+        (async () => {
+          try {
+            const { data, error } = await db
+              .from('wc26_matches').select('*')
+              .order('match_date', { ascending: true })
+              .order('match_time', { ascending: true });
+            if (error) throw error;
+            if (mounted && data) {
+              setMatches(data);
+              try { localStorage.setItem('em-wc26-matches', JSON.stringify(data)); } catch {}
+            }
+          } catch (e) {
+            // Silent — fall back to cached version if any
+            console.warn('useWorldCupMatches load failed:', e.message);
+          }
+        })();
+        const channel = db
+          .channel('wc26-matches-changes')
+          .on('postgres_changes',
+            { event: '*', schema: 'public', table: 'wc26_matches' },
+            async () => {
+              const { data } = await db
+                .from('wc26_matches').select('*')
+                .order('match_date', { ascending: true })
+                .order('match_time', { ascending: true });
+              if (mounted && data) {
+                setMatches(data);
+                try { localStorage.setItem('em-wc26-matches', JSON.stringify(data)); } catch {}
+              }
+            })
+          .subscribe();
+        return () => {
+          mounted = false;
+          db.removeChannel(channel);
+        };
+      }, []);
+      return matches;
+    }
+
+    // Helpers for matches display
+    function teamLabel(code) { return TEAM_NAMES[code] || code; }
+    function matchDateShort(dateStr) {
+      // '2026-06-16' → '16 JUN'
+      const [_y, m, d] = (dateStr || '').split('-');
+      const mo = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'][parseInt(m,10)-1] || '';
+      return `${parseInt(d,10)} ${mo}`;
+    }
+    function matchTimeShort(timeStr) {
+      // '20:00:00' → '20:00'
+      return (timeStr || '').slice(0, 5);
     }
 
     // useTrip: loads from Supabase + subscribes to realtime updates.
@@ -1381,7 +1501,7 @@
     }
 
     // === ITINERARY SCREEN ======================================
-    function ItineraryScreen({ trip, openDetail, goto, places }) {
+    function ItineraryScreen({ trip, openDetail, goto, places, matches }) {
       const itinerary = trip?.itinerary || [];
       const [selectedDay, setSelectedDay] = useState(0);
       const day = itinerary[selectedDay];
@@ -1404,6 +1524,12 @@
         return null;
       };
 
+      // Matches happening on the currently selected day
+      const todayMatches = useMemo(() => {
+        if (!day?.date || !matches?.length) return [];
+        return matches.filter(m => m.match_date === day.date);
+      }, [day?.date, matches]);
+
       return (
         <div style={{ position: 'absolute', inset: 0, background: P.surfaceDim, display: 'flex', flexDirection: 'column' }}>
           {/* Header */}
@@ -1420,21 +1546,31 @@
           {/* Day chips */}
           <div style={{ overflowX: 'auto', padding: '12px 16px', background: P.surface, borderBottom: `1px solid ${P.border}` }}>
             <div style={{ display: 'flex', gap: 8 }}>
-              {itinerary.map((d, i) => (
-                <button key={d.id || i} onClick={() => setSelectedDay(i)} style={{
-                  flexShrink: 0, padding: '8px 14px', borderRadius: 99,
-                  background: i === selectedDay ? P.primary : P.surfaceDim,
-                  color: i === selectedDay ? '#fff' : P.text,
-                  border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
-                  minWidth: 64,
-                }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, opacity: 0.7 }}>
-                    {(d.weekday || '').slice(0,3).toUpperCase()}
-                  </span>
-                  <span>{d.date ? d.date.slice(8) : `D${i+1}`}</span>
-                </button>
-              ))}
+              {itinerary.map((d, i) => {
+                const hasMatch = matches?.some(m => m.match_date === d.date);
+                return (
+                  <button key={d.id || i} onClick={() => setSelectedDay(i)} style={{
+                    flexShrink: 0, padding: '8px 14px', borderRadius: 99,
+                    background: i === selectedDay ? P.primary : P.surfaceDim,
+                    color: i === selectedDay ? '#fff' : P.text,
+                    border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                    minWidth: 64, position: 'relative',
+                  }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, opacity: 0.7 }}>
+                      {(d.weekday || '').slice(0,3).toUpperCase()}
+                    </span>
+                    <span>{d.date ? d.date.slice(8) : `D${i+1}`}</span>
+                    {hasMatch && (
+                      <span style={{
+                        position: 'absolute', top: 4, right: 6,
+                        width: 6, height: 6, borderRadius: '50%',
+                        background: i === selectedDay ? '#fff' : P.bad,
+                      }}/>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -1448,6 +1584,29 @@
                 <h3 style={{ fontSize: 20, fontWeight: 700, letterSpacing: -0.4, marginTop: 4, color: P.text }}>
                   {day.title || 'Día sin título'}
                 </h3>
+              </div>
+            )}
+
+            {/* Matches happening today — widget */}
+            {todayMatches.length > 0 && (
+              <div style={{
+                background: `linear-gradient(135deg, ${P.primary} 0%, ${P.primaryDeep} 100%)`,
+                borderRadius: 14, padding: '14px 14px 12px', marginBottom: 16,
+                color: '#fff',
+              }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  fontSize: 11, fontWeight: 700, letterSpacing: 1, marginBottom: 10,
+                  opacity: 0.85,
+                }}>
+                  <Icon name="soccer" size={13} stroke={2.4} color="#fff"/>
+                  PARTIDOS DEL MUNDIAL ESTE DÍA
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {todayMatches.map(m => (
+                    <DayMatchRow key={m.id} match={m} highlighted={m.highlight}/>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -1511,31 +1670,138 @@
       );
     }
 
-    // === CALENDAR SCREEN (Mundial-specific matches) ============
-    function CalendarScreen({ goto, onMatchTap }) {
+    // Compact row for the "matches today" widget inside ItineraryScreen
+    function DayMatchRow({ match, highlighted }) {
+      const flagHome = TEAM_FLAGS[match.team_home] || '';
+      const flagAway = TEAM_FLAGS[match.team_away] || '';
+      return (
+        <div style={{
+          background: highlighted ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)',
+          borderRadius: 10, padding: '8px 12px',
+          display: 'flex', alignItems: 'center', gap: 10,
+          border: highlighted ? '1px solid rgba(255,255,255,0.3)' : 'none',
+        }}>
+          <div style={{
+            fontSize: 13, fontWeight: 800, letterSpacing: -0.3,
+            minWidth: 42, fontFamily: '"Inter Tight"',
+          }}>
+            {matchTimeShort(match.match_time)}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: -0.2,
+                          display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+              {flagHome && <span style={{ fontSize: 15 }}>{flagHome}</span>}
+              <span>{match.team_home}</span>
+              <span style={{ opacity: 0.5, margin: '0 2px' }}>vs</span>
+              {flagAway && <span style={{ fontSize: 15 }}>{flagAway}</span>}
+              <span>{match.team_away}</span>
+            </div>
+            <div style={{ fontSize: 11, opacity: 0.7, marginTop: 1 }}>
+              {match.city} · {match.stadium}
+            </div>
+          </div>
+          {highlighted && (
+            <div style={{
+              background: '#fff', color: P.primary,
+              padding: '2px 8px', borderRadius: 99,
+              fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5,
+            }}>
+              TU PARTIDO
+            </div>
+          )}
+        </div>
+      );
+    }
+
+
+    // === CALENDAR SCREEN (Mundial — todos los partidos desde DB) =====
+    function CalendarScreen({ goto, onMatchTap, matches }) {
+      const [filter, setFilter] = useState('mine');  // 'mine' | 'all' | 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final'
+      const filtered = useMemo(() => {
+        if (!matches) return [];
+        if (filter === 'mine') return matches.filter(m => m.highlight);
+        if (filter === 'all')  return matches;
+        return matches.filter(m => m.stage === filter);
+      }, [matches, filter]);
+
+      // Group matches by date for the section headers
+      const byDate = useMemo(() => {
+        const groups = {};
+        filtered.forEach(m => {
+          (groups[m.match_date] = groups[m.match_date] || []).push(m);
+        });
+        return Object.entries(groups).map(([date, ms]) => ({ date, matches: ms }));
+      }, [filtered]);
+
+      const filters = [
+        { id: 'mine',  label: 'Mis partidos', count: matches.filter(m => m.highlight).length },
+        { id: 'all',   label: 'Todos',        count: matches.length },
+        { id: 'group', label: 'Grupos',       count: matches.filter(m => m.stage === 'group').length },
+        { id: 'r32',   label: 'R32',          count: matches.filter(m => m.stage === 'r32').length },
+        { id: 'r16',   label: 'Octavos',      count: matches.filter(m => m.stage === 'r16').length },
+        { id: 'qf',    label: 'Cuartos',      count: matches.filter(m => m.stage === 'qf').length },
+        { id: 'sf',    label: 'Semis',        count: matches.filter(m => m.stage === 'sf').length },
+        { id: 'final', label: 'Final',        count: matches.filter(m => m.stage === 'final').length },
+      ].filter(f => f.count > 0 || f.id === 'mine' || f.id === 'all');
+
       return (
         <div style={{ position: 'absolute', inset: 0, background: P.surfaceDim, display: 'flex', flexDirection: 'column' }}>
           <div className="em-safe-top" style={{
             background: `linear-gradient(180deg, ${P.primary} 0%, ${P.primaryDeep} 100%)`,
-            color: '#fff', padding: '60px 20px 24px',
+            color: '#fff', padding: '60px 20px 20px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
               <Icon name="flag-ar" size={18}/>
               <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.5 }}>
-                ARGENTINA · GRUPO C
+                MUNDIAL USA · CAN · MEX 2026
               </span>
             </div>
-            <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.8 }}>
-              El camino al<br/>Mundial.
+            <h2 style={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.8 }}>
+              Calendario completo
             </h2>
-            <p style={{ fontSize: 14, opacity: 0.78, marginTop: 6, lineHeight: 1.4 }}>
-              3 partidos del paquete · Todos en Arrowhead Stadium, Kansas City.
+            <p style={{ fontSize: 13, opacity: 0.78, marginTop: 4, lineHeight: 1.4 }}>
+              {matches.length} partido{matches.length === 1 ? '' : 's'} cargado{matches.length === 1 ? '' : 's'} · Datos en vivo
             </p>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '18px 16px 100px' }}>
-            {MATCHES.map((m, i) => (
-              <MatchCard key={m.id} match={m} onClick={() => onMatchTap?.(m)}/>
+          {/* Filter chips */}
+          <div style={{ overflowX: 'auto', padding: '12px 16px', background: P.surface, borderBottom: `1px solid ${P.border}` }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {filters.map(f => (
+                <button key={f.id} onClick={() => setFilter(f.id)} style={{
+                  flexShrink: 0, padding: '7px 12px', borderRadius: 99,
+                  background: filter === f.id ? P.primary : P.surfaceDim,
+                  color: filter === f.id ? '#fff' : P.text,
+                  border: 'none', fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+                  letterSpacing: -0.1,
+                }}>
+                  {f.label}{f.count > 0 && filter !== f.id ? ` · ${f.count}` : ''}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px 100px' }}>
+            {matches.length === 0 && (
+              <div style={{ textAlign: 'center', padding: 40, color: P.textMuted, fontStyle: 'italic' }}>
+                Cargando partidos…
+              </div>
+            )}
+            {byDate.length === 0 && matches.length > 0 && (
+              <div style={{ textAlign: 'center', padding: 40, color: P.textMuted, fontStyle: 'italic' }}>
+                Sin partidos en esta categoría.
+              </div>
+            )}
+            {byDate.map(({ date, matches: ms }) => (
+              <div key={date} style={{ marginBottom: 18 }}>
+                <div style={{
+                  fontSize: 11, fontWeight: 700, color: P.textMuted, letterSpacing: 1,
+                  textTransform: 'uppercase', marginBottom: 8, paddingLeft: 4,
+                }}>
+                  {formatDateHeading(date)}
+                </div>
+                {ms.map(m => <MatchCard key={m.id} match={m} onClick={() => onMatchTap?.(m)}/>)}
+              </div>
             ))}
           </div>
 
@@ -1544,39 +1810,85 @@
       );
     }
 
+    function formatDateHeading(dateStr) {
+      // '2026-06-16' → 'Martes 16 de junio'
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      const wd = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][date.getDay()];
+      const mo = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][m-1];
+      return `${wd} ${d} de ${mo}`;
+    }
+
     function MatchCard({ match, onClick }) {
+      const isHighlight = match.highlight;
+      const stage = STAGE_SHORT[match.stage] || match.stage;
+      const groupLabel = match.group_code ? `Grupo ${match.group_code}` : stage;
+      const isTbd = match.team_home === 'TBD' && match.team_away === 'TBD';
       return (
         <button onClick={onClick} style={{
           width: '100%', display: 'block', textAlign: 'left',
-          background: P.surface, border: 'none', borderRadius: 16,
-          padding: 16, marginBottom: 10, cursor: 'pointer',
-          boxShadow: match.highlight ? `0 0 0 2px ${P.primary}33` : '0 1px 3px rgba(0,0,0,0.05)',
+          background: P.surface, border: 'none', borderRadius: 14,
+          padding: 14, marginBottom: 8, cursor: 'pointer',
+          boxShadow: isHighlight ? `0 0 0 2px ${P.primary}40` : '0 1px 3px rgba(0,0,0,0.05)',
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: P.primary, letterSpacing: 0.5 }}>
-              {match.group}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: isHighlight ? P.primary : P.textMuted, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+              {groupLabel}{match.match_number ? ` · #${match.match_number}` : ''}
             </div>
-            <div style={{ fontSize: 12, color: P.textMuted }}>{match.stadium}</div>
+            <div style={{ fontSize: 11, color: P.textMuted }}>{match.stadium}</div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <Team code={match.team1}/>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-              <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.8, color: P.text }}>{match.date}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: P.textMuted }}>{match.time}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Team code={match.team_home}/>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, flexShrink: 0, minWidth: 60 }}>
+              <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.4, color: P.text, fontFamily: '"Inter Tight"' }}>
+                {matchTimeShort(match.match_time)}
+              </div>
+              {match.status === 'final' && match.home_score != null
+                ? <div style={{ fontSize: 14, fontWeight: 700, color: P.primary }}>{match.home_score} - {match.away_score}</div>
+                : <div style={{ fontSize: 11, color: P.textDim, letterSpacing: 0.3 }}>vs</div>
+              }
             </div>
-            <Team code={match.team2} align="end"/>
+            <Team code={match.team_away} align="end"/>
           </div>
-          <div style={{ fontSize: 12, color: P.textMuted, textAlign: 'center', marginTop: 12 }}>
-            {match.city}
+          {/* Bracket description for playoff matches with TBD teams */}
+          {isTbd && match.notes && (
+            <div style={{
+              fontSize: 11.5, color: P.textMuted, textAlign: 'center', marginTop: 10,
+              padding: '6px 10px', background: P.surfaceDim, borderRadius: 8,
+              fontStyle: 'italic',
+            }}>
+              {match.notes}
+            </div>
+          )}
+          <div style={{ fontSize: 11.5, color: P.textMuted, textAlign: 'center', marginTop: 8 }}>
+            {match.city}{match.country !== 'US' ? `, ${match.country}` : ''}
           </div>
         </button>
       );
     }
+
     function Team({ code, align = 'start' }) {
+      const flag = TEAM_FLAGS[code] || '';
+      const isTbd = code === 'TBD' || !code;
       return (
-        <div style={{ flex: 1, textAlign: align === 'end' ? 'right' : 'left' }}>
-          {code === 'ARG' && <div style={{ marginBottom: 6, display: 'inline-block' }}><Icon name="flag-ar" size={28}/></div>}
-          <div style={{ fontSize: 22, fontWeight: 800, color: P.text, letterSpacing: -0.4 }}>{code}</div>
+        <div style={{ flex: 1, textAlign: align === 'end' ? 'right' : 'left', minWidth: 0 }}>
+          {flag && (
+            <div style={{
+              fontSize: 26, lineHeight: 1, marginBottom: 4,
+              // Emojis on macOS Safari can look fuzzy if scaled — keep crisp
+              fontFamily: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif',
+            }}>
+              {flag}
+            </div>
+          )}
+          <div style={{
+            fontSize: 16, fontWeight: 800, color: isTbd ? P.textDim : P.text, letterSpacing: -0.3,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{isTbd ? '—' : code}</div>
+          <div style={{
+            fontSize: 11, color: P.textMuted, marginTop: 1,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{teamLabel(code)}</div>
         </div>
       );
     }
@@ -2005,6 +2317,7 @@
       const [routeDest, setRouteDest] = useState(null);
       const [filters, setFilters] = useState(null);  // { types: [], maxDistKm: 50 } | null
       const { data: trip, loading, error } = useTrip(TRIP_ID);
+      const matches = useWorldCupMatches();
       const [userLocation, requestLocation] = useUserLocation();
       const [favs, setFavs] = useLocalStorage(`em-${TRIP_ID}-favs`, []);
 
@@ -2074,9 +2387,9 @@
                          userLocation={userLocation} requestLocation={requestLocation} goto={goto}
                          filters={filters} clearFilters={() => setFilters(null)}/>;
         case 'trip':
-          return <ItineraryScreen trip={trip} places={places} openDetail={openDetail} goto={goto}/>;
+          return <ItineraryScreen trip={trip} places={places} openDetail={openDetail} goto={goto} matches={matches}/>;
         case 'cal':
-          return <CalendarScreen goto={goto}/>;
+          return <CalendarScreen goto={goto} matches={matches}/>;
         default:
           return <MapScreen trip={trip} places={places} openDetail={openDetail}
                             userLocation={userLocation} requestLocation={requestLocation} goto={goto}
