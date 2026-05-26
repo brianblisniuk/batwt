@@ -1501,9 +1501,14 @@
     }
 
     // === ITINERARY SCREEN ======================================
-    function ItineraryScreen({ trip, openDetail, goto, places, matches }) {
+    function ItineraryScreen({ trip, openDetail, goto, places, matches, initialDay }) {
       const itinerary = trip?.itinerary || [];
-      const [selectedDay, setSelectedDay] = useState(0);
+      const [selectedDay, setSelectedDay] = useState(() => {
+        if (typeof initialDay === 'number' && initialDay >= 0 && initialDay < itinerary.length) {
+          return initialDay;
+        }
+        return 0;
+      });
       const day = itinerary[selectedDay];
       const slots = day?.slots || [];
 
@@ -2327,10 +2332,29 @@
 
     // === APP ROOT ==============================================
     function App() {
+      // Parse URL params for preview mode (used by the operator app's
+      // "Previsualizar como cliente" button). When ?preview=<trip-id> matches
+      // this app's TRIP_ID, bypass the access code. When ?day=N is present,
+      // open directly on the itinerary screen with that day selected (1-indexed).
+      const previewParams = useMemo(() => {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const preview = params.get('preview');
+          const dayParam = parseInt(params.get('day') || '0', 10);
+          return {
+            isPreview: !!preview && preview === TRIP_ID,
+            initialDay: dayParam > 0 ? dayParam - 1 : null,
+          };
+        } catch { return { isPreview: false, initialDay: null }; }
+      }, []);
+
       const [unlocked, setUnlocked] = useState(() => {
+        if (previewParams.isPreview) return true;
         try { return localStorage.getItem('em-unlocked') === '1'; } catch { return false; }
       });
-      const [screen, setScreen] = useState('splash');
+      const [screen, setScreen] = useState(() =>
+        previewParams.initialDay !== null ? 'trip' : 'splash'
+      );
       const [activePlace, setActivePlace] = useState(null);
       const [routeDest, setRouteDest] = useState(null);
       const [filters, setFilters] = useState(null);  // { types: [], maxDistKm: 50 } | null
@@ -2375,19 +2399,24 @@
 
       const goto = (s) => setScreen(s);
 
+      // Render the actual screen, then overlay a preview banner if in preview mode.
+      let screenEl;
       switch (screen) {
         case 'splash':
-          return <SplashScreen onContinue={() => setScreen('map')} trip={trip}/>;
+          screenEl = <SplashScreen onContinue={() => setScreen('map')} trip={trip}/>;
+          break;
         case 'map':
-          return <MapScreen trip={trip} places={places} openDetail={openDetail}
+          screenEl = <MapScreen trip={trip} places={places} openDetail={openDetail}
                             userLocation={userLocation} requestLocation={requestLocation} goto={goto}
                             filters={filters} clearFilters={() => setFilters(null)}/>;
+          break;
         case 'filters':
-          return <FiltersScreen trip={trip} initialFilters={filters}
+          screenEl = <FiltersScreen trip={trip} initialFilters={filters}
                                 goBack={() => setScreen('map')}
                                 onApply={(f) => { setFilters(f); setScreen('map'); }}/>;
+          break;
         case 'detail':
-          return activePlace
+          screenEl = activePlace
             ? <DetailScreen place={activePlace} trip={trip}
                             goBack={() => setScreen('map')}
                             onRoute={() => openRoute(activePlace)}
@@ -2397,22 +2426,45 @@
             : <MapScreen trip={trip} places={places} openDetail={openDetail}
                          userLocation={userLocation} requestLocation={requestLocation} goto={goto}
                          filters={filters} clearFilters={() => setFilters(null)}/>;
+          break;
         case 'route':
-          return routeDest
+          screenEl = routeDest
             ? <RouteScreen dest={routeDest} userLocation={userLocation} trip={trip}
                            goBack={() => setScreen('detail')}/>
             : <MapScreen trip={trip} places={places} openDetail={openDetail}
                          userLocation={userLocation} requestLocation={requestLocation} goto={goto}
                          filters={filters} clearFilters={() => setFilters(null)}/>;
+          break;
         case 'trip':
-          return <ItineraryScreen trip={trip} places={places} openDetail={openDetail} goto={goto} matches={matches}/>;
+          screenEl = <ItineraryScreen trip={trip} places={places} openDetail={openDetail} goto={goto} matches={matches} initialDay={previewParams.initialDay}/>;
+          break;
         case 'cal':
-          return <CalendarScreen goto={goto} matches={matches}/>;
+          screenEl = <CalendarScreen goto={goto} matches={matches}/>;
+          break;
         default:
-          return <MapScreen trip={trip} places={places} openDetail={openDetail}
+          screenEl = <MapScreen trip={trip} places={places} openDetail={openDetail}
                             userLocation={userLocation} requestLocation={requestLocation} goto={goto}
                             filters={filters} clearFilters={() => setFilters(null)}/>;
       }
+
+      if (previewParams.isPreview) {
+        return (
+          <>
+            <div style={{
+              position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+              background: P.warn, color: '#fff', padding: '6px 14px',
+              fontSize: 11, fontWeight: 700, textAlign: 'center',
+              letterSpacing: '0.04em', textTransform: 'uppercase',
+              fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+            }}>
+              Vista previa · modo operador
+            </div>
+            <div style={{ paddingTop: 28 }}>{screenEl}</div>
+          </>
+        );
+      }
+      return screenEl;
     }
 
     ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
