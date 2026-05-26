@@ -1,17 +1,34 @@
-# Netlify configuration for Piemonte BA × TWT app
+# Netlify config para la app cliente del Mundial.
+# Netlify lo lee porque el sitio tiene base directory = "mundial-app"
 
 [build]
   publish = "."
 
+# CRÍTICO: el service worker no debe cachearse.
+# Si Netlify lo cachea, los clientes quedan con la versión vieja para siempre
+# y no reciben updates aunque vos hagas deploy.
 [[headers]]
-  for = "/*"
+  for = "/service-worker.js"
   [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "geolocation=(), camera=(), microphone=()"
+    Cache-Control = "no-cache, no-store, must-revalidate"
 
+# CRÍTICO: el manifest necesita content-type correcto para que iOS lo reconozca
+# y permita "Agregar a inicio" como PWA.
 [[headers]]
-  for = "/index.html"
+  for = "/manifest.webmanifest"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=3600"
+
+# Los íconos pueden cachearse fuerte (no cambian)
+[[headers]]
+  for = "/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# El bundle minificado puede cachearse mientras el HTML referencie esta versión.
+# Cuando rebuildies, cambiá el nombre del archivo o agregale un query param.
+[[headers]]
+  for = "/app.min.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
