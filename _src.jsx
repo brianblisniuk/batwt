@@ -8,8 +8,10 @@
     // === CONSTANTES ============================================
     const SUPABASE_URL = 'https://pptldpjwggrnbkvppolu.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_6Xs9DoveG6nvB8FK1q_RAw_apQCmTr_';
-    const TRIP_ID = 'mundial-arg-2026';
-    const ACCESS_CODE = '4590';
+    // Trip ID is no longer hardcoded — it comes from:
+    //   1. The ?preview=<trip-id> URL param (operator preview mode), or
+    //   2. The logged-in user's trip_members record (client mode)
+    // The access code (was '4590') has been replaced by Supabase Auth login.
 
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -248,18 +250,23 @@
       return (timeStr || '').slice(0, 5);
     }
 
-    // useTrip: loads from Supabase + subscribes to realtime updates.
-    // ALSO caches the latest data to localStorage so the app works offline:
-    // if the network fetch fails (no signal in the RV mid-trip), we serve the
-    // last known good copy and the UI keeps working with stale-but-usable data.
+    // useTrip: loads filtered trip data from Supabase via the get_client_trip()
+    // RPC function (so we never see internal fields like cost/budget/comments)
+    // and subscribes to realtime updates on the trips table. When a change is
+    // detected we re-call the RPC to get the freshly filtered version (we can't
+    // just take payload.new because that's the raw row, which would leak fields).
+    // Also caches the latest filtered data to localStorage for offline use.
     function useTrip(tripId) {
       const [state, setState] = useState({ data: null, loading: true, error: null, stale: false });
       useEffect(() => {
+        if (!tripId) {
+          setState({ data: null, loading: false, error: null, stale: false });
+          return;
+        }
         let mounted = true;
         let channel = null;
         const cacheKey = `em-trip-cache-${tripId}`;
-        // 1. Optimistic: hydrate from localStorage cache immediately so the UI
-        //    has something while we wait on the network.
+        // 1. Optimistic: hydrate from localStorage cache immediately
         try {
           const cached = localStorage.getItem(cacheKey);
           if (cached) {
@@ -267,42 +274,34 @@
             setState({ data: parsed.data, loading: false, error: null, stale: true });
           }
         } catch {}
-        // 2. Fetch fresh in background
-        (async () => {
+        // 2. Fetch fresh via RPC
+        const fetchFresh = async () => {
           try {
-            const { data, error } = await db
-              .from('trips').select('data, updated_at').eq('id', tripId).single();
+            const { data, error } = await db.rpc('get_client_trip', { p_trip_id: tripId });
             if (error) throw error;
             if (mounted) {
-              setState({ data: data.data, loading: false, error: null, stale: false });
+              setState({ data, loading: false, error: null, stale: false });
               try {
-                localStorage.setItem(cacheKey, JSON.stringify({ data: data.data, updated_at: data.updated_at, cached_at: Date.now() }));
+                localStorage.setItem(cacheKey, JSON.stringify({ data, cached_at: Date.now() }));
               } catch {}
             }
           } catch (e) {
             console.warn('useTrip fetch failed, using cached:', e.message);
             if (mounted) {
-              // If we already hydrated from cache, keep that; only flip to error
-              // when we have nothing at all.
               setState(s => s.data
                 ? { ...s, loading: false, error: null, stale: true }
                 : { data: null, loading: false, error: 'Sin señal · no hay datos guardados', stale: false });
             }
           }
-          // Subscribe to realtime — when it fires, also update the cache
-          channel = db
-            .channel(`trip-${tripId}`)
-            .on('postgres_changes',
-              { event: 'UPDATE', schema: 'public', table: 'trips', filter: `id=eq.${tripId}` },
-              (payload) => {
-                if (!mounted) return;
-                setState(s => ({ ...s, data: payload.new.data, stale: false }));
-                try {
-                  localStorage.setItem(cacheKey, JSON.stringify({ data: payload.new.data, cached_at: Date.now() }));
-                } catch {}
-              })
-            .subscribe();
-        })();
+        };
+        fetchFresh();
+        // Subscribe to realtime — when the raw row changes, re-fetch via RPC.
+        channel = db
+          .channel(`trip-${tripId}`)
+          .on('postgres_changes',
+            { event: 'UPDATE', schema: 'public', table: 'trips', filter: `id=eq.${tripId}` },
+            () => { if (mounted) fetchFresh(); })
+          .subscribe();
         return () => {
           mounted = false;
           if (channel) db.removeChannel(channel);
@@ -377,75 +376,248 @@
     // Code-protected entry. The code lives in localStorage once entered so it
     // doesn't ask every session. NOT a security boundary — anyone reading the
     // JS sees the code. Just a "this is for the actual passenger" gate.
-    function AccessGate({ onUnlock }) {
-      const [val, setVal] = useState('');
-      const [shake, setShake] = useState(false);
-      const submit = () => {
-        if (val.trim() === ACCESS_CODE) {
-          try { localStorage.setItem('em-unlocked', '1'); } catch {}
-          onUnlock();
-        } else {
-          setShake(true);
-          setTimeout(() => setShake(false), 500);
+    // === LOGIN ================================================
+    // Replaces the old 4-digit access code gate. Each huésped now has their
+    // own Supabase Auth account (email + password) created by the operator
+    // through B&A. On successful login, Supabase persists the session — they
+    // won't need to log in again until token expiry or explicit logout.
+    function LoginScreen({ onAuth }) {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [busy, setBusy] = useState(false);
+      const [error, setError] = useState(null);
+      const [showReset, setShowReset] = useState(false);
+      const [resetSent, setResetSent] = useState(false);
+
+      const submit = async () => {
+        if (!email.trim() || !password) return;
+        setBusy(true); setError(null);
+        try {
+          const { data, error } = await db.auth.signInWithPassword({
+            email: email.trim().toLowerCase(),
+            password,
+          });
+          if (error) throw error;
+          onAuth(data.session);
+        } catch (e) {
+          setError(e.message || 'No pudimos iniciar sesión');
+        } finally {
+          setBusy(false);
         }
       };
+
+      const requestReset = async () => {
+        if (!email.trim()) { setError('Ingresá tu email primero'); return; }
+        setBusy(true); setError(null);
+        try {
+          const { error } = await db.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+            redirectTo: window.location.origin,
+          });
+          if (error) throw error;
+          setResetSent(true);
+        } catch (e) {
+          setError(e.message || 'No pudimos enviar el email');
+        } finally {
+          setBusy(false);
+        }
+      };
+
       return (
         <div style={{
           position: 'fixed', inset: 0,
           background: `linear-gradient(180deg, ${P.primary} 0%, ${P.primaryDeep} 100%)`,
           color: '#fff', display: 'flex', flexDirection: 'column',
-          padding: '80px 28px 40px', justifyContent: 'space-between',
+          padding: '70px 28px 40px', justifyContent: 'space-between',
+          overflowY: 'auto',
         }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 40 }}>
-              <Icon name="flag-ar" size={20}/>
               <span style={{ fontSize: 12, letterSpacing: 2, fontWeight: 600, opacity: 0.85 }}>
-                EXPEDICIÓN MUNDIAL
+                BLISNIUK &amp; AMANOV
               </span>
             </div>
             <h1 style={{
-              fontSize: 38, fontWeight: 800, lineHeight: 1.05, letterSpacing: -1.2,
+              fontSize: 34, fontWeight: 800, lineHeight: 1.05, letterSpacing: -1,
               marginBottom: 12,
             }}>
-              Ingresá tu código<br/>de viaje.
+              {showReset ? 'Restablecer contraseña' : 'Tu viaje\nte espera.'}
             </h1>
-            <p style={{ fontSize: 15, lineHeight: 1.5, color: 'rgba(255,255,255,0.7)', marginBottom: 40 }}>
-              Te lo dimos al momento de confirmar tu reserva.
+            <p style={{ fontSize: 15, lineHeight: 1.5, color: 'rgba(255,255,255,0.7)', marginBottom: 32, whiteSpace: 'pre-line' }}>
+              {showReset
+                ? (resetSent
+                    ? 'Te mandamos un email con un link para crear una nueva contraseña.'
+                    : 'Te vamos a mandar un email con un link para crear una nueva contraseña.')
+                : 'Iniciá sesión con el email que registraste con tu operador.'}
             </p>
-            <div style={{
-              animation: shake ? 'shake 0.4s' : 'none',
-              transform: shake ? 'translateX(0)' : 'none',
-            }}>
+            <input
+              type="email" autoFocus value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@email.com"
+              style={{
+                width: '100%', padding: '16px 18px', marginBottom: 12,
+                background: 'rgba(255,255,255,0.1)', border: 'none',
+                borderRadius: 14, color: '#fff', fontSize: 16, outline: 'none',
+                fontFamily: 'inherit', boxSizing: 'border-box',
+              }}
+            />
+            {!showReset && (
               <input
-                type="tel" inputMode="numeric" pattern="[0-9]*" maxLength={6}
-                autoFocus value={val}
-                onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, ''))}
+                type="password" value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && submit()}
+                placeholder="Contraseña"
                 style={{
-                  width: '100%', padding: '20px 24px',
+                  width: '100%', padding: '16px 18px',
                   background: 'rgba(255,255,255,0.1)', border: 'none',
-                  borderRadius: 16, color: '#fff',
-                  fontSize: 28, fontWeight: 700, letterSpacing: 8,
-                  textAlign: 'center', outline: 'none',
+                  borderRadius: 14, color: '#fff', fontSize: 16, outline: 'none',
+                  fontFamily: 'inherit', boxSizing: 'border-box',
                 }}
-                placeholder="• • • •"
               />
-              {shake && (
-                <div style={{ marginTop: 12, fontSize: 13, color: '#FECACA', textAlign: 'center' }}>
-                  Código incorrecto.
-                </div>
-              )}
-            </div>
+            )}
+            {error && (
+              <div style={{ marginTop: 12, fontSize: 13, color: '#FECACA' }}>
+                {error}
+              </div>
+            )}
+            {!showReset ? (
+              <button onClick={() => { setShowReset(true); setError(null); setResetSent(false); }} style={{
+                marginTop: 16, background: 'transparent', border: 'none',
+                color: 'rgba(255,255,255,0.7)', fontSize: 13, cursor: 'pointer',
+                padding: 0, textAlign: 'left', textDecoration: 'underline',
+              }}>
+                Olvidé mi contraseña
+              </button>
+            ) : (
+              <button onClick={() => { setShowReset(false); setResetSent(false); setError(null); }} style={{
+                marginTop: 16, background: 'transparent', border: 'none',
+                color: 'rgba(255,255,255,0.7)', fontSize: 13, cursor: 'pointer',
+                padding: 0, textAlign: 'left', textDecoration: 'underline',
+              }}>
+                Volver al login
+              </button>
+            )}
           </div>
-          <button onClick={submit} disabled={!val} style={{
-            background: val ? '#fff' : 'rgba(255,255,255,0.2)',
-            color: val ? P.primary : 'rgba(255,255,255,0.6)',
-            border: 'none', padding: '18px', borderRadius: 16,
-            fontSize: 17, fontWeight: 700, cursor: val ? 'pointer' : 'not-allowed',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          <button
+            onClick={showReset ? (resetSent ? () => { setShowReset(false); setResetSent(false); } : requestReset) : submit}
+            disabled={busy || !email.trim() || (!showReset && !password)}
+            style={{
+              background: (busy || !email.trim() || (!showReset && !password)) ? 'rgba(255,255,255,0.2)' : '#fff',
+              color: (busy || !email.trim() || (!showReset && !password)) ? 'rgba(255,255,255,0.6)' : P.primary,
+              border: 'none', padding: '18px', borderRadius: 16,
+              fontSize: 17, fontWeight: 700,
+              cursor: (busy || !email.trim() || (!showReset && !password)) ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}>
+            {busy ? '…' : (showReset
+              ? (resetSent ? 'Volver al login' : 'Enviar email')
+              : <>Entrar <Icon name="arrow-right" size={18} stroke={2.4}/></>)}
+          </button>
+        </div>
+      );
+    }
+
+    // === TRIP SELECTOR ========================================
+    // Shown when the logged-in user has membership in more than one trip.
+    // Lets them pick which one to view.
+    function TripSelectScreen({ memberships, onSelect, onLogout }) {
+      const [loading, setLoading] = useState(true);
+      const [titles, setTitles] = useState({});
+      useEffect(() => {
+        let cancelled = false;
+        // Fetch a name + period preview for each membership via the RPC
+        (async () => {
+          const result = {};
+          for (const m of memberships) {
+            try {
+              const { data, error } = await db.rpc('get_client_trip', { p_trip_id: m.trip_id });
+              if (!error && data) {
+                result[m.trip_id] = {
+                  name: data.meta?.tripName || m.trip_id,
+                  period: data.meta?.shortPeriod || '',
+                  region: data.meta?.region || '',
+                };
+              } else {
+                result[m.trip_id] = { name: m.trip_id, period: '', region: '' };
+              }
+            } catch { result[m.trip_id] = { name: m.trip_id, period: '', region: '' }; }
+          }
+          if (!cancelled) { setTitles(result); setLoading(false); }
+        })();
+        return () => { cancelled = true; };
+      }, [memberships]);
+
+      return (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: P.surfaceDim, color: P.text,
+          display: 'flex', flexDirection: 'column',
+          padding: '60px 24px 32px', overflowY: 'auto',
+        }}>
+          <div style={{ marginBottom: 32 }}>
+            <span style={{ fontSize: 12, letterSpacing: 2, fontWeight: 600, color: P.textMuted }}>
+              BLISNIUK &amp; AMANOV
+            </span>
+            <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.5, marginTop: 8 }}>
+              Elegí tu viaje
+            </h1>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+            {loading && <div style={{ color: P.textDim, fontSize: 14 }}>Cargando…</div>}
+            {!loading && memberships.map(m => {
+              const t = titles[m.trip_id] || {};
+              return (
+                <button key={m.trip_id} onClick={() => onSelect(m.trip_id)} style={{
+                  background: P.surface, border: `1px solid ${P.border}`,
+                  borderRadius: 16, padding: '18px 20px',
+                  textAlign: 'left', cursor: 'pointer', display: 'flex',
+                  flexDirection: 'column', gap: 4,
+                }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: P.text }}>{t.name}</div>
+                  {(t.region || t.period) && (
+                    <div style={{ fontSize: 13, color: P.textMuted }}>
+                      {[t.region, t.period].filter(Boolean).join(' · ')}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <button onClick={onLogout} style={{
+            marginTop: 24, background: 'transparent', border: 'none',
+            color: P.textMuted, fontSize: 13, cursor: 'pointer',
+            textDecoration: 'underline', padding: 0,
           }}>
-            Entrar
-            <Icon name="arrow-right" size={18} stroke={2.4}/>
+            Cerrar sesión
+          </button>
+        </div>
+      );
+    }
+
+    // === NO TRIPS =============================================
+    // Shown when the logged-in user has no trip memberships. Likely means
+    // the operator hasn't assigned a trip yet, or the user is on the wrong
+    // app (e.g. a client opening the operator app).
+    function NoTripsScreen({ email, onLogout }) {
+      return (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: P.surfaceDim, color: P.text,
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', padding: '60px 32px', textAlign: 'center',
+        }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>
+            Aún no tenés un viaje asignado
+          </h1>
+          <p style={{ fontSize: 15, lineHeight: 1.5, color: P.textMuted, marginBottom: 32, maxWidth: 360 }}>
+            La cuenta <strong>{email}</strong> no tiene ningún viaje asociado todavía.
+            Si esto es un error, contactá a tu operador.
+          </p>
+          <button onClick={onLogout} style={{
+            background: P.primary, color: '#fff', border: 'none',
+            padding: '14px 24px', borderRadius: 12, fontSize: 15,
+            fontWeight: 600, cursor: 'pointer',
+          }}>
+            Cerrar sesión
           </button>
         </div>
       );
@@ -722,14 +894,14 @@
     // Persists driving polylines from the user's basecamp / userLocation to
     // each positioned slot of the itinerary, plus inter-day slot pairs.
     // Lets RouteScreen render real routes even when there's no signal.
-    function loadDirectionsCache() {
+    function loadDirectionsCache(tripId) {
       try {
-        const raw = localStorage.getItem(`em-directions-${TRIP_ID}`);
+        const raw = localStorage.getItem(`em-directions-${tripId}`);
         return raw ? JSON.parse(raw) : {};
       } catch { return {}; }
     }
-    function saveDirectionsCache(cache) {
-      try { localStorage.setItem(`em-directions-${TRIP_ID}`, JSON.stringify(cache)); } catch {}
+    function saveDirectionsCache(tripId, cache) {
+      try { localStorage.setItem(`em-directions-${tripId}`, JSON.stringify(cache)); } catch {}
     }
     function dirCacheKey(origin, dest, mode = 'DRIVING') {
       const r = n => Math.round(n * 1e4) / 1e4;  // 4 decimals ≈ 11m precision
@@ -739,15 +911,15 @@
     // Hook: kicks off background prefetch of routes to all positioned slots
     // once the trip is loaded. Best-effort — silent failures keep the app
     // responsive even when offline.
-    function useDirectionsPrefetch(trip, places, origin) {
+    function useDirectionsPrefetch(tripId, trip, places, origin) {
       useEffect(() => {
-        if (!trip || !places.length || !origin) return;
+        if (!tripId || !trip || !places.length || !origin) return;
         let cancelled = false;
         (async () => {
           try {
             const { DirectionsService } = await google.maps.importLibrary('routes');
             const svc = new DirectionsService();
-            const cache = loadDirectionsCache();
+            const cache = loadDirectionsCache(tripId);
             const positioned = places.filter(p => p.lat != null);
             // Prefetch driving routes from origin to each positioned place
             for (const place of positioned) {
@@ -767,7 +939,7 @@
                   polyline: result.routes[0].overview_polyline,
                   fetched_at: Date.now(),
                 };
-                saveDirectionsCache(cache);
+                saveDirectionsCache(tripId, cache);
                 // Tiny stagger to avoid hammering API
                 await new Promise(r => setTimeout(r, 250));
               } catch (e) {
@@ -779,7 +951,7 @@
           }
         })();
         return () => { cancelled = true; };
-      }, [trip?.providers?.length, origin?.lat, origin?.lng]);
+      }, [tripId, trip?.providers?.length, origin?.lat, origin?.lng]);
     }
     // Curated list of utility categories that make sense on the road.
     // Type strings come from https://developers.google.com/maps/documentation/places/web-service/place-types
@@ -2332,68 +2504,133 @@
 
     // === APP ROOT ==============================================
     function App() {
-      // Parse URL params for preview mode (used by the operator app's
-      // "Previsualizar como cliente" button). When ?preview=<trip-id> matches
-      // this app's TRIP_ID, bypass the access code. When ?day=N is present,
-      // open directly on the itinerary screen with that day selected (1-indexed).
+      // === URL params: ?preview=<trip-id>&day=<N> ====================
+      // The operator's "Previsualizar como cliente" button sends them here
+      // with these params. Preview mode also bypasses the login screen
+      // (the operator is already logged in in their other tab, but even if
+      // not, we want the URL to "just work" for them).
       const previewParams = useMemo(() => {
         try {
           const params = new URLSearchParams(window.location.search);
           const preview = params.get('preview');
           const dayParam = parseInt(params.get('day') || '0', 10);
           return {
-            isPreview: !!preview && preview === TRIP_ID,
+            previewTripId: preview || null,
             initialDay: dayParam > 0 ? dayParam - 1 : null,
           };
-        } catch { return { isPreview: false, initialDay: null }; }
+        } catch { return { previewTripId: null, initialDay: null }; }
+      }, []);
+      const isPreview = !!previewParams.previewTripId;
+
+      // === Auth session ===============================================
+      const [session, setSession] = useState(null);
+      const [sessionChecked, setSessionChecked] = useState(false);
+      useEffect(() => {
+        db.auth.getSession().then(({ data }) => {
+          setSession(data?.session || null);
+          setSessionChecked(true);
+        });
+        const { data: sub } = db.auth.onAuthStateChange((_event, s) => {
+          setSession(s || null);
+        });
+        return () => { sub?.subscription?.unsubscribe?.(); };
       }, []);
 
-      const [unlocked, setUnlocked] = useState(() => {
-        if (previewParams.isPreview) return true;
-        try { return localStorage.getItem('em-unlocked') === '1'; } catch { return false; }
-      });
+      // === Trip memberships of current user ===========================
+      // null = not yet loaded, [] = none, [...] = available
+      const [memberships, setMemberships] = useState(null);
+      useEffect(() => {
+        if (isPreview) { setMemberships([]); return; }
+        if (!session?.user?.id) { setMemberships(null); return; }
+        let cancelled = false;
+        (async () => {
+          const { data, error } = await db
+            .from('trip_members')
+            .select('trip_id, role')
+            .eq('user_id', session.user.id);
+          if (cancelled) return;
+          if (error) {
+            console.warn('memberships fetch failed:', error);
+            setMemberships([]);
+          } else {
+            setMemberships(data || []);
+          }
+        })();
+        return () => { cancelled = true; };
+      }, [session?.user?.id, isPreview]);
+
+      // === Active trip id (computed) ==================================
+      const [selectedTripId, setSelectedTripId] = useState(null);
+      const activeTripId = useMemo(() => {
+        if (isPreview) return previewParams.previewTripId;
+        if (selectedTripId) return selectedTripId;
+        if (memberships?.length === 1) return memberships[0].trip_id;
+        return null;
+      }, [isPreview, previewParams.previewTripId, selectedTripId, memberships]);
+
+      // === App screen state ===========================================
       const [screen, setScreen] = useState(() =>
         previewParams.initialDay !== null ? 'trip' : 'splash'
       );
       const [activePlace, setActivePlace] = useState(null);
       const [routeDest, setRouteDest] = useState(null);
-      const [filters, setFilters] = useState(null);  // { types: [], maxDistKm: 50 } | null
-      const { data: trip, loading, error } = useTrip(TRIP_ID);
+      const [filters, setFilters] = useState(null);
+      const { data: trip, loading, error } = useTrip(activeTripId);
       const matches = useWorldCupMatches();
       const [userLocation, requestLocation] = useUserLocation();
-      const [favs, setFavs] = useLocalStorage(`em-${TRIP_ID}-favs`, []);
+      const [favs, setFavs] = useLocalStorage(
+        activeTripId ? `em-${activeTripId}-favs` : 'em-no-trip-favs', []
+      );
 
-      // Transform providers into "places" once per trip change
       const places = useMemo(() => {
         if (!trip) return [];
         const providerTypes = trip.meta?.providerTypes || [];
         return (trip.providers || []).map(p => providerToPlace(p, providerTypes)).filter(Boolean);
       }, [trip]);
 
-      // Prefetch driving polylines from basecamp to each place in background.
-      // Best-effort, silent. Means Route screen has real routes even offline.
       const prefetchOrigin = useMemo(() => {
         if (userLocation) return userLocation;
         const bc = trip?.meta?.basecamp?.coords;
         if (bc?.lat && bc?.lon) return { lat: bc.lat, lng: bc.lon };
         return null;
       }, [userLocation, trip?.meta?.basecamp]);
-      useDirectionsPrefetch(trip, places, prefetchOrigin);
+      useDirectionsPrefetch(activeTripId, trip, places, prefetchOrigin);
 
-      const openDetail = useCallback((p) => {
-        setActivePlace(p);
-        setScreen('detail');
-      }, []);
-      const openRoute = useCallback((p) => {
-        setRouteDest(p);
-        setScreen('route');
-      }, []);
+      const openDetail = useCallback((p) => { setActivePlace(p); setScreen('detail'); }, []);
+      const openRoute = useCallback((p) => { setRouteDest(p); setScreen('route'); }, []);
       const toggleFav = useCallback((id) => {
         setFavs(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id]);
       }, [setFavs]);
 
-      // Gate first
-      if (!unlocked) return <AccessGate onUnlock={() => setUnlocked(true)}/>;
+      const handleLogout = useCallback(async () => {
+        try { await db.auth.signOut(); } catch {}
+        setSession(null);
+        setMemberships(null);
+        setSelectedTripId(null);
+        setScreen('splash');
+        // Clear the unlocked flag from the old 4590 flow just in case
+        try { localStorage.removeItem('em-unlocked'); } catch {}
+      }, []);
+
+      // === Gate logic =================================================
+      // Preview mode skips auth entirely (operator viewing in another tab).
+      if (!isPreview) {
+        if (!sessionChecked) return <LoadingScreen/>;
+        if (!session) return <LoginScreen onAuth={(s) => setSession(s)}/>;
+        if (!memberships) return <LoadingScreen/>;
+        if (memberships.length === 0) {
+          return <NoTripsScreen email={session.user.email} onLogout={handleLogout}/>;
+        }
+        if (memberships.length > 1 && !selectedTripId) {
+          return <TripSelectScreen
+            memberships={memberships}
+            onSelect={setSelectedTripId}
+            onLogout={handleLogout}
+          />;
+        }
+      }
+
+      if (!activeTripId) return <LoadingScreen/>;
       if (loading) return <LoadingScreen/>;
       if (error)   return <ErrorScreen error={error} onRetry={() => location.reload()}/>;
 
@@ -2447,7 +2684,7 @@
                             filters={filters} clearFilters={() => setFilters(null)}/>;
       }
 
-      if (previewParams.isPreview) {
+      if (isPreview) {
         return (
           <>
             <div style={{
