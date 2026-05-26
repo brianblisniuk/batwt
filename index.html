@@ -3338,6 +3338,101 @@ color: var(--text-1);
   font-weight: 500;
 }
 
+/* Layer tabs (Interna / Cliente) inside slot drawer */
+.v5b-layer-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-2);
+  padding: 4px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+.v5b-layer-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  transition: all 120ms ease;
+  text-align: left;
+}
+.v5b-layer-tab:hover { color: var(--text-1); }
+.v5b-layer-tab.active {
+  background: var(--surface-1);
+  color: var(--text-1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.v5b-layer-tab-hint {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 400;
+}
+.v5b-layer-tab.active .v5b-layer-tab-hint { color: var(--terracotta); }
+
+.v5b-client-visible {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.v5b-client-visible input[type=checkbox] {
+  width: 18px; height: 18px;
+  accent-color: var(--terracotta);
+  cursor: pointer;
+}
+.v5b-client-visible span { display: flex; flex-direction: column; gap: 2px; }
+.v5b-client-visible strong { font-size: 13.5px; color: var(--text-1); font-weight: 600; }
+.v5b-client-visible em {
+  font-style: normal;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.v5b-client-hint {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-3);
+  margin-top: 4px;
+  font-style: italic;
+}
+.v5b-client-preview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 7px;
+  background: var(--terracotta);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  width: fit-content;
+}
+.v5b-client-preview-btn:hover { opacity: 0.9; }
+
+/* Lock icon for slots hidden from client */
+.v5b-slot-lock {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 11px;
+  opacity: 0.7;
+  vertical-align: middle;
+}
+.v5b-slot.client-hidden { opacity: 0.78; }
+.v5b-slot.client-hidden .v5b-slot-title { color: var(--text-2); }
+
 .v5b-detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -7866,14 +7961,17 @@ textarea:focus-visible {
           <div class="v5b-day-slots" x-init="initSortable($el, day.id)" :data-day-id="day.id">
             <template x-for="(slot, sIdx) in day.slots" :key="slot.id">
               <div class="v5b-slot-group">
-                <div class="v5b-slot" :data-slot-id="slot.id" :class="{'is-untimed': !slotStart(slot), 'has-conflict': slotIssues(day, slot).conflict}" @click="openSlotDrawer(slot.id)">
+                <div class="v5b-slot" :data-slot-id="slot.id" :class="{'is-untimed': !slotStart(slot), 'has-conflict': slotIssues(day, slot).conflict, 'client-hidden': slot.client?.visible === false}" @click="openSlotDrawer(slot.id)">
                   <span class="v5b-slot-handle" @click.stop @mousedown.stop @touchstart.stop title="Arrastrar para mover este slot a otro día o reordenarlo">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg>
                   </span>
                   <div class="v5b-slot-time" x-text="slotDisplayTime(slot) || '—'"></div>
                   <div class="v5b-slot-glyph" :class="slotKind(slot)" x-html="slotKindIcon(slotKind(slot))"></div>
                   <div class="v5b-slot-body">
-                    <div class="v5b-slot-title" :class="{empty: !slot.title}" x-text="slot.title || 'Sin título'"></div>
+                    <div class="v5b-slot-title" :class="{empty: !slot.title}">
+                      <span x-text="slot.title || 'Sin título'"></span>
+                      <span class="v5b-slot-lock" x-show="slot.client?.visible === false" title="Oculto al cliente">🔒</span>
+                    </div>
                     <div class="v5b-slot-sub" x-show="slot.description" x-text="slot.description"></div>
                     <div class="v5b-slot-verdict" x-show="slot.verdict" x-text="slot.verdict"></div>
                     <template x-if="slotIssues(day, slot).hasAny">
@@ -8989,9 +9087,20 @@ textarea:focus-visible {
             </div>
           </div>
 
-          <div class="v5b-detail-section">
-            <h4>Detalle</h4>
-            <div class="v5b-detail-grid cols-1">
+          <div class="v5b-detail-section" x-data="{ slotTab: 'interna' }">
+            <div class="v5b-layer-tabs">
+              <button class="v5b-layer-tab" :class="{active: slotTab === 'interna'}" @click="slotTab = 'interna'">
+                Interna
+                <span class="v5b-layer-tab-hint">solo Brian + Federico</span>
+              </button>
+              <button class="v5b-layer-tab" :class="{active: slotTab === 'cliente'}" @click="slotTab = 'cliente'">
+                Cliente
+                <span class="v5b-layer-tab-hint">lo que ve el huésped</span>
+              </button>
+            </div>
+
+            <!-- TAB INTERNA -->
+            <div x-show="slotTab === 'interna'" class="v5b-detail-grid cols-1">
               <div class="v5b-field">
                 <span class="lbl">Descripción · contacto · precio</span>
                 <textarea x-model="drawerSlot.description" @blur="save()" rows="4" placeholder="Notas, reserva confirmada, contacto, precio, lo que haya..."></textarea>
@@ -8999,6 +9108,49 @@ textarea:focus-visible {
               <div class="v5b-field">
                 <span class="lbl">Veredicto · acción</span>
                 <input type="text" x-model="drawerSlot.verdict" @blur="save()" placeholder="ej: confirmar el viernes 15, llamar a Marco, pagar seña...">
+              </div>
+            </div>
+
+            <!-- TAB CLIENTE -->
+            <div x-show="slotTab === 'cliente'" class="v5b-detail-grid cols-1" x-cloak>
+              <div class="v5b-field">
+                <label class="v5b-client-visible">
+                  <input type="checkbox" :checked="drawerSlot.client?.visible !== false"
+                    @change="(drawerSlot.client = drawerSlot.client || {}); drawerSlot.client.visible = $event.target.checked; save()">
+                  <span>
+                    <strong x-text="drawerSlot.client?.visible !== false ? 'Visible para el cliente' : 'Oculto al cliente'"></strong>
+                    <em x-text="drawerSlot.client?.visible !== false ? 'el huésped ve este slot en su app' : 'el huésped NO ve este slot'"></em>
+                  </span>
+                </label>
+              </div>
+              <div class="v5b-field">
+                <span class="lbl">Título narrativo (lo que lee el cliente)</span>
+                <input type="text"
+                  :value="drawerSlot.client?.title || ''"
+                  @input="(drawerSlot.client = drawerSlot.client || {}); drawerSlot.client.title = $event.target.value"
+                  @blur="save()"
+                  :placeholder="drawerSlot.title || 'Título narrativo del slot…'">
+                <span class="v5b-client-hint" x-show="!drawerSlot.client?.title">
+                  Vacío · se usa el título interno como fallback (<span x-text="drawerSlot.title"></span>)
+                </span>
+              </div>
+              <div class="v5b-field">
+                <span class="lbl">Descripción narrativa (lo que lee el cliente)</span>
+                <textarea
+                  :value="drawerSlot.client?.description || ''"
+                  @input="(drawerSlot.client = drawerSlot.client || {}); drawerSlot.client.description = $event.target.value"
+                  @blur="save()"
+                  rows="4"
+                  placeholder="Descripción para el cliente, sin precios ni notas operativas…"></textarea>
+                <span class="v5b-client-hint" x-show="!drawerSlot.client?.description && drawerSlot.description">
+                  Vacío · se usa la descripción interna como fallback (sin filtrar)
+                </span>
+              </div>
+              <div class="v5b-field" x-show="TRIP_ID === 'mundial-arg-2026'">
+                <a class="v5b-client-preview-btn" :href="'https://expedicionmundial.netlify.app/?preview=' + TRIP_ID + '&day=' + (data.itinerary.findIndex(d => d.id === drawerSlotDay?.id) + 1)" target="_blank" rel="noopener">
+                  Previsualizar como cliente →
+                </a>
+                <span class="v5b-client-hint">solo Mundial 2026 por ahora · multi-trip viene en Fase 4</span>
               </div>
             </div>
           </div>
@@ -11565,6 +11717,7 @@ function app() {
       }));
       // Optionally apply day title if it was set
       if (tmpl.data.dayTitle && !day.title) day.title = tmpl.data.dayTitle;
+      this.save();  // triggers _syncSlotLayers() which fills in internal/client layers
       this.toast(`✓ "${tmpl.name}" aplicado`, 'success');
       this.closeApplyTemplatePicker();
     },
@@ -12065,6 +12218,12 @@ function app() {
         }
       });
 
+      // Listen for hash changes — fires when user navigates between home and trips.
+      // MUST be registered before the auth guard below, otherwise users who land
+      // on a fresh page without an existing session never get this listener and
+      // their first navigation after sign-in silently does nothing.
+      window.addEventListener('hashchange', () => { this._onRouteChange(); });
+
       // If not authed, show the login view and stop here. Routing/data loading
       // happens after sign-in (the onAuthStateChange handler re-fires this flow).
       if (!this.authSession) {
@@ -12074,9 +12233,6 @@ function app() {
 
       // Load the operator (B&A) for branding + trip listing
       await this.loadOperator();
-
-      // Listen for hash changes — fires when user navigates between home and trips
-      window.addEventListener('hashchange', () => { this._onRouteChange(); });
 
       // Initial route dispatch
       await this._onRouteChange();
@@ -12513,6 +12669,12 @@ function app() {
     },
 
     async saveToCloud() {
+      // Sync internal/client layers from the legacy root fields before persisting.
+      // Operator edits write to slot.title / slot.description / slot.status / slot.verdict
+      // (the legacy root fields, bound to Alpine x-model in the drawer). This mirrors them
+      // into slot.internal.* so the JSON is consistent for downstream consumers (client app).
+      this._syncSlotLayers();
+
       // Always save local as fallback
       try { localStorage.setItem(this._storeKey('data-cache'), JSON.stringify(this.data)); } catch (e) {}
 
@@ -12633,6 +12795,38 @@ function app() {
     },
 
     // Alias for retro-compat (old @blur="save()" handlers)
+    // Sync slot.title/description/status/verdict (legacy root, Alpine-bound)
+    // into slot.internal.* so the JSON stays consistent. Idempotent.
+    // Also ensures slot.client exists with sensible defaults.
+    _syncSlotLayers() {
+      if (!this.data?.itinerary) return;
+      for (const day of this.data.itinerary) {
+        if (!Array.isArray(day.slots)) continue;
+        for (const s of day.slots) {
+          // Ensure internal exists
+          if (!s.internal || typeof s.internal !== 'object') s.internal = {};
+          // Mirror root → internal
+          s.internal.title       = s.title       ?? s.internal.title       ?? '';
+          s.internal.description = s.description ?? s.internal.description ?? '';
+          s.internal.status      = s.status      ?? s.internal.status      ?? 'ok';
+          s.internal.verdict     = s.verdict     ?? s.internal.verdict     ?? '';
+
+          // Ensure client exists with sensible defaults
+          if (!s.client || typeof s.client !== 'object') {
+            s.client = {
+              visible: true,
+              title: s.title || '',
+              description: s.description || ''
+            };
+          } else {
+            if (s.client.visible === undefined) s.client.visible = true;
+            if (s.client.title === undefined) s.client.title = '';
+            if (s.client.description === undefined) s.client.description = '';
+          }
+        }
+      }
+    },
+
     save() {
       // Watcher on data already triggers save; this is a no-op explicit trigger
       this.saveToCloud();
@@ -12666,7 +12860,7 @@ function app() {
             danger: true
           });
           if (ok) {
-            this.data = parsed;
+            this.data = this.migrateData(parsed);
             this.save();
             this.notify('Datos importados');
           }
@@ -12686,7 +12880,7 @@ function app() {
         danger: true
       });
       if (ok) {
-        this.data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        this.data = this.migrateData(JSON.parse(JSON.stringify(DEFAULT_DATA)));
         this.save();
         this.notify('Reset completo');
       }
@@ -15196,6 +15390,26 @@ function app() {
             if (s.timeEnd === undefined) s.timeEnd = '';
             if (!s.time && s.timeStart) s.time = s.timeStart;
             if (!Array.isArray(s.attachments)) s.attachments = [];
+            // Internal layer: mirror legacy root fields (price, supplier_code, etc.
+            // go here in the future without polluting the slot root).
+            if (!s.internal || typeof s.internal !== 'object') s.internal = {};
+            if (s.internal.title === undefined)       s.internal.title       = s.title || '';
+            if (s.internal.description === undefined) s.internal.description = s.description || '';
+            if (s.internal.status === undefined)      s.internal.status      = s.status || 'ok';
+            if (s.internal.verdict === undefined)     s.internal.verdict     = s.verdict || '';
+            // Client layer: what the guest sees in their app. Defaults to copies
+            // of internal so a freshly migrated slot already has something to show.
+            if (!s.client || typeof s.client !== 'object') {
+              s.client = {
+                visible: true,
+                title: s.title || '',
+                description: s.description || ''
+              };
+            } else {
+              if (s.client.visible === undefined)     s.client.visible     = true;
+              if (s.client.title === undefined)       s.client.title       = '';
+              if (s.client.description === undefined) s.client.description = '';
+            }
             // providerId: auto-link by title if missing
             if (s.providerId === undefined) {
               s.providerId = '';
@@ -15593,7 +15807,9 @@ function app() {
       });
       if (!ok) return;
       this.applyingRemote = true;
-      this.data = JSON.parse(JSON.stringify(s.data));
+      // migrateData ensures any pre-Layer-migration snapshot gets initialized
+      // with internal/client layers so the new drawer UI doesn't break.
+      this.data = this.migrateData(JSON.parse(JSON.stringify(s.data)));
       this.$nextTick(() => { this.applyingRemote = false; this.saveToCloud(); });
       this.notify(`Restaurado "${s.name}"`);
       await this.logEvent('snapshot.restored', `restauró snapshot "${s.name}"`, { snapshot_id: s.id, name: s.name });
