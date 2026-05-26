@@ -12739,7 +12739,7 @@ function app() {
         // Parse as local date (no timezone surprises with YYYY-MM-DD strings)
         const [y, m, d] = iso.split('-').map(n => parseInt(n, 10));
         const dt = new Date(y, m - 1, d);
-        const wd = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+        const wd = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         return wd[dt.getDay()];
       } catch (e) {
         return '';
