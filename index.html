@@ -14954,10 +14954,10 @@ function app() {
             'internationalPhoneNumber', 'nationalPhoneNumber',
             'websiteURI', 'googleMapsURI', 'regularOpeningHours', 'id'
           ],
-          // Spanish locale + global region. Search matches across languages
+          // Locale auto-detected by region. Search matches across languages
           // (Google Places autocompletes "Turin" → "Torino" regardless), but
           // displayName / formattedAddress come back in the requested language.
-          language: 'es',
+          language: this._getPlacesLang(),
           maxResultCount: 1
         };
         const { places } = await PlaceClass.searchByText(request);
@@ -15080,9 +15080,31 @@ function app() {
       this.toast(`Vinculado a "${provider.name}"`, 'success');
       this.refreshAllTravelTimes && this.refreshAllTravelTimes();
     },
+    // Decide the language used in Google Places search results based on
+    // the trip's region/country (heuristic) or an explicit meta.placesLanguage.
+    // This matters because users searching "airport" expect English results
+    // for USA trips, but "aeropuerto" for Argentina trips, etc. The trip UI
+    // language is NOT a good proxy — Brian's UI is always Spanish.
+    _getPlacesLang() {
+      if (this.data.meta?.placesLanguage) return this.data.meta.placesLanguage;
+      const blob = ((this.data.meta?.region || '') + ' ' +
+                    (this.data.meta?.country || '') + ' ' +
+                    (this.data.meta?.tripName || '')).toLowerCase();
+      if (/itali|piemont|tuscan|toscan|veneto|sicil|lombard|roma|milan|napoli|firenz|venec|venic/.test(blob)) return 'it';
+      if (/franc|paris|provence|cote|nice|lyon|burgund|bourgogne|champagne|alsac/.test(blob)) return 'fr';
+      if (/german|deutschl|munich|münchen|berlin|hamburg|bavaria/.test(blob)) return 'de';
+      if (/portug|lisbon|porto|algarv|madeira/.test(blob)) return 'pt';
+      if (/españ|spain|madrid|barcelon|catalu|andaluc|sevill|valenc|baleares|canari/.test(blob)) return 'es';
+      if (/usa|united states|mundial|miami|kansas|texas|dallas|new york|california|chicago|memphis|nashville|atlanta|orlando|tampa|graceland|stadium/.test(blob)) return 'en';
+      if (/argenti|mendoza|buenos aires|caba|patagon|bariloche|salta/.test(blob)) return 'es';
+      if (/brasil|brazil|rio|sao paulo|salvador|bahia/.test(blob)) return 'pt';
+      // Fallback: use the trip's UI language if it's NOT Spanish (otherwise English).
+      // Spanish UI is the default for Brian — don't assume the place is Spanish-speaking.
+      const uiLang = this.data.meta?.language;
+      return (uiLang && uiLang !== 'es') ? uiLang : 'en';
+    },
     async searchGoogleForSlot() {
       const query = (this.drawerSlot?.title || '').trim();
-      if (!query) return;
       this.slotAC.searchingGoogle = true;
       this.slotAC.providerMatches = [];
       try {
@@ -15092,9 +15114,11 @@ function app() {
         if (this.data.meta?.region) regionParts.push(this.data.meta.region);
         if (this.data.meta?.country) regionParts.push(this.data.meta.country);
         const fullQuery = [query, ...regionParts].join(' ');
-        // Language for Places API (it = Italian, de = German for Saint Moritz, en = English)
-        const placesLang = this.data.meta?.language === 'es' ? 'it'  // default to local language for region
-                         : (this.data.meta?.language || 'en');
+        // Places API: language of the response (display name + address).
+        // Auto-detect from region/country so the trip's UI language doesn't
+        // force "wrong" search terms (e.g. searching "airport" in Italian
+        // when the trip is to USA but the UI is in Spanish).
+        const placesLang = this._getPlacesLang();
         const { places } = await PlaceClass.searchByText({
           textQuery: fullQuery,
           fields: ['displayName', 'formattedAddress', 'location',
