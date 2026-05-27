@@ -9740,6 +9740,51 @@ textarea:focus-visible {
     </div>
   </template>
 
+  <!-- ====== CLIENT INVITE RESULT MODAL ====== -->
+  <!-- Shown after a successful invite_client call. Displays the temporary
+       password ONCE so the operator can copy it and forward to the guest
+       (whatsapp / email / etc.) before closing. -->
+  <template x-if="clientInviteResult">
+    <div class="v5-confirm-overlay" @click.self="closeClientInviteResult()">
+      <div class="v5-confirm" role="dialog" aria-modal="true" style="max-width: 480px;">
+        <h3 style="margin-bottom: 4px;">Huésped invitado</h3>
+        <p style="margin: 0 0 18px 0; color: var(--text-2); font-size: 13.5px;">
+          <strong x-text="clientInviteResult.fullName"></strong> ya tiene acceso. Copialé estas credenciales antes de cerrar — la contraseña no se vuelve a mostrar.
+        </p>
+        <div x-show="clientInviteResult.reused" style="background: var(--surface-2); padding: 10px 12px; border-radius: 6px; font-size: 12.5px; color: var(--text-2); margin-bottom: 14px; border-left: 3px solid var(--accent);">
+          Este email ya tenía cuenta en B&amp;A. La agregamos al viaje y le generamos una nueva contraseña temporal.
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px;">Email</div>
+            <div style="display: flex; gap: 6px; align-items: stretch;">
+              <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px;" x-text="clientInviteResult.email"></code>
+              <button class="btn btn-sm btn-ghost" @click="navigator.clipboard.writeText(clientInviteResult.email).then(() => toast('Email copiado', 'success'))">Copiar</button>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px;">Contraseña temporal</div>
+            <div style="display: flex; gap: 6px; align-items: stretch;">
+              <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px;" x-text="clientInviteResult.password"></code>
+              <button class="btn btn-sm btn-ghost" @click="navigator.clipboard.writeText(clientInviteResult.password).then(() => toast('Contraseña copiada', 'success'))">Copiar</button>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px;">URL para el huésped</div>
+            <div style="display: flex; gap: 6px; align-items: stretch;">
+              <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px;">https://expedicionmundial.netlify.app</code>
+              <button class="btn btn-sm btn-ghost" @click="navigator.clipboard.writeText('https://expedicionmundial.netlify.app').then(() => toast('URL copiada', 'success'))">Copiar</button>
+            </div>
+          </div>
+        </div>
+        <div class="v5-confirm-actions" style="margin-top: 22px;">
+          <button class="btn btn-ghost" @click="navigator.clipboard.writeText(`Hola ${clientInviteResult.fullName}, te creé acceso a tu viaje en Blisniuk & Amanov.\n\nEntrá a https://expedicionmundial.netlify.app\nEmail: ${clientInviteResult.email}\nContraseña: ${clientInviteResult.password}\n\nTe recomiendo cambiar la contraseña al primer ingreso.`).then(() => toast('Mensaje copiado al portapapeles', 'success'))">Copiar mensaje completo</button>
+          <button class="btn" @click="closeClientInviteResult()">Listo</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
   <!-- ====== V5 PLACES SCAN MODAL ====== -->
   <template x-if="placesScan.open">
     <div class="v5-places-scan-overlay" @click.self="phase === 'review' && closePlacesScan()">
@@ -10226,42 +10271,92 @@ textarea:focus-visible {
           <!-- Section: Miembros (compartir el viaje) -->
           <div class="v5b-detail-section">
             <h4>Miembros del viaje</h4>
-            <p style="font-style: italic; color: var(--text-3); font-size: 12.5px; margin-bottom: 12px;">
-              Solo las personas listadas acá ven este viaje cuando ingresan a la app. Agregá por email — si el usuario ya tiene cuenta se vincula al toque, si no, queda invitado y se le activa cuando ingrese con ese mail.
+            <p style="font-style: italic; color: var(--text-3); font-size: 12.5px; margin-bottom: 16px;">
+              Solo las personas listadas acá ven este viaje. <strong>Operadores</strong> son co-administradores con acceso completo (B&amp;A). <strong>Huéspedes</strong> ven solo la app cliente sin precios ni datos internos.
             </p>
-            <div class="v5-members-list" x-show="tripMembers.length > 0">
-              <template x-for="m in tripMembers" :key="m.id">
-                <div class="v5-member-row">
-                  <span class="v5-member-avatar" :class="m.user_id === authUser?.id ? 'me' : ''">
-                    <span x-text="(m.invited_email || 'U').substring(0, 1).toUpperCase()"></span>
-                  </span>
-                  <div class="v5-member-body">
-                    <div class="v5-member-name">
-                      <span x-show="m.user_id === authUser?.id" x-text="identity"></span>
-                      <span x-show="m.user_id && m.user_id !== authUser?.id">Miembro · <code style="font-family: 'JetBrains Mono', monospace; font-size: 10px;" x-text="m.user_id.substring(0, 8)"></code></span>
-                      <span x-show="!m.user_id && m.invited_email" x-text="m.invited_email"></span>
-                      <span class="v5-member-self-tag" x-show="m.user_id === authUser?.id">vos</span>
-                      <span class="v5-member-pending-tag" x-show="!m.user_id">invitado pendiente</span>
+
+            <!-- Operadores -->
+            <div style="margin-bottom: 18px;">
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">
+                Operadores
+              </div>
+              <div class="v5-members-list" x-show="tripMembers.filter(m => m.role === 'operator').length > 0">
+                <template x-for="m in tripMembers.filter(m => m.role === 'operator')" :key="m.id">
+                  <div class="v5-member-row">
+                    <span class="v5-member-avatar" :class="m.user_id === authUser?.id ? 'me' : ''">
+                      <span x-text="(m.invited_email || 'U').substring(0, 1).toUpperCase()"></span>
+                    </span>
+                    <div class="v5-member-body">
+                      <div class="v5-member-name">
+                        <span x-show="m.user_id === authUser?.id" x-text="identity"></span>
+                        <span x-show="m.user_id && m.user_id !== authUser?.id">Operador · <code style="font-family: 'JetBrains Mono', monospace; font-size: 10px;" x-text="m.user_id.substring(0, 8)"></code></span>
+                        <span x-show="!m.user_id && m.invited_email" x-text="m.invited_email"></span>
+                        <span class="v5-member-self-tag" x-show="m.user_id === authUser?.id">vos</span>
+                        <span class="v5-member-pending-tag" x-show="!m.user_id">invitado pendiente</span>
+                      </div>
+                      <div class="v5-member-meta">
+                        <span>agregado </span>
+                        <span x-text="relativeTime(m.joined_at)"></span>
+                      </div>
                     </div>
-                    <div class="v5-member-meta">
-                      <span x-text="m.role"></span>
-                      <span> · agregado </span>
-                      <span x-text="relativeTime(m.joined_at)"></span>
-                    </div>
+                    <button class="v5-member-remove" @click="removeMember(m.id)" :title="m.user_id === authUser?.id ? 'Quitarme del viaje' : 'Quitar este operador'">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
                   </div>
-                  <button class="v5-member-remove" @click="removeMember(m.id)" :title="m.user_id === authUser?.id ? 'Quitarme del viaje' : 'Quitar este miembro'">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </template>
+              </div>
+              <div style="margin-top: 10px;">
+                <div style="display: flex; gap: 8px; align-items: stretch;">
+                  <input type="email" x-model="addMemberForm.email" placeholder="email@ejemplo.com" @keydown.enter.prevent="addMemberByEmail()" style="flex: 1; padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
+                  <button class="btn btn-sm" @click="addMemberByEmail()" :disabled="addMemberForm.submitting || !addMemberForm.email">
+                    <span x-show="!addMemberForm.submitting">+ Operador</span>
+                    <span x-show="addMemberForm.submitting">…</span>
                   </button>
                 </div>
-              </template>
+              </div>
             </div>
-            <div style="margin-top: 12px;">
-              <div style="display: flex; gap: 8px; align-items: stretch;">
-                <input type="email" x-model="addMemberForm.email" placeholder="email@ejemplo.com" @keydown.enter.prevent="addMemberByEmail()" style="flex: 1; padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
-                <button class="btn btn-sm" @click="addMemberByEmail()" :disabled="addMemberForm.submitting || !addMemberForm.email">
-                  <span x-show="!addMemberForm.submitting">+ Agregar</span>
-                  <span x-show="addMemberForm.submitting">…</span>
-                </button>
+
+            <!-- Huéspedes -->
+            <div>
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">
+                Huéspedes
+              </div>
+              <div class="v5-members-list" x-show="tripMembers.filter(m => m.role === 'client').length > 0">
+                <template x-for="m in tripMembers.filter(m => m.role === 'client')" :key="m.id">
+                  <div class="v5-member-row">
+                    <span class="v5-member-avatar">
+                      <span x-text="(m.invited_email || m.user_id || 'H').substring(0, 1).toUpperCase()"></span>
+                    </span>
+                    <div class="v5-member-body">
+                      <div class="v5-member-name">
+                        <span x-show="m.invited_email" x-text="m.invited_email"></span>
+                        <span x-show="!m.invited_email && m.user_id">Huésped · <code style="font-family: 'JetBrains Mono', monospace; font-size: 10px;" x-text="m.user_id.substring(0, 8)"></code></span>
+                      </div>
+                      <div class="v5-member-meta">
+                        <span>agregado </span>
+                        <span x-text="relativeTime(m.joined_at)"></span>
+                      </div>
+                    </div>
+                    <button class="v5-member-remove" @click="removeMember(m.id)" title="Quitar acceso a este huésped">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                </template>
+              </div>
+              <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" x-model="inviteClientForm.fullName" placeholder="Nombre del huésped" style="flex: 1; padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
+                </div>
+                <div style="display: flex; gap: 8px; align-items: stretch;">
+                  <input type="email" x-model="inviteClientForm.email" placeholder="email@huesped.com" @keydown.enter.prevent="inviteClient()" style="flex: 1; padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
+                  <button class="btn btn-sm" @click="inviteClient()" :disabled="inviteClientForm.submitting || !inviteClientForm.email || !inviteClientForm.fullName">
+                    <span x-show="!inviteClientForm.submitting">+ Huésped</span>
+                    <span x-show="inviteClientForm.submitting">…</span>
+                  </button>
+                </div>
+                <p style="font-size: 11.5px; color: var(--text-3); font-style: italic; margin: 0;">
+                  Crea una cuenta con contraseña temporal. Te mostramos la contraseña una sola vez para que se la mandes al huésped.
+                </p>
               </div>
             </div>
           </div>
@@ -10802,6 +10897,15 @@ function app() {
       email: '',
       submitting: false
     },
+    // Client invite (creates an auth.users entry + trip_members with role='client')
+    inviteClientForm: {
+      email: '',
+      fullName: '',
+      submitting: false,
+    },
+    // After a successful invite, hold the temporary password to display in
+    // a modal so the operator can copy & send it via whatever channel.
+    clientInviteResult: null,  // { email, password, fullName } | null
 
     // === STATE ===
     tab: 'today',
@@ -12451,7 +12555,60 @@ function app() {
       }
     },
 
-    // === ROUTE-AWARE TRIP LOAD ===
+    // === CLIENT INVITES ===
+    // Invite a client (huésped) to a trip. Calls the invite_client edge function
+    // which (a) creates an auth.users account, (b) inserts trip_members with
+    // role='client', (c) returns a temporary password for the operator to share.
+    async inviteClient() {
+      const f = this.inviteClientForm;
+      const email = f.email.trim().toLowerCase();
+      const fullName = f.fullName.trim();
+      if (!email || !email.includes('@')) { this.toast('Email inválido', 'error'); return; }
+      if (!fullName) { this.toast('Falta el nombre del huésped', 'error'); return; }
+      if (!this.TRIP_ID) return;
+      // Prevent duplicate invites
+      const existing = this.tripMembers.find(m => m.invited_email === email && m.role === 'client');
+      if (existing) { this.toast('Ese email ya está invitado a este viaje', 'info'); return; }
+      f.submitting = true;
+      try {
+        const { data: session } = await this._client.auth.getSession();
+        const accessToken = session?.session?.access_token;
+        if (!accessToken) throw new Error('No hay sesión activa, recargá');
+        const url = `${this._client.supabaseUrl}/functions/v1/invite_client`;
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'apikey': this._client.supabaseKey,
+          },
+          body: JSON.stringify({
+            trip_id: this.TRIP_ID,
+            email,
+            full_name: fullName,
+          }),
+        });
+        const result = await resp.json();
+        if (!resp.ok) throw new Error(result.error || result.message || `HTTP ${resp.status}`);
+        // Show modal with temp password so the operator can copy & send
+        this.clientInviteResult = {
+          email,
+          password: result.temp_password,
+          fullName,
+          reused: !!result.reused_existing_user,
+        };
+        f.email = '';
+        f.fullName = '';
+        await this.loadTripMembers();
+        this.logEvent && this.logEvent('client.invited', `invitó cliente ${email}`, { email, full_name: fullName });
+      } catch (e) {
+        console.error('inviteClient failed:', e);
+        this.toast('Error invitando: ' + (e.message || ''), 'error');
+      } finally {
+        f.submitting = false;
+      }
+    },
+    closeClientInviteResult() { this.clientInviteResult = null; },
     // Called from _onRouteChange when entering trip view. Loads the trip's data
     // from Supabase + sets up real-time sync + fires weather/geocoding/travel-times.
     async _enterTripView() {
