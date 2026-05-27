@@ -12574,13 +12574,13 @@ function app() {
         const { data: session } = await this._client.auth.getSession();
         const accessToken = session?.session?.access_token;
         if (!accessToken) throw new Error('No hay sesión activa, recargá');
-        const url = `${this._client.supabaseUrl}/functions/v1/invite_client`;
+        const url = `${this.SUPABASE_URL}/functions/v1/invite_client`;
         const resp = await fetch(url, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-            'apikey': this._client.supabaseKey,
+            'apikey': this.SUPABASE_KEY,
           },
           body: JSON.stringify({
             trip_id: this.TRIP_ID,
