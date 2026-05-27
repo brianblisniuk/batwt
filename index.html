@@ -8645,10 +8645,34 @@ textarea:focus-visible {
     <button class="btn" @click="bulkPromoteToLibrary()">Promover todos →</button>
   </div>
 
+  <!-- V5D · KPI stats clickables como filtros de estado -->
+  <div class="v5d-stats">
+    <div class="v5d-stat pending" :class="{active: providerStatusFilter === 'pending'}" @click="providerStatusFilter = providerStatusFilter === 'pending' ? 'all' : 'pending'">
+      <div class="num" x-text="data.providers.filter(p => p.reservationStatus === 'pending').length"></div>
+      <div class="lb">Pendientes</div>
+      <span class="pct">sin contactar</span>
+    </div>
+    <div class="v5d-stat contacted" :class="{active: providerStatusFilter === 'contacted'}" @click="providerStatusFilter = providerStatusFilter === 'contacted' ? 'all' : 'contacted'">
+      <div class="num" x-text="data.providers.filter(p => p.reservationStatus === 'contacted').length"></div>
+      <div class="lb">En conversación</div>
+      <span class="pct">esperando respuesta</span>
+    </div>
+    <div class="v5d-stat confirmed" :class="{active: providerStatusFilter === 'confirmed'}" @click="providerStatusFilter = providerStatusFilter === 'confirmed' ? 'all' : 'confirmed'">
+      <div class="num" x-text="data.providers.filter(p => p.reservationStatus === 'confirmed').length"></div>
+      <div class="lb">Confirmadas</div>
+      <span class="pct" x-text="data.providers.length > 0 ? Math.round(data.providers.filter(p => p.reservationStatus === 'confirmed').length / data.providers.length * 100) + '% del total' : ''"></span>
+    </div>
+    <div class="v5d-stat cancelled" :class="{active: providerStatusFilter === 'cancelled'}" @click="providerStatusFilter = providerStatusFilter === 'cancelled' ? 'all' : 'cancelled'">
+      <div class="num" x-text="data.providers.filter(p => p.reservationStatus === 'cancelled').length"></div>
+      <div class="lb">Canceladas</div>
+      <span class="pct">descartadas</span>
+    </div>
+  </div>
+
   <div class="v5b-toolbar">
     <div class="v5b-search-wrap">
       <svg class="v5b-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="text" x-model="providerSearch" placeholder="Buscar por nombre, lugar, contacto...">
+      <input type="text" x-model="providerSearch" placeholder="Buscar por nombre, lugar, contacto..." x-ref="provSearch" @keydown.escape="providerSearch = ''">
       <button class="v5b-search-clear" x-show="providerSearch" @click="providerSearch = ''" aria-label="Limpiar búsqueda">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
@@ -8662,9 +8686,45 @@ textarea:focus-visible {
         </button>
       </template>
     </div>
+    <button class="v5d-michelin-chip" :class="{active: providerMichelinFilter}" @click="providerMichelinFilter = !providerMichelinFilter" title="Filtrar solo Michelin estrellados">
+      ★ Solo Michelin <span class="num" x-text="data.providers.filter(p => p.michelin > 0).length"></span>
+    </button>
+    <div class="v5d-tb-sort" x-show="providerView === 'table'" @click.stop="providerSortOpen = !providerSortOpen" @click.outside="providerSortOpen = false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h13M3 12h9M3 18h5"/></svg>
+      <span>Ordenar: <strong x-text="sortLabel(providerSort)"></strong></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="v5d-sort-menu" x-show="providerSortOpen" @click.stop x-cloak>
+        <div class="h4">Ordenar por</div>
+        <template x-for="opt in sortOptions" :key="opt.key">
+          <button class="item" :class="{active: providerSort === opt.key}" @click="providerSort = opt.key; providerSortOpen = false">
+            <span class="check">✓</span>
+            <span x-text="opt.label"></span>
+          </button>
+        </template>
+        <div class="divider"></div>
+        <button class="item" @click="providerSortDir = providerSortDir === 'asc' ? 'desc' : 'asc'; providerSortOpen = false">
+          <span class="check"></span>
+          <span>Dirección: <strong x-text="providerSortDir === 'asc' ? 'Asc ↑' : 'Desc ↓'"></strong></span>
+        </button>
+      </div>
+    </div>
+    <div class="v5d-tb-view" role="tablist" aria-label="Vista">
+      <button :class="{active: providerView === 'cards'}" @click="providerView = 'cards'" title="Tarjetas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Tarjetas</span>
+      </button>
+      <button :class="{active: providerView === 'table'}" @click="providerView = 'table'" title="Tabla">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span>Tabla</span>
+      </button>
+      <button :class="{active: providerView === 'pipeline'}" @click="providerView = 'pipeline'" title="Pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="6" rx="1"/></svg>
+        <span>Pipeline</span>
+      </button>
+    </div>
   </div>
 
-  <div class="v5b-prov-statusbar">
+  <div class="v5b-prov-statusbar" x-show="providerView === 'cards'">
     <span class="label">Reserva</span>
     <button class="v5b-status-chip" :class="{active: providerStatusFilter === 'all'}" @click="providerStatusFilter = 'all'">Todas</button>
     <button class="v5b-status-chip pending" :class="{active: providerStatusFilter === 'pending'}" @click="providerStatusFilter = 'pending'">
@@ -8681,48 +8741,215 @@ textarea:focus-visible {
     </button>
   </div>
 
-  <template x-for="(group, gi) in providersGrouped" :key="group.key">
-    <div class="v5b-prov-group">
-      <header class="v5b-prov-group-head">
-        <span class="roman" x-text="toRoman(gi + 1)"></span>
-        <h2><em x-text="group.italianLabel || group.label"></em></h2>
-        <span class="count"><span x-text="group.providers.length"></span> · de <span x-text="data.providers.filter(p => p.type === group.key).length"></span></span>
-      </header>
-      <div class="v5b-prov-grid">
-        <template x-for="provider in group.providers" :key="provider.id">
-          <article class="v5b-prov-card" :class="provider.reservationStatus" @click="openProviderDrawer(provider.id)">
-            <div class="v5b-prov-eyebrow">
-              <span x-text="group.label"></span>
-              <span x-show="provider.michelin > 0" class="michelin" x-text="'★'.repeat(provider.michelin)"></span>
-              <span class="v5b-spacer"></span>
-              <span class="v5b-stamp" :class="provider.reservationStatus" x-text="resStampLabel(provider.reservationStatus)"></span>
-            </div>
-            <h3 class="v5b-prov-name" x-text="provider.name || 'Sin nombre'"></h3>
-            <div class="v5b-prov-meta">
-              <div class="row" x-show="provider.location"><span class="k">Lugar</span><span class="v" x-text="provider.location"></span></div>
-              <div class="row" x-show="provider.priceRange"><span class="k">Precio</span><span class="v" x-text="provider.priceRange"></span></div>
-              <div class="row danger" x-show="provider.closingDays"><span class="k">Cierre</span><span class="v" x-text="provider.closingDays"></span></div>
-            </div>
-            <div class="v5b-prov-foot">
-              <span class="v5b-comment-pill" :class="{has: commentCount('provider', provider.id) > 0}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                <span x-text="commentCount('provider', provider.id) || 'Comentar'"></span>
-              </span>
-              <span class="v5-completeness" :class="{complete: providerCompleteness(provider) >= 85, poor: providerCompleteness(provider) < 35}" :title="'Completitud de datos: ' + providerCompleteness(provider) + '%'">
-                <template x-for="i in 5" :key="i">
-                  <span class="v5-completeness-dot" :class="{filled: providerCompleteness(provider) >= i * 20 - 10}"></span>
-                </template>
-              </span>
-              <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-left: auto;">Abrir →</span>
-            </div>
-          </article>
-        </template>
+  <!-- V5D · CARDS VIEW (editorial agrupada) — default -->
+  <div x-show="providerView === 'cards'">
+    <template x-for="(group, gi) in providersGrouped" :key="group.key">
+      <div class="v5b-prov-group">
+        <header class="v5b-prov-group-head">
+          <span class="roman" x-text="toRoman(gi + 1)"></span>
+          <h2><em x-text="group.italianLabel || group.label"></em></h2>
+          <span class="count"><span x-text="group.providers.length"></span> · de <span x-text="data.providers.filter(p => p.type === group.key).length"></span></span>
+        </header>
+        <div class="v5b-prov-grid">
+          <template x-for="provider in group.providers" :key="provider.id">
+            <article class="v5b-prov-card" :class="provider.reservationStatus" @click="openProviderDrawer(provider.id)">
+              <div class="v5b-prov-eyebrow">
+                <span x-text="group.label"></span>
+                <span x-show="provider.michelin > 0" class="michelin" x-text="'★'.repeat(provider.michelin)"></span>
+                <span class="v5b-spacer"></span>
+                <span class="v5b-stamp" :class="provider.reservationStatus" x-text="resStampLabel(provider.reservationStatus)"></span>
+              </div>
+              <h3 class="v5b-prov-name" x-text="provider.name || 'Sin nombre'"></h3>
+              <div class="v5b-prov-meta">
+                <div class="row" x-show="provider.location"><span class="k">Lugar</span><span class="v" x-text="provider.location"></span></div>
+                <div class="row" x-show="provider.priceRange"><span class="k">Precio</span><span class="v" x-text="provider.priceRange"></span></div>
+                <div class="row danger" x-show="provider.closingDays"><span class="k">Cierre</span><span class="v" x-text="provider.closingDays"></span></div>
+              </div>
+              <div class="v5b-prov-foot">
+                <span class="v5b-comment-pill" :class="{has: commentCount('provider', provider.id) > 0}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <span x-text="commentCount('provider', provider.id) || 'Comentar'"></span>
+                </span>
+                <span class="v5-completeness" :class="{complete: providerCompleteness(provider) >= 85, poor: providerCompleteness(provider) < 35}" :title="'Completitud de datos: ' + providerCompleteness(provider) + '%'">
+                  <template x-for="i in 5" :key="i">
+                    <span class="v5-completeness-dot" :class="{filled: providerCompleteness(provider) >= i * 20 - 10}"></span>
+                  </template>
+                </span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-left: auto;">Abrir →</span>
+              </div>
+            </article>
+          </template>
+        </div>
       </div>
-    </div>
-  </template>
+    </template>
 
-  <template x-if="filteredProviders.length === 0">
-    <div class="empty-state">Sin resultados. Cambiá filtros o <button class="btn btn-sm" @click="addProvider(); providerSearch = ''; providerFilter = 'all'; providerStatusFilter = 'all';" style="margin-left: 8px;">+ agregá un proveedor</button></div>
+    <template x-if="filteredProviders.length === 0">
+      <div class="empty-state">Sin resultados. Cambiá filtros o <button class="btn btn-sm" @click="addProvider(); providerSearch = ''; providerFilter = 'all'; providerStatusFilter = 'all';" style="margin-left: 8px;">+ agregá un proveedor</button></div>
+    </template>
+  </div>
+
+  <!-- V5D · TABLE VIEW -->
+  <div x-show="providerView === 'table'">
+    <div class="v5d-table-wrap">
+      <div class="v5d-table-scroll">
+        <table class="v5d-table">
+          <thead>
+            <tr>
+              <th class="col-check">
+                <span class="v5d-cb" :class="selectAllState" @click="toggleSelectAll()" role="checkbox" :aria-checked="selectedProviders.size > 0" tabindex="0"></span>
+              </th>
+              <th class="sortable" :class="{'active-sort': providerSort === 'name'}" @click="setSort('name')">Nombre <span class="sort-ind" x-text="providerSort === 'name' ? (providerSortDir === 'asc' ? '↑' : '↓') : '↕'"></span></th>
+              <th class="sortable" :class="{'active-sort': providerSort === 'type'}" @click="setSort('type')">Tipo <span class="sort-ind" x-text="providerSort === 'type' ? (providerSortDir === 'asc' ? '↑' : '↓') : '↕'"></span></th>
+              <th class="sortable" :class="{'active-sort': providerSort === 'location'}" @click="setSort('location')">Lugar <span class="sort-ind" x-text="providerSort === 'location' ? (providerSortDir === 'asc' ? '↑' : '↓') : '↕'"></span></th>
+              <th class="sortable" :class="{'active-sort': providerSort === 'status'}" @click="setSort('status')">Reserva <span class="sort-ind" x-text="providerSort === 'status' ? (providerSortDir === 'asc' ? '↑' : '↓') : '↕'"></span></th>
+              <th>Contacto</th>
+              <th>Cierre</th>
+              <th class="sortable" :class="{'active-sort': providerSort === 'comments'}" @click="setSort('comments')">Notas <span class="sort-ind" x-text="providerSort === 'comments' ? (providerSortDir === 'asc' ? '↑' : '↓') : '↕'"></span></th>
+              <th class="col-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="provider in providersForTable" :key="provider.id">
+              <tr :class="{'is-selected': selectedProviders.has(provider.id), 'cancelled': provider.reservationStatus === 'cancelled'}" @click="openProviderDrawer(provider.id)">
+                <td class="col-check" @click.stop>
+                  <span class="v5d-cb" :class="{checked: selectedProviders.has(provider.id)}" @click="toggleSelectProvider(provider.id, $event)" role="checkbox" :aria-checked="selectedProviders.has(provider.id)" tabindex="0"></span>
+                </td>
+                <td>
+                  <div class="v5d-name">
+                    <div class="v5d-name-ic" :class="'t-' + provider.type" x-html="providerTypeIcon(provider.type)"></div>
+                    <div class="v5d-name-text">
+                      <div class="v5d-name-title">
+                        <span x-text="provider.name || 'Sin nombre'"></span>
+                        <span class="ml" x-show="provider.michelin > 0" x-text="'★'.repeat(provider.michelin)"></span>
+                      </div>
+                      <div class="v5d-name-sub" x-show="providerInItinerary(provider).length > 0">
+                        <template x-for="day in providerInItinerary(provider)" :key="day.idx">
+                          <span class="day-pill" x-text="'Día ' + day.idx + ' · ' + day.weekday"></span>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="v5d-cell-mute" x-text="(providerTypes.find(t => t.key === provider.type) || {label: provider.type}).label"></span></td>
+                <td><div class="v5d-cell-loc" x-text="provider.location || '—'"></div></td>
+                <td @click.stop>
+                  <span class="v5d-status-pill" :class="provider.reservationStatus" @click="cycleReservationStatus(provider)" :title="'Click para avanzar · ' + provider.reservationStatus">
+                    <span class="d"></span>
+                    <span x-text="statusLabelEs(provider.reservationStatus)"></span>
+                  </span>
+                </td>
+                <td @click.stop>
+                  <div class="v5d-qa">
+                    <a :href="provider.phone ? 'tel:' + provider.phone.replace(/\s/g, '') : '#'" :class="{disabled: !provider.phone}" :title="provider.phone || 'Sin teléfono'" aria-label="Llamar">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </a>
+                    <a :href="provider.email ? 'mailto:' + provider.email : '#'" :class="{disabled: !provider.email}" :title="provider.email || 'Sin email'" aria-label="Email">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    </a>
+                    <a :href="provider.web ? (provider.web.startsWith('http') ? provider.web : 'https://' + provider.web) : '#'" target="_blank" rel="noopener" :class="{disabled: !provider.web}" :title="provider.web || 'Sin web'" aria-label="Web">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </a>
+                  </div>
+                </td>
+                <td>
+                  <span class="v5d-cell-close" x-show="provider.closingDays" x-text="provider.closingDays"></span>
+                  <span class="v5d-cell-mute" x-show="!provider.closingDays">—</span>
+                </td>
+                <td>
+                  <span class="v5d-cell-comm" :class="{has: commentCount('provider', provider.id) > 0}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span x-text="commentCount('provider', provider.id) || '0'"></span>
+                  </span>
+                </td>
+                <td class="col-actions" @click.stop>
+                  <span style="opacity: 0.5; color: var(--text-3);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="m9 18 6-6-6-6"/></svg>
+                  </span>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+      <template x-if="providersForTable.length === 0">
+        <div class="v5d-table-empty">
+          <h3>Sin proveedores</h3>
+          <p>No hay resultados con estos filtros.</p>
+          <button class="btn btn-sm" @click="resetProviderFilters()">↻ Limpiar filtros</button>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- V5D · PIPELINE VIEW (Kanban) -->
+  <div x-show="providerView === 'pipeline'">
+    <div class="v5d-pipeline">
+      <template x-for="col in pipelineColumns" :key="col.key">
+        <div class="v5d-pp-col" :class="[col.key, {'drag-over': dragOverCol === col.key}]"
+             @dragover.prevent="dragOverCol = col.key"
+             @dragleave="dragOverCol = dragOverCol === col.key ? null : dragOverCol"
+             @drop.prevent="onPipelineDrop(col.key)">
+          <header class="v5d-pp-head">
+            <span class="title" x-text="col.label"></span>
+            <span class="count" x-text="providersForPipeline.filter(p => p.reservationStatus === col.key).length"></span>
+          </header>
+          <div class="v5d-pp-list">
+            <template x-for="provider in providersForPipeline.filter(p => p.reservationStatus === col.key)" :key="provider.id">
+              <article class="v5d-pp-card" :class="{dragging: draggingProviderId === provider.id}" draggable="true"
+                       @dragstart="draggingProviderId = provider.id; $event.dataTransfer.effectAllowed = 'move'"
+                       @dragend="draggingProviderId = null; dragOverCol = null"
+                       @click="openProviderDrawer(provider.id)">
+                <div class="top">
+                  <span x-text="(providerTypes.find(t => t.key === provider.type) || {label: provider.type}).label"></span>
+                  <span class="ml" x-show="provider.michelin > 0" x-text="'★'.repeat(provider.michelin)"></span>
+                </div>
+                <div class="ttl" x-text="provider.name || 'Sin nombre'"></div>
+                <div class="loc" x-show="provider.location" x-text="provider.location"></div>
+                <div class="foot">
+                  <span class="closing" x-show="provider.closingDays" x-text="'Cierra ' + provider.closingDays"></span>
+                  <span x-show="!provider.closingDays"></span>
+                  <span class="cm" :class="{has: commentCount('provider', provider.id) > 0}" x-show="commentCount('provider', provider.id) > 0">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span x-text="commentCount('provider', provider.id)"></span>
+                  </span>
+                </div>
+              </article>
+            </template>
+            <div x-show="providersForPipeline.filter(p => p.reservationStatus === col.key).length === 0" class="v5d-pp-empty">
+              Arrastrá una card acá
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- V5D · Bulk action bar (sólo cuando hay seleccionados) -->
+  <template x-if="selectedProviders.size > 0">
+    <div class="v5d-bulk" role="toolbar" aria-label="Acciones masivas">
+      <span><span class="count" x-text="selectedProviders.size"></span> <span class="lbl-long">seleccionados</span></span>
+      <div class="divider"></div>
+      <button @click="bulkSetStatus('contacted')" title="Marcar como contactados">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span class="lbl-long">Contactado</span>
+      </button>
+      <button @click="bulkSetStatus('confirmed')" title="Confirmar reservas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="lbl-long">Confirmar</span>
+      </button>
+      <button @click="bulkSetStatus('pending')" title="Marcar pendientes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><polyline points="3 4 3 12 11 12"/></svg>
+        <span class="lbl-long">Pendiente</span>
+      </button>
+      <div class="divider"></div>
+      <button class="danger" @click="bulkDelete()" title="Eliminar seleccionados">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <span class="lbl-long">Eliminar</span>
+      </button>
+      <button class="close" @click="clearSelection()" aria-label="Limpiar selección">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
   </template>
 </section>
 
