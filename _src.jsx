@@ -623,6 +623,126 @@
       );
     }
 
+    // === FORCE CHANGE PASSWORD ================================
+    // Shown the first time a guest logs in (when their app_metadata
+    // .must_change_password === true). They cannot proceed without
+    // setting a new password. After success the edge function clears
+    // the flag and we refresh the session so the app continues normally.
+    function ForceChangePasswordScreen({ session, onComplete, onLogout }) {
+      const [pwd1, setPwd1] = useState('');
+      const [pwd2, setPwd2] = useState('');
+      const [busy, setBusy] = useState(false);
+      const [error, setError] = useState(null);
+
+      const canSubmit = pwd1.length >= 8 && pwd1 === pwd2 && !busy;
+      const submit = async () => {
+        setError(null);
+        if (pwd1.length < 8) { setError('La contraseña debe tener al menos 8 caracteres'); return; }
+        if (pwd1 !== pwd2)  { setError('Las contraseñas no coinciden'); return; }
+        setBusy(true);
+        try {
+          const accessToken = session?.access_token;
+          if (!accessToken) throw new Error('No hay sesión activa');
+          const url = `${SUPABASE_URL}/functions/v1/complete_onboarding`;
+          const resp = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_KEY,
+            },
+            body: JSON.stringify({ new_password: pwd1 }),
+          });
+          const result = await resp.json();
+          if (!resp.ok) throw new Error(result.error || `HTTP ${resp.status}`);
+          // Refresh the session so the new app_metadata (must_change_password=false)
+          // is reflected client-side.
+          const { data: refreshed } = await db.auth.refreshSession();
+          onComplete(refreshed?.session || session);
+        } catch (e) {
+          setError(e.message || 'No pudimos cambiar la contraseña');
+        } finally {
+          setBusy(false);
+        }
+      };
+
+      const fullName = session?.user?.user_metadata?.full_name;
+      const email = session?.user?.email;
+      return (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: `linear-gradient(180deg, ${P.primary} 0%, ${P.primaryDeep} 100%)`,
+          color: '#fff', display: 'flex', flexDirection: 'column',
+          padding: '70px 28px 40px', justifyContent: 'space-between',
+          overflowY: 'auto',
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32 }}>
+              <span style={{ fontSize: 12, letterSpacing: 2, fontWeight: 600, opacity: 0.85 }}>
+                BLISNIUK &amp; AMANOV
+              </span>
+            </div>
+            <h1 style={{
+              fontSize: 30, fontWeight: 800, lineHeight: 1.1, letterSpacing: -0.8,
+              marginBottom: 10,
+            }}>
+              {fullName ? `Bienvenido, ${fullName.split(' ')[0]}.` : 'Bienvenido.'}
+            </h1>
+            <p style={{ fontSize: 15, lineHeight: 1.5, color: 'rgba(255,255,255,0.75)', marginBottom: 28 }}>
+              Antes de entrar a tu viaje, creá una contraseña tuya. Usaste una temporal que te dimos por mensaje — ahora elegí una que solo vos sepas.
+            </p>
+            <input
+              type="password" value={pwd1} autoFocus
+              onChange={(e) => setPwd1(e.target.value)}
+              placeholder="Nueva contraseña (min. 8 caracteres)"
+              style={{
+                width: '100%', padding: '16px 18px', marginBottom: 10,
+                background: 'rgba(255,255,255,0.1)', border: 'none',
+                borderRadius: 14, color: '#fff', fontSize: 16, outline: 'none',
+                fontFamily: 'inherit', boxSizing: 'border-box',
+              }}
+            />
+            <input
+              type="password" value={pwd2}
+              onChange={(e) => setPwd2(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && canSubmit && submit()}
+              placeholder="Repetir contraseña"
+              style={{
+                width: '100%', padding: '16px 18px',
+                background: 'rgba(255,255,255,0.1)', border: 'none',
+                borderRadius: 14, color: '#fff', fontSize: 16, outline: 'none',
+                fontFamily: 'inherit', boxSizing: 'border-box',
+              }}
+            />
+            {error && (
+              <div style={{ marginTop: 12, fontSize: 13, color: '#FECACA' }}>{error}</div>
+            )}
+            <div style={{ marginTop: 16, fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
+              Ingresaste como <strong style={{ color: 'rgba(255,255,255,0.8)' }}>{email}</strong>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button onClick={submit} disabled={!canSubmit} style={{
+              background: canSubmit ? '#fff' : 'rgba(255,255,255,0.2)',
+              color: canSubmit ? P.primary : 'rgba(255,255,255,0.6)',
+              border: 'none', padding: '18px', borderRadius: 16,
+              fontSize: 17, fontWeight: 700, cursor: canSubmit ? 'pointer' : 'not-allowed',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}>
+              {busy ? '…' : <>Guardar y continuar <Icon name="arrow-right" size={18} stroke={2.4}/></>}
+            </button>
+            <button onClick={onLogout} style={{
+              background: 'transparent', border: 'none',
+              color: 'rgba(255,255,255,0.55)', fontSize: 13, cursor: 'pointer',
+              padding: '8px',
+            }}>
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     // === SPLASH ================================================
     function SplashScreen({ onContinue, trip }) {
       const tripName = trip?.meta?.tripName || 'Argentina al Mundial 2026';
@@ -2617,6 +2737,17 @@
       if (!isPreview) {
         if (!sessionChecked) return <LoadingScreen/>;
         if (!session) return <LoginScreen onAuth={(s) => setSession(s)}/>;
+        // First-login flow: if app_metadata says they must change their
+        // password, force them through the onboarding screen before they
+        // can see the trip. This flag is set by invite_client and cleared
+        // by complete_onboarding.
+        if (session.user?.app_metadata?.must_change_password === true) {
+          return <ForceChangePasswordScreen
+            session={session}
+            onComplete={(s) => setSession(s)}
+            onLogout={handleLogout}
+          />;
+        }
         if (!memberships) return <LoadingScreen/>;
         if (memberships.length === 0) {
           return <NoTripsScreen email={session.user.email} onLogout={handleLogout}/>;
