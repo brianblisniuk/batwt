@@ -11443,6 +11443,18 @@ function app() {
     providerSearch: '',
     providerFilter: 'all',
     providerStatusFilter: 'all',
+    // V5D · CRM state (Tabla / Pipeline / Tarjetas + bulk)
+    providerView: 'cards',
+    providerSort: 'name',
+    providerSortDir: 'asc',
+    providerSortOpen: false,
+    providerMichelinFilter: false,
+    selectedProviders: new Set(),
+    _lastSelectedProviderId: null,
+    draggingProviderId: null,
+    dragOverCol: null,
+    sortOptions: [ { key: 'name', label: 'Nombre (A→Z)' }, { key: 'status', label: 'Estado de reserva' }, { key: 'type', label: 'Tipo' }, { key: 'location', label: 'Lugar' }, { key: 'michelin', label: 'Estrellas Michelin' }, { key: 'comments', label: 'Más comentados' } ],
+    pipelineColumns: [ { key: 'pending', label: 'Pendientes' }, { key: 'contacted', label: 'En conversación' }, { key: 'confirmed', label: 'Confirmados' }, { key: 'cancelled', label: 'Cancelados' } ],
     actionFilter: 'all',
     actionTypeFilter: '',
     // Slot title autocomplete state
