@@ -1698,6 +1698,7 @@ border: 1px solid var(--line);
 .v5-sync-dot.online { background: var(--olive-deep); box-shadow: 0 0 0 3px rgba(60,107,60,0.18); }
 .v5-sync-dot.syncing { background: var(--gold-v5); box-shadow: 0 0 0 3px rgba(184,137,58,0.20); animation: pulse 1.2s infinite; }
 .v5-sync-dot.offline { background: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.18); }
+.v5-sync-dot.conflict { background: #F59E0B; box-shadow: 0 0 0 3px rgba(245,158,11,0.25); }
 .v5-sync-dot.idle { background: var(--text-3); }
 @media (max-width: 720px) {
 .v5-sync-pill { padding: 6px; border: none; }
@@ -7604,6 +7605,34 @@ textarea:focus-visible {
   <!-- ====== V5 SHELL: sidebar + content (TRIP VIEW only) ====== -->
   <div class="v5-shell" x-show="currentView === 'trip'" x-cloak>
 
+    <!-- Conflict resolution banner -->
+    <template x-if="conflictWarning">
+      <div style="position: sticky; top: 0; z-index: 80; padding: 14px 18px; background: #FEF3C7; border-bottom: 1px solid #FCD34D; display: flex; gap: 14px; align-items: flex-start;">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#92400E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 600; color: #78350F; margin-bottom: 4px;">
+            <span x-text="conflictWarning.by"></span> modificó el viaje
+            <span style="font-weight: 400; color: #92400E;">· <span x-text="relativeTime(conflictWarning.at)"></span></span>
+          </div>
+          <div style="font-size: 13px; color: #78350F; line-height: 1.45;">
+            <span x-show="conflictWarning.source === 'realtime'">Tus cambios pendientes aún no están sincronizados. Si los pisás, ganan; si traés los suyos, perdés lo que estabas editando.</span>
+            <span x-show="conflictWarning.source === 'save_blocked'">Intentamos guardar pero el servidor ya tiene otra versión. Decidí cuál pisa cuál.</span>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+            <button @click="acceptRemoteAndReload()" style="padding: 7px 14px; background: #fff; border: 1px solid #92400E; color: #78350F; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit;">
+              Traer los suyos · perder mis cambios
+            </button>
+            <button @click="forceLocalSave()" style="padding: 7px 14px; background: #92400E; border: 1px solid #92400E; color: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit;">
+              Pisar y guardar lo mío
+            </button>
+            <button @click="dismissConflictWarning()" style="padding: 7px 14px; background: transparent; border: 1px solid transparent; color: #92400E; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit;">
+              Decido después
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <!-- Sidebar nav (desktop) -->
     <aside class="v5-sidebar">
       <div class="v5-nav-group">Operaciones</div>
@@ -10338,28 +10367,94 @@ textarea:focus-visible {
               </div>
               <div class="v5-members-list" x-show="tripMembers.filter(m => m.role === 'client').length > 0">
                 <template x-for="m in tripMembers.filter(m => m.role === 'client')" :key="m.id">
-                  <div class="v5-member-row">
-                    <span class="v5-member-avatar">
-                      <span x-text="((m.user_full_name || m.user_email || m.invited_email || 'H').trim().substring(0, 1)).toUpperCase()"></span>
-                    </span>
-                    <div class="v5-member-body">
-                      <div class="v5-member-name">
-                        <span x-show="m.user_full_name" x-text="m.user_full_name"></span>
-                        <span x-show="!m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email"></span>
-                        <span class="v5-member-pending-tag" x-show="!m.last_sign_in_at" style="background: #FEF3C7; color: #92400E;">no entró aún</span>
+                  <div>
+                    <div class="v5-member-row" style="align-items: flex-start;">
+                      <span class="v5-member-avatar" style="margin-top: 2px;">
+                        <span x-text="((m.user_full_name || m.user_email || m.invited_email || 'H').trim().substring(0, 1)).toUpperCase()"></span>
+                      </span>
+                      <div class="v5-member-body" style="cursor: pointer;" @click="expandedMemberId = (expandedMemberId === m.id ? null : m.id)">
+                        <div class="v5-member-name">
+                          <span x-show="m.user_full_name" x-text="m.user_full_name"></span>
+                          <span x-show="!m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email"></span>
+                          <span class="v5-member-pending-tag" x-show="!m.last_sign_in_at" style="background: #FEF3C7; color: #92400E;">no entró aún</span>
+                          <span class="v5-member-pending-tag" x-show="m.profile" style="background: #ECFDF5; color: #047857; border-style: solid; border-color: #10B981;">perfil ✓</span>
+                        </div>
+                        <div class="v5-member-meta" style="display: flex; flex-direction: column; gap: 2px;">
+                          <span x-show="m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email" style="font-family: 'JetBrains Mono', monospace; font-size: 11px;"></span>
+                          <span>
+                            <span x-show="m.last_sign_in_at">Última entrada </span>
+                            <span x-show="!m.last_sign_in_at">Invitado </span>
+                            <span x-text="relativeTime(m.last_sign_in_at || m.joined_at)"></span>
+                            <span style="margin: 0 6px; color: var(--text-3);">·</span>
+                            <span x-text="expandedMemberId === m.id ? '▴ contraer' : '▾ ver perfil'" style="color: var(--accent); cursor: pointer;"></span>
+                          </span>
+                        </div>
                       </div>
-                      <div class="v5-member-meta" style="display: flex; flex-direction: column; gap: 2px;">
-                        <span x-show="m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email" style="font-family: 'JetBrains Mono', monospace; font-size: 11px;"></span>
-                        <span>
-                          <span x-show="m.last_sign_in_at">Última entrada </span>
-                          <span x-show="!m.last_sign_in_at">Invitado </span>
-                          <span x-text="relativeTime(m.last_sign_in_at || m.joined_at)"></span>
-                        </span>
-                      </div>
+                      <button class="v5-member-remove" @click.stop="removeMember(m.id)" title="Quitar acceso a este huésped">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                      </button>
                     </div>
-                    <button class="v5-member-remove" @click="removeMember(m.id)" title="Quitar acceso a este huésped">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                    </button>
+                    <!-- Expanded profile panel -->
+                    <div x-show="expandedMemberId === m.id" x-transition style="margin: 4px 0 12px 48px; padding: 14px 16px; background: var(--surface-2); border-radius: 8px; border-left: 3px solid var(--accent); font-size: 13px;">
+                      <template x-if="!m.profile">
+                        <div style="color: var(--text-3); font-style: italic;">Este huésped todavía no completó su perfil de viaje.</div>
+                      </template>
+                      <template x-if="m.profile">
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                          <template x-if="m.profile.dietary_restrictions && m.profile.dietary_restrictions.length > 0">
+                            <div>
+                              <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px;">Restricciones</div>
+                              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                <template x-for="r in m.profile.dietary_restrictions">
+                                  <span style="background: var(--surface-1); padding: 3px 10px; border-radius: 999px; font-size: 12px; color: var(--text-1); border: 1px solid var(--line);" x-text="({'vegetariano':'Vegetariano','vegano':'Vegano','sin_gluten':'Sin gluten / celíaco','sin_lactosa':'Sin lactosa','sin_pescado':'Sin pescado / mariscos','sin_carne_roja':'Sin carne roja','sin_cerdo':'Sin cerdo','kosher':'Kosher','halal':'Halal'})[r] || r"></span>
+                                </template>
+                              </div>
+                            </div>
+                          </template>
+                          <template x-if="m.profile.food_allergies">
+                            <div>
+                              <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px;">Alergias</div>
+                              <div x-text="m.profile.food_allergies" style="color: var(--bad);"></div>
+                            </div>
+                          </template>
+                          <template x-if="m.profile.mobility_notes">
+                            <div>
+                              <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px;">Movilidad</div>
+                              <div x-text="m.profile.mobility_notes"></div>
+                            </div>
+                          </template>
+                          <template x-if="m.profile.preferred_phone">
+                            <div>
+                              <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px;">Teléfono</div>
+                              <div style="font-family: 'JetBrains Mono', monospace;">
+                                <a :href="`https://wa.me/${m.profile.preferred_phone.replace(/[^0-9]/g, '')}`" target="_blank" rel="noopener" x-text="m.profile.preferred_phone" style="color: var(--accent); text-decoration: none;"></a>
+                              </div>
+                            </div>
+                          </template>
+                          <template x-if="m.profile.emergency_contact_name">
+                            <div>
+                              <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px;">Contacto de emergencia</div>
+                              <div>
+                                <span x-text="m.profile.emergency_contact_name" style="font-weight: 600;"></span>
+                                <span x-show="m.profile.emergency_contact_relationship" style="color: var(--text-3);">
+                                  · <span x-text="m.profile.emergency_contact_relationship"></span>
+                                </span>
+                              </div>
+                              <div x-show="m.profile.emergency_contact_phone" style="font-family: 'JetBrains Mono', monospace; color: var(--text-2); font-size: 12px;" x-text="m.profile.emergency_contact_phone"></div>
+                            </div>
+                          </template>
+                          <template x-if="m.profile.notes">
+                            <div>
+                              <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px;">Notas del huésped</div>
+                              <div style="white-space: pre-wrap; line-height: 1.45;" x-text="m.profile.notes"></div>
+                            </div>
+                          </template>
+                          <div x-show="m.profile.updated_at" style="font-size: 10.5px; color: var(--text-3); margin-top: 4px; font-style: italic;">
+                            Actualizado <span x-text="relativeTime(m.profile.updated_at)"></span>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
                   </div>
                 </template>
               </div>
@@ -10913,6 +11008,25 @@ function app() {
     // Members of the current trip (for the share UI in the meta editor)
     tripMembers: [],
     tripMembersLoading: false,
+    expandedMemberId: null,  // id of trip_member row currently expanded to show profile
+
+    // === Conflict resolution state =======================================
+    // Optimistic concurrency control between operators (Brian vs Federico).
+    // _baselineUpdatedAt: trips.updated_at value we last saw on the server.
+    //   Every save attempt filters by .eq('updated_at', baseline). If another
+    //   operator saved in between, the filter matches 0 rows and we know to
+    //   surface a conflict rather than overwriting silently.
+    // _localDirty: true between the moment the user makes an edit and the
+    //   next successful saveToCloud. While dirty, the realtime subscription
+    //   will NOT auto-apply remote payloads — instead it shows the banner.
+    // _forceSaveBypass: set true by forceLocalSave() to skip baseline filter
+    //   on the next save (deliberate override).
+    // conflictWarning: { by, at, remoteData, source } | null — drives the
+    //   banner UI at the top of the trip view.
+    _baselineUpdatedAt: null,
+    _localDirty: false,
+    _forceSaveBypass: false,
+    conflictWarning: null,
     addMemberForm: {
       email: '',
       submitting: false
@@ -12802,6 +12916,13 @@ function app() {
           this.data = this.migrateData(row.data);
           this.lastUpdatedBy = row.updated_by;
           this.lastUpdatedAt = row.updated_at;
+          // Optimistic-locking baseline. Any later save attempt will check
+          // that the server's updated_at still matches this; if not, the
+          // save is rejected as a conflict and the operator is asked to
+          // either accept the remote change or force-push their own.
+          this._baselineUpdatedAt = row.updated_at;
+          this._localDirty = false;
+          this.conflictWarning = null;
           // Capture the trip row metadata (denormalized columns) for home page use.
           // We strip 'data' since this.data already holds it (avoids duplication).
           this.tripRow = { ...row };
@@ -12845,9 +12966,6 @@ function app() {
 
     async saveToCloud() {
       // Sync internal/client layers from the legacy root fields before persisting.
-      // Operator edits write to slot.title / slot.description / slot.status / slot.verdict
-      // (the legacy root fields, bound to Alpine x-model in the drawer). This mirrors them
-      // into slot.internal.* so the JSON is consistent for downstream consumers (client app).
       this._syncSlotLayers();
 
       // Always save local as fallback
@@ -12859,27 +12977,63 @@ function app() {
         return;
       }
 
+      // Mark local as dirty until we successfully sync. This lets the
+      // realtime subscription know not to clobber our pending edits if
+      // another operator pushes a change in the meantime.
+      this._localDirty = true;
+
       if (this.saveTimeout) clearTimeout(this.saveTimeout);
       this.syncStatus = 'syncing';
       this.syncLabel = 'Guardando';
       this.saveTimeout = setTimeout(async () => {
         try {
           const now = new Date().toISOString();
-          // Compute denormalized columns from data.meta. Stored separately from
-          // the JSON so the home page can list/filter trips cheaply without
-          // deserializing every full data blob.
           const denorm = this._tripDenormFromMeta();
-          const { error } = await this._client
-            .from('trips')
-            .update({
-              data: this.data,
-              updated_by: this.identity || 'anónimo',
-              updated_at: now,
-              ...denorm
-            })
-            .eq('id', this.TRIP_ID);
 
+          // Optimistic concurrency: only update if the row's updated_at
+          // still matches the baseline we loaded with. If another operator
+          // saved in the meantime, server updated_at changed and the
+          // update affects 0 rows. We detect that and surface a conflict
+          // banner instead of silently overwriting their work.
+          let query = this._client.from('trips').update({
+            data: this.data,
+            updated_by: this.identity || 'anónimo',
+            updated_at: now,
+            ...denorm,
+          }).eq('id', this.TRIP_ID);
+          if (this._baselineUpdatedAt && !this._forceSaveBypass) {
+            query = query.eq('updated_at', this._baselineUpdatedAt);
+          }
+          const { data: updatedRows, error } = await query.select('updated_at');
           if (error) throw error;
+
+          if (!updatedRows || updatedRows.length === 0) {
+            // Conflict: someone else saved first. Don't clear _localDirty;
+            // the user must decide what to do via the banner.
+            // Fetch what's on the server now so we can show them who/when.
+            try {
+              const { data: latest } = await this._client
+                .from('trips')
+                .select('updated_at, updated_by, data')
+                .eq('id', this.TRIP_ID)
+                .maybeSingle();
+              if (latest) {
+                this.conflictWarning = {
+                  by: latest.updated_by || 'otra persona',
+                  at: latest.updated_at,
+                  remoteData: latest.data,
+                  source: 'save_blocked',
+                };
+              }
+            } catch (e) { console.warn('conflict latest fetch failed', e); }
+            this.syncStatus = 'conflict';
+            this.syncLabel = 'Conflicto';
+            return;
+          }
+
+          this._baselineUpdatedAt = updatedRows[0].updated_at;
+          this._localDirty = false;
+          this._forceSaveBypass = false;
           this.lastUpdatedBy = this.identity || 'anónimo';
           this.lastUpdatedAt = now;
           this.syncStatus = 'online';
@@ -12890,6 +13044,51 @@ function app() {
           this.syncLabel = 'Error · solo local';
         }
       }, 800);
+    },
+
+    // === Conflict resolution actions =====================================
+    // Triggered from the conflict banner UI.
+
+    // Accept the remote changes: replace our local data with what the
+    // server has and discard any pending local edits.
+    async acceptRemoteAndReload() {
+      if (!this.conflictWarning) return;
+      const remote = this.conflictWarning.remoteData;
+      const at = this.conflictWarning.at;
+      const by = this.conflictWarning.by;
+      this.conflictWarning = null;
+      if (!remote) {
+        // Fallback: reload from cloud
+        await this.loadFromCloud();
+        return;
+      }
+      this.applyingRemote = true;
+      this.data = this.migrateData(remote);
+      this.lastUpdatedBy = by;
+      this.lastUpdatedAt = at;
+      this._baselineUpdatedAt = at;
+      this._localDirty = false;
+      this.syncStatus = 'online';
+      this.syncLabel = 'Sincronizado';
+      this.$nextTick(() => { this.applyingRemote = false; });
+      this.toast(`Cambios de ${by} aplicados`, 'info');
+    },
+
+    // Override the conflict: keep our local data and force-push it,
+    // overwriting whatever the other operator saved. Use with care.
+    async forceLocalSave() {
+      if (!this.conflictWarning) return;
+      this.conflictWarning = null;
+      this._forceSaveBypass = true;
+      this.saveToCloud();  // re-trigger save without the baseline check
+      this.toast('Forzando guardado de tus cambios…', 'warn');
+    },
+
+    // Just close the banner. The conflict persists internally; the next
+    // save attempt will hit the same wall. Useful if the operator wants
+    // to see what they were editing before deciding.
+    dismissConflictWarning() {
+      this.conflictWarning = null;
     },
 
     subscribeToChanges() {
@@ -12906,11 +13105,28 @@ function app() {
           if (payload.new.updated_by === this.identity && Math.abs(new Date(payload.new.updated_at) - new Date(this.lastUpdatedAt)) < 2000) {
             return;
           }
+          // If we have unsaved local edits, do NOT auto-apply the remote payload —
+          // that would silently destroy whatever the operator is currently typing.
+          // Surface a conflict banner instead and let them choose.
+          if (this._localDirty) {
+            this.conflictWarning = {
+              by: payload.new.updated_by || 'otra persona',
+              at: payload.new.updated_at,
+              remoteData: payload.new.data,
+              source: 'realtime',
+            };
+            if (payload.new.updated_by !== this.identity) {
+              this.notifyRemote(`${payload.new.updated_by} editó · tus cambios aún no se guardaron`);
+            }
+            return;
+          }
           // Apply remote update without re-triggering save
           this.applyingRemote = true;
           this.data = this.migrateData(payload.new.data);
           this.lastUpdatedBy = payload.new.updated_by;
           this.lastUpdatedAt = payload.new.updated_at;
+          // Keep our optimistic-locking baseline in sync with the server.
+          this._baselineUpdatedAt = payload.new.updated_at;
           this.$nextTick(() => { this.applyingRemote = false; });
           if (payload.new.updated_by !== this.identity) {
             this.notifyRemote(`${payload.new.updated_by} editó`);
