@@ -13891,6 +13891,222 @@ function app() {
         return matchesSearch && matchesFilter && matchesStatus;
       });
     },
+    // V5D · CRM helpers (Phase 2B)
+    sortLabel(key) {
+      return (this.sortOptions.find(o => o.key === key) || { label: key }).label;
+    },
+    setSort(key) {
+      if (this.providerSort === key) {
+        this.providerSortDir = this.providerSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.providerSort = key;
+        this.providerSortDir = (key === 'michelin' || key === 'comments') ? 'desc' : 'asc';
+      }
+    },
+    statusLabelEs(s) {
+      return ({ pending: 'Pendiente', contacted: 'Contactado', confirmed: 'Confirmado', cancelled: 'Cancelado' })[s] || s;
+    },
+    statusOrder(s) {
+      var o = { pending: 0, contacted: 1, confirmed: 2, cancelled: 3 };
+      return (s in o) ? o[s] : 9;
+    },
+    providerTypeIcon(t) {
+      var ic = {
+        restaurant: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
+        winery: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5V3H7v7a5 5 0 0 0 5 5z"/></svg>',
+        truffle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/></svg>',
+        activity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>',
+        transfer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M3 10h18l-2 7H5z"/></svg>',
+        service: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>'
+      };
+      return ic[t] || '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg>';
+    },
+    providerInItinerary(provider) {
+      if (!provider || !provider.name) return [];
+      if (!this.data || !this.data.itinerary) return [];
+      var nameLow = provider.name.toLowerCase();
+      var nameTokens = nameLow.split(/[\s·]+/).filter(function (t) { return t.length >= 5; });
+      var result = [];
+      this.data.itinerary.forEach(function (day, di) {
+        var has = (day.slots || []).some(function (s) {
+          var txt = ((s.title || '') + ' ' + (s.description || '')).toLowerCase();
+          if (!txt) return false;
+          return nameTokens.some(function (tok) { return txt.indexOf(tok) !== -1; });
+        });
+        if (has) result.push({ idx: di + 1, weekday: (day.weekday || '').substring(0, 3) });
+      });
+      return result.slice(0, 2);
+    },
+    cycleReservationStatus(provider) {
+      var order = ['pending', 'contacted', 'confirmed', 'cancelled'];
+      var i = order.indexOf(provider.reservationStatus);
+      var next = order[(i + 1) % order.length];
+      if (typeof this.setReservationStatus === 'function') {
+        this.setReservationStatus(provider, next);
+      } else {
+        provider.reservationStatus = next;
+        if (typeof this.save === 'function') this.save();
+      }
+    },
+    resetProviderFilters() {
+      this.providerSearch = '';
+      this.providerFilter = 'all';
+      this.providerStatusFilter = 'all';
+      this.providerMichelinFilter = false;
+    },
+    get providersForTable() {
+      var self = this;
+      var sorted = this.filteredProviders.slice();
+      if (this.providerMichelinFilter) {
+        sorted = sorted.filter(function (p) { return p.michelin && p.michelin > 0; });
+      }
+      var dir = this.providerSortDir === 'asc' ? 1 : -1;
+      sorted.sort(function (a, b) {
+        var av, bv;
+        switch (self.providerSort) {
+          case 'name': av = (a.name || '').toLowerCase(); bv = (b.name || '').toLowerCase(); break;
+          case 'type': av = a.type || ''; bv = b.type || ''; break;
+          case 'location': av = (a.location || '').toLowerCase(); bv = (b.location || '').toLowerCase(); break;
+          case 'status': av = self.statusOrder(a.reservationStatus); bv = self.statusOrder(b.reservationStatus); break;
+          case 'michelin': av = a.michelin || 0; bv = b.michelin || 0; break;
+          case 'comments': av = (typeof self.commentCount === 'function' ? self.commentCount('provider', a.id) : 0); bv = (typeof self.commentCount === 'function' ? self.commentCount('provider', b.id) : 0); break;
+          default: av = (a.name || '').toLowerCase(); bv = (b.name || '').toLowerCase();
+        }
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
+      return sorted;
+    },
+    get providersForPipeline() {
+      var self = this;
+      var search = (this.providerSearch || '').toLowerCase();
+      return (this.data.providers || []).filter(function (p) {
+        var matchesSearch = !search ||
+          (p.name || '').toLowerCase().indexOf(search) !== -1 ||
+          (p.location || '').toLowerCase().indexOf(search) !== -1 ||
+          (p.notes || '').toLowerCase().indexOf(search) !== -1 ||
+          (p.phone || '').toLowerCase().indexOf(search) !== -1 ||
+          (p.email || '').toLowerCase().indexOf(search) !== -1 ||
+          (p.web || '').toLowerCase().indexOf(search) !== -1;
+        var matchesFilter = self.providerFilter === 'all' || p.type === self.providerFilter;
+        var matchesMichelin = !self.providerMichelinFilter || (p.michelin && p.michelin > 0);
+        return matchesSearch && matchesFilter && matchesMichelin;
+      });
+    },
+    get selectAllState() {
+      var visible = this.providersForTable;
+      var total = visible.length;
+      if (total === 0) return '';
+      var self = this;
+      var sel = visible.filter(function (p) { return self.selectedProviders.has(p.id); }).length;
+      if (sel === 0) return '';
+      if (sel === total) return 'checked';
+      return 'indeterminate';
+    },
+    toggleSelectAll() {
+      var self = this;
+      var visible = this.providersForTable;
+      var allSelected = visible.length > 0 && visible.every(function (p) { return self.selectedProviders.has(p.id); });
+      var next = new Set(this.selectedProviders);
+      if (allSelected) visible.forEach(function (p) { next.delete(p.id); });
+      else visible.forEach(function (p) { next.add(p.id); });
+      this.selectedProviders = next;
+    },
+    toggleSelectProvider(id, evt) {
+      var next = new Set(this.selectedProviders);
+      if (evt && evt.shiftKey && this._lastSelectedProviderId) {
+        var list = this.providersForTable.map(function (p) { return p.id; });
+        var a = list.indexOf(this._lastSelectedProviderId);
+        var b = list.indexOf(id);
+        if (a !== -1 && b !== -1) {
+          var lo = Math.min(a, b);
+          var hi = Math.max(a, b);
+          for (var i = lo; i <= hi; i++) next.add(list[i]);
+          this.selectedProviders = next;
+          this._lastSelectedProviderId = id;
+          return;
+        }
+      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      this.selectedProviders = next;
+      this._lastSelectedProviderId = id;
+    },
+    clearSelection() {
+      this.selectedProviders = new Set();
+      this._lastSelectedProviderId = null;
+    },
+    async bulkSetStatus(newStatus) {
+      var ids = Array.from(this.selectedProviders);
+      if (!ids.length) return;
+      var labels = { pending: 'Pendiente', contacted: 'Contactado', confirmed: 'Confirmado', cancelled: 'Cancelado' };
+      var confirmedCount = 0;
+      var self = this;
+      ids.forEach(function (id) {
+        var p = self.data.providers.find(function (x) { return x.id === id; });
+        if (p && p.reservationStatus !== newStatus) {
+          var prev = p.reservationStatus;
+          p.reservationStatus = newStatus;
+          if (typeof self.logEvent === 'function') {
+            self.logEvent('provider.status_changed', 'cambió "' + (p.name || '?') + '" a ' + labels[newStatus], { provider_id: p.id, from: prev, to: newStatus });
+          }
+          if (newStatus === 'confirmed') confirmedCount++;
+        }
+      });
+      if (typeof this.save === 'function') this.save();
+      this.clearSelection();
+      if (newStatus === 'confirmed' && confirmedCount > 0 && typeof this.celebrate === 'function') {
+        this.celebrate(confirmedCount > 1 ? 'TUTTI RISERVATI' : 'RISERVATO');
+      }
+      if (typeof this.toast === 'function') {
+        this.toast(ids.length + ' ' + (ids.length === 1 ? 'proveedor actualizado' : 'proveedores actualizados') + ' · ' + labels[newStatus], 'success');
+      }
+    },
+    async bulkDelete() {
+      var ids = Array.from(this.selectedProviders);
+      if (!ids.length) return;
+      var ok = true;
+      if (typeof this.askConfirm === 'function') {
+        ok = await this.askConfirm({
+          title: 'Eliminar ' + ids.length + ' ' + (ids.length === 1 ? 'proveedor' : 'proveedores') + '?',
+          body: 'Esta acción no se puede deshacer (excepto restaurando un snapshot).',
+          confirmLabel: 'Eliminar todos',
+          danger: true
+        });
+      } else {
+        ok = confirm('Eliminar ' + ids.length + ' proveedores? No se puede deshacer.');
+      }
+      if (!ok) return;
+      var self = this;
+      var names = ids.map(function (id) {
+        var p = self.data.providers.find(function (x) { return x.id === id; });
+        return p ? p.name : null;
+      }).filter(Boolean);
+      this.data.providers = this.data.providers.filter(function (p) { return !self.selectedProviders.has(p.id); });
+      if (typeof this.logEvent === 'function') {
+        this.logEvent('provider.bulk_deleted', 'eliminó ' + ids.length + ' proveedores', { provider_ids: ids, names: names });
+      }
+      this.clearSelection();
+      if (typeof this.save === 'function') this.save();
+      if (typeof this.toast === 'function') {
+        this.toast(ids.length + ' ' + (ids.length === 1 ? 'proveedor eliminado' : 'proveedores eliminados'));
+      }
+    },
+    onPipelineDrop(targetStatus) {
+      if (!this.draggingProviderId) return;
+      var p = this.data.providers.find(function (x) { return x.id === this.draggingProviderId; }.bind(this));
+      this.draggingProviderId = null;
+      this.dragOverCol = null;
+      if (!p || p.reservationStatus === targetStatus) return;
+      if (typeof this.setReservationStatus === 'function') {
+        this.setReservationStatus(p, targetStatus);
+      } else {
+        p.reservationStatus = targetStatus;
+        if (typeof this.save === 'function') this.save();
+      }
+    },
+
     get providersGrouped() {
       const italianMap = {
         restaurant: 'Ristoranti',
