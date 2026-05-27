@@ -9747,11 +9747,14 @@ textarea:focus-visible {
   <template x-if="clientInviteResult">
     <div class="v5-confirm-overlay" @click.self="closeClientInviteResult()">
       <div class="v5-confirm" role="dialog" aria-modal="true" style="max-width: 480px;">
-        <h3 style="margin-bottom: 4px;">Huésped invitado</h3>
+        <h3 style="margin-bottom: 4px;">
+          <span x-show="!clientInviteResult.isRecurring">Huésped invitado</span>
+          <span x-show="clientInviteResult.isRecurring">Huésped agregado al viaje</span>
+        </h3>
         <p style="margin: 0 0 18px 0; color: var(--text-2); font-size: 13.5px;">
-          <strong x-text="clientInviteResult.fullName"></strong> ya tiene acceso.
-          <span x-show="clientInviteResult.emailSent">Le mandamos un email con las credenciales — igualmente podés copiarlas de acá.</span>
-          <span x-show="!clientInviteResult.emailSent">Copialé estas credenciales antes de cerrar — la contraseña no se vuelve a mostrar.</span>
+          <strong x-text="clientInviteResult.fullName"></strong>
+          <span x-show="!clientInviteResult.isRecurring"> ya tiene acceso. <span x-show="clientInviteResult.emailSent">Le mandamos un email con las credenciales — igualmente podés copiarlas de acá.</span><span x-show="!clientInviteResult.emailSent">Copialé estas credenciales antes de cerrar — la contraseña no se vuelve a mostrar.</span></span>
+          <span x-show="clientInviteResult.isRecurring"> ya tenía cuenta en B&amp;A. Lo agregamos al viaje. Usa su contraseña existente para entrar.</span>
         </p>
         <div x-show="clientInviteResult.emailSent" style="background: #ECFDF5; padding: 10px 12px; border-radius: 6px; font-size: 12.5px; color: #047857; margin-bottom: 14px; border-left: 3px solid #10B981; display: flex; align-items: center; gap: 6px;">
           <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"/></svg>
@@ -9759,9 +9762,6 @@ textarea:focus-visible {
         </div>
         <div x-show="!clientInviteResult.emailSent && clientInviteResult.emailError" style="background: #FEF3C7; padding: 10px 12px; border-radius: 6px; font-size: 12.5px; color: #92400E; margin-bottom: 14px; border-left: 3px solid #F59E0B;">
           El email automático falló — usá el botón "Copiar mensaje completo" abajo y mandáselo por WhatsApp.
-        </div>
-        <div x-show="clientInviteResult.reused" style="background: var(--surface-2); padding: 10px 12px; border-radius: 6px; font-size: 12.5px; color: var(--text-2); margin-bottom: 14px; border-left: 3px solid var(--accent);">
-          Este email ya tenía cuenta en B&amp;A. La agregamos al viaje y le generamos una nueva contraseña temporal.
         </div>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           <div>
@@ -9771,7 +9771,7 @@ textarea:focus-visible {
               <button class="btn btn-sm btn-ghost" @click="navigator.clipboard.writeText(clientInviteResult.email).then(() => toast('Email copiado', 'success'))">Copiar</button>
             </div>
           </div>
-          <div>
+          <div x-show="!clientInviteResult.isRecurring">
             <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px;">Contraseña temporal</div>
             <div style="display: flex; gap: 6px; align-items: stretch;">
               <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px;" x-text="clientInviteResult.password"></code>
@@ -9787,7 +9787,8 @@ textarea:focus-visible {
           </div>
         </div>
         <div class="v5-confirm-actions" style="margin-top: 22px;">
-          <button class="btn btn-ghost" @click="navigator.clipboard.writeText(`Hola ${clientInviteResult.fullName}, te creé acceso a tu viaje en Blisniuk & Amanov.\n\nEntrá a https://expedicionmundial.netlify.app\nEmail: ${clientInviteResult.email}\nContraseña: ${clientInviteResult.password}\n\nTe recomiendo cambiar la contraseña al primer ingreso.`).then(() => toast('Mensaje copiado al portapapeles', 'success'))">Copiar mensaje completo</button>
+          <button x-show="!clientInviteResult.isRecurring" class="btn btn-ghost" @click="navigator.clipboard.writeText(`Hola ${clientInviteResult.fullName}, te creé acceso a tu viaje en Blisniuk & Amanov.\n\nEntrá a https://expedicionmundial.netlify.app\nEmail: ${clientInviteResult.email}\nContraseña: ${clientInviteResult.password}\n\nTe recomiendo cambiar la contraseña al primer ingreso.`).then(() => toast('Mensaje copiado al portapapeles', 'success'))">Copiar mensaje completo</button>
+          <button x-show="clientInviteResult.isRecurring" class="btn btn-ghost" @click="navigator.clipboard.writeText(`Hola ${clientInviteResult.fullName}, te agregué al nuevo viaje en Blisniuk & Amanov.\n\nEntrá a https://expedicionmundial.netlify.app con tu email y contraseña habitual.`).then(() => toast('Mensaje copiado al portapapeles', 'success'))">Copiar mensaje completo</button>
           <button class="btn" @click="closeClientInviteResult()">Listo</button>
         </div>
       </div>
@@ -12598,13 +12599,16 @@ function app() {
           }),
         });
         const result = await resp.json();
-        if (!resp.ok) throw new Error(result.error || result.message || `HTTP ${resp.status}`);
+        if (!resp.ok) {
+          // Surface the friendly message if the backend provided one
+          throw new Error(result.message || result.error || `HTTP ${resp.status}`);
+        }
         // Show modal with temp password so the operator can copy & send
         this.clientInviteResult = {
           email,
-          password: result.temp_password,
+          password: result.temp_password,            // null for recurring guests
           fullName,
-          reused: !!result.reused_existing_user,
+          isRecurring: !!result.is_recurring,
           emailSent: !!result.email_sent,
           emailError: result.email_error || null,
         };
