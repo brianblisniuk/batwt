@@ -746,14 +746,264 @@
     }
 
     // === ACCOUNT SCREEN =======================================
-    // Simple profile / settings screen accessible from the bottom nav.
-    // Shows the guest's name and email, exposes "log out", and acts as a
-    // landing spot for future per-user settings (change password,
-    // notifications, contact the operator, etc.).
+    // Profile + settings screen accessible from the bottom nav.
+    // Shows the guest's name, email, and a "Tu perfil de viaje" card that
+    // surfaces dietary restrictions / allergies / emergency contact. Empty
+    // profiles get a friendly prompt; filled profiles show a summary and an
+    // "Editar" button. Editing happens in a sheet modal over the screen.
+    const DIETARY_OPTIONS = [
+      { id: 'vegetariano',   label: 'Vegetariano' },
+      { id: 'vegano',        label: 'Vegano' },
+      { id: 'sin_gluten',    label: 'Sin gluten / celíaco' },
+      { id: 'sin_lactosa',   label: 'Sin lactosa' },
+      { id: 'sin_pescado',   label: 'Sin pescado / mariscos' },
+      { id: 'sin_carne_roja',label: 'Sin carne roja' },
+      { id: 'sin_cerdo',     label: 'Sin cerdo' },
+      { id: 'kosher',        label: 'Kosher' },
+      { id: 'halal',         label: 'Halal' },
+    ];
+
+    function dietaryLabel(id) {
+      const o = DIETARY_OPTIONS.find(x => x.id === id);
+      return o ? o.label : id;
+    }
+
+    function useProfile(session) {
+      const [profile, setProfile] = useState(null);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        if (!session?.user?.id) { setLoading(false); return; }
+        let alive = true;
+        (async () => {
+          try {
+            const { data, error } = await db
+              .from('user_profiles')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+            if (!alive) return;
+            if (error) console.warn('profile load error', error);
+            setProfile(data || null);
+          } finally {
+            if (alive) setLoading(false);
+          }
+        })();
+        return () => { alive = false; };
+      }, [session?.user?.id]);
+
+      const save = useCallback(async (patch) => {
+        if (!session?.user?.id) return null;
+        const row = {
+          user_id: session.user.id,
+          dietary_restrictions: patch.dietary_restrictions || [],
+          food_allergies: patch.food_allergies || '',
+          mobility_notes: patch.mobility_notes || '',
+          emergency_contact_name: patch.emergency_contact_name || '',
+          emergency_contact_phone: patch.emergency_contact_phone || '',
+          emergency_contact_relationship: patch.emergency_contact_relationship || '',
+          preferred_phone: patch.preferred_phone || '',
+          notes: patch.notes || '',
+        };
+        const { data, error } = await db
+          .from('user_profiles')
+          .upsert(row, { onConflict: 'user_id' })
+          .select()
+          .single();
+        if (error) { console.error('profile save error', error); return null; }
+        setProfile(data);
+        return data;
+      }, [session?.user?.id]);
+
+      return { profile, loading, save };
+    }
+
+    function profileIsFilled(p) {
+      if (!p) return false;
+      return (p.dietary_restrictions && p.dietary_restrictions.length > 0)
+        || !!p.food_allergies
+        || !!p.emergency_contact_name
+        || !!p.preferred_phone;
+    }
+
+    function EditProfileModal({ profile, save, onClose }) {
+      const [form, setForm] = useState(() => ({
+        dietary_restrictions: profile?.dietary_restrictions || [],
+        food_allergies: profile?.food_allergies || '',
+        mobility_notes: profile?.mobility_notes || '',
+        emergency_contact_name: profile?.emergency_contact_name || '',
+        emergency_contact_phone: profile?.emergency_contact_phone || '',
+        emergency_contact_relationship: profile?.emergency_contact_relationship || '',
+        preferred_phone: profile?.preferred_phone || '',
+        notes: profile?.notes || '',
+      }));
+      const [saving, setSaving] = useState(false);
+
+      const toggleDietary = (id) => {
+        setForm(f => ({
+          ...f,
+          dietary_restrictions: f.dietary_restrictions.includes(id)
+            ? f.dietary_restrictions.filter(x => x !== id)
+            : [...f.dietary_restrictions, id]
+        }));
+      };
+
+      const handleSave = async () => {
+        setSaving(true);
+        const result = await save(form);
+        setSaving(false);
+        if (result) onClose();
+      };
+
+      const fieldLabel = (s) => (
+        <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 1.4, textTransform: 'uppercase', color: P.textDim, marginBottom: 6 }}>{s}</div>
+      );
+      const inputStyle = {
+        width: '100%', boxSizing: 'border-box',
+        padding: '11px 13px', border: `1px solid ${P.border}`,
+        borderRadius: 8, fontSize: 14, fontFamily: 'inherit',
+        background: P.surface, color: P.text,
+      };
+
+      return (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'flex-end',
+        }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+          <div style={{
+            background: P.surfaceDim, width: '100%', maxHeight: '92vh',
+            borderTopLeftRadius: 20, borderTopRightRadius: 20,
+            display: 'flex', flexDirection: 'column',
+            animation: 'slideUp 0.25s ease-out',
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '18px 20px 14px', borderBottom: `1px solid ${P.border}`,
+            }}>
+              <button onClick={onClose} style={{
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                fontSize: 15, color: P.textMuted, padding: 0,
+              }}>Cancelar</button>
+              <div style={{ fontSize: 16, fontWeight: 600, color: P.text }}>Tu perfil</div>
+              <button onClick={handleSave} disabled={saving} style={{
+                background: 'transparent', border: 'none',
+                cursor: saving ? 'wait' : 'pointer',
+                fontSize: 15, fontWeight: 600, color: P.primary, padding: 0,
+              }}>{saving ? 'Guardando…' : 'Guardar'}</button>
+            </div>
+
+            <div style={{ overflowY: 'auto', padding: '20px', flex: 1 }}>
+              <p style={{ fontSize: 13, color: P.textMuted, lineHeight: 1.5, margin: '0 0 24px' }}>
+                Esta información la usamos para preparar tu experiencia y para poder contactarte si algo cambia durante el viaje. Solo la ve tu operador.
+              </p>
+
+              {/* Dietary */}
+              <div style={{ marginBottom: 24 }}>
+                {fieldLabel('Restricciones alimentarias')}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {DIETARY_OPTIONS.map(opt => {
+                    const active = form.dietary_restrictions.includes(opt.id);
+                    return (
+                      <button key={opt.id} onClick={() => toggleDietary(opt.id)} style={{
+                        padding: '8px 14px', borderRadius: 999,
+                        border: `1px solid ${active ? P.primary : P.border}`,
+                        background: active ? P.primary : P.surface,
+                        color: active ? '#fff' : P.text,
+                        fontSize: 13, fontWeight: active ? 600 : 500,
+                        cursor: 'pointer', fontFamily: 'inherit',
+                      }}>{opt.label}</button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Allergies */}
+              <div style={{ marginBottom: 24 }}>
+                {fieldLabel('Alergias alimentarias')}
+                <input
+                  type="text"
+                  value={form.food_allergies}
+                  onChange={(e) => setForm(f => ({ ...f, food_allergies: e.target.value }))}
+                  placeholder="Ej: maní, mariscos"
+                  style={inputStyle}
+                />
+              </div>
+
+              {/* Mobility */}
+              <div style={{ marginBottom: 24 }}>
+                {fieldLabel('Movilidad (opcional)')}
+                <input
+                  type="text"
+                  value={form.mobility_notes}
+                  onChange={(e) => setForm(f => ({ ...f, mobility_notes: e.target.value }))}
+                  placeholder="Ej: uso bastón, dificultad para escaleras"
+                  style={inputStyle}
+                />
+              </div>
+
+              {/* Preferred phone */}
+              <div style={{ marginBottom: 24 }}>
+                {fieldLabel('Tu teléfono / WhatsApp')}
+                <input
+                  type="tel"
+                  value={form.preferred_phone}
+                  onChange={(e) => setForm(f => ({ ...f, preferred_phone: e.target.value }))}
+                  placeholder="+54 9 11 6139 5550"
+                  style={inputStyle}
+                />
+              </div>
+
+              {/* Emergency contact */}
+              <div style={{ marginBottom: 24 }}>
+                {fieldLabel('Contacto de emergencia')}
+                <input
+                  type="text"
+                  value={form.emergency_contact_name}
+                  onChange={(e) => setForm(f => ({ ...f, emergency_contact_name: e.target.value }))}
+                  placeholder="Nombre completo"
+                  style={{ ...inputStyle, marginBottom: 8 }}
+                />
+                <input
+                  type="tel"
+                  value={form.emergency_contact_phone}
+                  onChange={(e) => setForm(f => ({ ...f, emergency_contact_phone: e.target.value }))}
+                  placeholder="Teléfono con código de país"
+                  style={{ ...inputStyle, marginBottom: 8 }}
+                />
+                <input
+                  type="text"
+                  value={form.emergency_contact_relationship}
+                  onChange={(e) => setForm(f => ({ ...f, emergency_contact_relationship: e.target.value }))}
+                  placeholder="Relación (esposa, hijo, hermano…)"
+                  style={inputStyle}
+                />
+              </div>
+
+              {/* Notes */}
+              <div style={{ marginBottom: 24 }}>
+                {fieldLabel('Otras notas (opcional)')}
+                <textarea
+                  value={form.notes}
+                  onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))}
+                  placeholder="Cualquier cosa que quieras que tu operador sepa"
+                  rows={4}
+                  style={{ ...inputStyle, resize: 'vertical', minHeight: 80, fontFamily: 'inherit' }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     function AccountScreen({ session, trip, onLogout, goto }) {
       const fullName = session?.user?.user_metadata?.full_name;
       const email = session?.user?.email;
       const memberSince = session?.user?.created_at;
+      const { profile, loading: profileLoading, save: saveProfile } = useProfile(session);
+      const [editingProfile, setEditingProfile] = useState(false);
+      const filled = profileIsFilled(profile);
       const formatSince = (iso) => {
         if (!iso) return '';
         try {
@@ -799,6 +1049,89 @@
 
           {/* Content cards */}
           <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+            {/* Profile card */}
+            {profileLoading ? (
+              <div style={{ background: P.surface, borderRadius: 12, padding: '20px', textAlign: 'center', color: P.textMuted, fontSize: 13 }}>
+                Cargando perfil…
+              </div>
+            ) : !filled ? (
+              <button onClick={() => setEditingProfile(true)} style={{
+                background: P.surface, border: `1px solid ${P.border}`, borderRadius: 12,
+                padding: '18px 16px', textAlign: 'left', cursor: 'pointer',
+                fontFamily: 'inherit', color: P.text,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+                  <Icon name="plus" size={20} color={P.primary}/>
+                  <div style={{ fontSize: 15, fontWeight: 600 }}>Completá tu perfil</div>
+                </div>
+                <div style={{ fontSize: 12.5, color: P.textMuted, lineHeight: 1.5, marginLeft: 32 }}>
+                  Restricciones alimentarias, contacto de emergencia, teléfono. Tu operador lo usa para preparar tu experiencia.
+                </div>
+              </button>
+            ) : (
+              <div style={{ background: P.surface, borderRadius: 12, padding: '14px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.06 * 16, textTransform: 'uppercase', color: P.textDim }}>
+                    Tu perfil
+                  </div>
+                  <button onClick={() => setEditingProfile(true)} style={{
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    color: P.primary, fontSize: 13, fontWeight: 600, padding: 0,
+                    fontFamily: 'inherit',
+                  }}>Editar</button>
+                </div>
+                {profile?.dietary_restrictions?.length > 0 && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 11, color: P.textDim, marginBottom: 4 }}>Restricciones</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {profile.dietary_restrictions.map(id => (
+                        <span key={id} style={{ background: P.surfaceDim, padding: '4px 10px', borderRadius: 999, fontSize: 12, color: P.text }}>
+                          {dietaryLabel(id)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {profile?.food_allergies && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 11, color: P.textDim, marginBottom: 2 }}>Alergias</div>
+                    <div style={{ fontSize: 13.5 }}>{profile.food_allergies}</div>
+                  </div>
+                )}
+                {profile?.mobility_notes && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 11, color: P.textDim, marginBottom: 2 }}>Movilidad</div>
+                    <div style={{ fontSize: 13.5 }}>{profile.mobility_notes}</div>
+                  </div>
+                )}
+                {profile?.preferred_phone && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 11, color: P.textDim, marginBottom: 2 }}>Teléfono</div>
+                    <div style={{ fontSize: 13.5, fontFamily: 'ui-monospace, monospace' }}>{profile.preferred_phone}</div>
+                  </div>
+                )}
+                {profile?.emergency_contact_name && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 11, color: P.textDim, marginBottom: 2 }}>Contacto de emergencia</div>
+                    <div style={{ fontSize: 13.5 }}>
+                      {profile.emergency_contact_name}
+                      {profile.emergency_contact_relationship && <span style={{ color: P.textMuted }}> ({profile.emergency_contact_relationship})</span>}
+                    </div>
+                    {profile.emergency_contact_phone && (
+                      <div style={{ fontSize: 13, color: P.textMuted, fontFamily: 'ui-monospace, monospace' }}>{profile.emergency_contact_phone}</div>
+                    )}
+                  </div>
+                )}
+                {profile?.notes && (
+                  <div>
+                    <div style={{ fontSize: 11, color: P.textDim, marginBottom: 2 }}>Notas</div>
+                    <div style={{ fontSize: 13, color: P.text, lineHeight: 1.5 }}>{profile.notes}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {tripName && (
               <div style={{
                 background: P.surface, borderRadius: 12, padding: '14px 16px',
@@ -827,7 +1160,6 @@
               </div>
             )}
 
-            {/* Contact CTA */}
             <a href="mailto:brianblisniuk@gmail.com" style={{
               background: P.surface, borderRadius: 12, padding: '14px 16px',
               display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none',
@@ -841,7 +1173,6 @@
               <Icon name="chevron-r" size={18} color={P.textMuted}/>
             </a>
 
-            {/* Logout */}
             <button onClick={onLogout} style={{
               background: P.surface, border: `1px solid ${P.border}`,
               borderRadius: 12, padding: '14px 16px',
@@ -857,6 +1188,14 @@
               Blisniuk &amp; Amanov · v1
             </div>
           </div>
+
+          {editingProfile && (
+            <EditProfileModal
+              profile={profile}
+              save={saveProfile}
+              onClose={() => setEditingProfile(false)}
+            />
+          )}
 
           <BottomNav active="account" goto={goto}/>
         </div>
