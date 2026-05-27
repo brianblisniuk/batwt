@@ -142,6 +142,8 @@
         case 'soccer':   return <svg {...props}><circle cx="12" cy="12" r="9"/><path d="M12 3l3 5-1 4-4 2-3-3 1-5z"/></svg>;
         case 'crosshair':return <svg {...props}><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>;
         case 'home':     return <svg {...props}><path d="M3 11l9-8 9 8v9a2 2 0 01-2 2h-3v-7H8v7H5a2 2 0 01-2-2v-9z"/></svg>;
+        case 'user':     return <svg {...props}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>;
+        case 'logout':   return <svg {...props}><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>;
         case 'check':    return <svg {...props}><path d="M5 12l5 5 9-11"/></svg>;
         case 'flag-ar':  return (
           <svg width={size} height={size} viewBox="0 0 24 16">
@@ -743,6 +745,124 @@
       );
     }
 
+    // === ACCOUNT SCREEN =======================================
+    // Simple profile / settings screen accessible from the bottom nav.
+    // Shows the guest's name and email, exposes "log out", and acts as a
+    // landing spot for future per-user settings (change password,
+    // notifications, contact the operator, etc.).
+    function AccountScreen({ session, trip, onLogout, goto }) {
+      const fullName = session?.user?.user_metadata?.full_name;
+      const email = session?.user?.email;
+      const memberSince = session?.user?.created_at;
+      const formatSince = (iso) => {
+        if (!iso) return '';
+        try {
+          const d = new Date(iso);
+          const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+          return `${months[d.getMonth()]} ${d.getFullYear()}`;
+        } catch { return ''; }
+      };
+      const initials = (fullName || email || 'U')
+        .split(/\s+/).slice(0, 2).map(s => s.charAt(0).toUpperCase()).join('');
+      const tripName = trip?.meta?.tripName;
+      return (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: P.surfaceDim, color: P.text,
+          display: 'flex', flexDirection: 'column',
+          paddingBottom: 90, overflowY: 'auto',
+        }}>
+          {/* Header */}
+          <div style={{
+            background: `linear-gradient(180deg, ${P.primary} 0%, ${P.primaryDeep} 100%)`,
+            color: '#fff', padding: '60px 24px 40px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{
+                width: 60, height: 60, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.15)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22, fontWeight: 700, letterSpacing: 0.5,
+              }}>{initials}</div>
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.3 }}>
+                  {fullName || email}
+                </div>
+                {fullName && (
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>
+                    {email}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Content cards */}
+          <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {tripName && (
+              <div style={{
+                background: P.surface, borderRadius: 12, padding: '14px 16px',
+                display: 'flex', flexDirection: 'column', gap: 4,
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.06 * 16, textTransform: 'uppercase', color: P.textDim }}>
+                  Tu viaje
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: P.text }}>
+                  {tripName}
+                </div>
+              </div>
+            )}
+
+            {memberSince && (
+              <div style={{
+                background: P.surface, borderRadius: 12, padding: '14px 16px',
+                display: 'flex', flexDirection: 'column', gap: 4,
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.06 * 16, textTransform: 'uppercase', color: P.textDim }}>
+                  Tu cuenta · desde
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: P.text }}>
+                  {formatSince(memberSince)}
+                </div>
+              </div>
+            )}
+
+            {/* Contact CTA */}
+            <a href="mailto:brianblisniuk@gmail.com" style={{
+              background: P.surface, borderRadius: 12, padding: '14px 16px',
+              display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none',
+              color: P.text,
+            }}>
+              <Icon name="phone" size={20} color={P.primary}/>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>Hablar con tu operador</div>
+                <div style={{ fontSize: 12, color: P.textMuted }}>Cualquier cambio o duda</div>
+              </div>
+              <Icon name="chevron-r" size={18} color={P.textMuted}/>
+            </a>
+
+            {/* Logout */}
+            <button onClick={onLogout} style={{
+              background: P.surface, border: `1px solid ${P.border}`,
+              borderRadius: 12, padding: '14px 16px',
+              display: 'flex', alignItems: 'center', gap: 12,
+              cursor: 'pointer', textAlign: 'left',
+              color: P.bad,
+            }}>
+              <Icon name="logout" size={20} color={P.bad}/>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Cerrar sesión</div>
+            </button>
+
+            <div style={{ marginTop: 28, textAlign: 'center', fontSize: 11, color: P.textDim }}>
+              Blisniuk &amp; Amanov · v1
+            </div>
+          </div>
+
+          <BottomNav active="account" goto={goto}/>
+        </div>
+      );
+    }
+
     // === SPLASH ================================================
     function SplashScreen({ onContinue, trip }) {
       const tripName = trip?.meta?.tripName || 'Argentina al Mundial 2026';
@@ -796,12 +916,13 @@
       );
     }
 
-    // === BOTTOM NAV (3 items, no chat) =========================
+    // === BOTTOM NAV (4 items) ==================================
     function BottomNav({ active, goto }) {
       const items = [
-        { id: 'map',  icon: 'map',  label: 'Mapa' },
-        { id: 'cal',  icon: 'cal',  label: 'Mundial' },
-        { id: 'trip', icon: 'list', label: 'Mi viaje' },
+        { id: 'map',     icon: 'map',  label: 'Mapa' },
+        { id: 'cal',     icon: 'cal',  label: 'Mundial' },
+        { id: 'trip',    icon: 'list', label: 'Mi viaje' },
+        { id: 'account', icon: 'user', label: 'Cuenta' },
       ];
       return (
         <div className="em-safe-bottom" style={{
@@ -2808,6 +2929,9 @@
           break;
         case 'cal':
           screenEl = <CalendarScreen goto={goto} matches={matches}/>;
+          break;
+        case 'account':
+          screenEl = <AccountScreen session={session} trip={trip} onLogout={handleLogout} goto={goto}/>;
           break;
         default:
           screenEl = <MapScreen trip={trip} places={places} openDetail={openDetail}
