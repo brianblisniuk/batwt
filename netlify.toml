@@ -1,34 +1,44 @@
-# Netlify config para la app cliente del Mundial.
-# Netlify lo lee porque el sitio tiene base directory = "mundial-app"
+# Netlify configuration for the Expedición Mundial client PWA.
+# The two concerns: (1) make sure HTML and the JS bundle never sit in
+# browser cache long enough to serve stale UI when we ship a fix, and
+# (2) let static assets be cached aggressively because they rarely change.
 
 [build]
   publish = "."
 
-# CRÍTICO: el service worker no debe cachearse.
-# Si Netlify lo cachea, los clientes quedan con la versión vieja para siempre
-# y no reciben updates aunque vos hagas deploy.
+# HTML and root never cached.
 [[headers]]
-  for = "/service-worker.js"
+  for = "/*.html"
   [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
-# CRÍTICO: el manifest necesita content-type correcto para que iOS lo reconozca
-# y permita "Agregar a inicio" como PWA.
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# App bundle: always revalidate.
+[[headers]]
+  for = "/app.min.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Service worker MUST never be cached.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, max-age=0"
+    Service-Worker-Allowed = "/"
+
+# Manifest
 [[headers]]
   for = "/manifest.webmanifest"
   [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
     Content-Type = "application/manifest+json"
-    Cache-Control = "public, max-age=3600"
 
-# Los íconos pueden cachearse fuerte (no cambian)
+# Long-cache static assets.
 [[headers]]
   for = "/icons/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
-# El bundle minificado puede cachearse mientras el HTML referencie esta versión.
-# Cuando rebuildies, cambiá el nombre del archivo o agregale un query param.
-[[headers]]
-  for = "/app.min.js"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"

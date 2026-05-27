@@ -59,17 +59,6 @@
 <body>
   <div id="root"></div>
 
-  <!-- Register service worker for PWA offline support. Silently ignores
-       if the host doesn't serve from HTTPS or service workers are disabled. -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .catch(e => console.warn('SW register failed:', e));
-      });
-    }
-  </script>
-
   <!-- Production builds of React (faster than dev) -->
   <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
@@ -87,5 +76,50 @@
 
     <!-- Pre-bundled app (esbuild, minified). Source: em-app.jsx -->
   <script src="app.min.js"></script>
+
+  <!-- Service worker registration. The SW handles cache busting for fresh
+       deploys (network-first on HTML/JS) and offline support (cache-first
+       for assets). When a new SW becomes waiting, we just reload — without
+       in-app banner integration the user gets the new version on the next
+       refresh / app re-open / focus-back from background. -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          window.__SW_REGISTRATION = reg;
+          // When a new SW takes control, reload once so the user sees the
+          // freshest assets without manual intervention.
+          let reloaded = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (reloaded) return;
+            reloaded = true;
+            window.location.reload();
+          });
+          // If a new SW is already waiting at mount time, activate it now.
+          if (reg.waiting) {
+            reg.waiting.postMessage('SKIP_WAITING');
+          }
+          // Watch for new versions and activate them as soon as installed.
+          reg.addEventListener('updatefound', () => {
+            const nw = reg.installing;
+            if (!nw) return;
+            nw.addEventListener('statechange', () => {
+              if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                nw.postMessage('SKIP_WAITING');
+              }
+            });
+          });
+          // Trigger update checks: now, on focus, and every 5 minutes.
+          const checkForUpdate = () => reg.update().catch(() => {});
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') checkForUpdate();
+          });
+          setInterval(checkForUpdate, 5 * 60 * 1000);
+        }).catch((err) => {
+          console.warn('Service worker registration failed:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
