@@ -10294,19 +10294,24 @@ textarea:focus-visible {
                 <template x-for="m in tripMembers.filter(m => m.role === 'operator')" :key="m.id">
                   <div class="v5-member-row">
                     <span class="v5-member-avatar" :class="m.user_id === authUser?.id ? 'me' : ''">
-                      <span x-text="(m.invited_email || 'U').substring(0, 1).toUpperCase()"></span>
+                      <span x-text="((m.user_full_name || m.user_email || m.invited_email || 'U').trim().substring(0, 1)).toUpperCase()"></span>
                     </span>
                     <div class="v5-member-body">
                       <div class="v5-member-name">
                         <span x-show="m.user_id === authUser?.id" x-text="identity"></span>
-                        <span x-show="m.user_id && m.user_id !== authUser?.id">Operador · <code style="font-family: 'JetBrains Mono', monospace; font-size: 10px;" x-text="m.user_id.substring(0, 8)"></code></span>
-                        <span x-show="!m.user_id && m.invited_email" x-text="m.invited_email"></span>
+                        <span x-show="m.user_id !== authUser?.id && m.user_full_name" x-text="m.user_full_name"></span>
+                        <span x-show="m.user_id !== authUser?.id && !m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email"></span>
                         <span class="v5-member-self-tag" x-show="m.user_id === authUser?.id">vos</span>
                         <span class="v5-member-pending-tag" x-show="!m.user_id">invitado pendiente</span>
                       </div>
-                      <div class="v5-member-meta">
-                        <span>agregado </span>
-                        <span x-text="relativeTime(m.joined_at)"></span>
+                      <div class="v5-member-meta" style="display: flex; flex-direction: column; gap: 2px;">
+                        <span x-show="m.user_id !== authUser?.id && m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email" style="font-family: 'JetBrains Mono', monospace; font-size: 11px;"></span>
+                        <span>
+                          <span x-show="m.last_sign_in_at && m.user_id !== authUser?.id">Última entrada </span>
+                          <span x-show="m.user_id === authUser?.id">agregado </span>
+                          <span x-show="!m.last_sign_in_at && m.user_id !== authUser?.id">Invitado </span>
+                          <span x-text="relativeTime((m.user_id !== authUser?.id ? m.last_sign_in_at : null) || m.joined_at)"></span>
+                        </span>
                       </div>
                     </div>
                     <button class="v5-member-remove" @click="removeMember(m.id)" :title="m.user_id === authUser?.id ? 'Quitarme del viaje' : 'Quitar este operador'">
@@ -10335,16 +10340,21 @@ textarea:focus-visible {
                 <template x-for="m in tripMembers.filter(m => m.role === 'client')" :key="m.id">
                   <div class="v5-member-row">
                     <span class="v5-member-avatar">
-                      <span x-text="(m.invited_email || m.user_id || 'H').substring(0, 1).toUpperCase()"></span>
+                      <span x-text="((m.user_full_name || m.user_email || m.invited_email || 'H').trim().substring(0, 1)).toUpperCase()"></span>
                     </span>
                     <div class="v5-member-body">
                       <div class="v5-member-name">
-                        <span x-show="m.invited_email" x-text="m.invited_email"></span>
-                        <span x-show="!m.invited_email && m.user_id">Huésped · <code style="font-family: 'JetBrains Mono', monospace; font-size: 10px;" x-text="m.user_id.substring(0, 8)"></code></span>
+                        <span x-show="m.user_full_name" x-text="m.user_full_name"></span>
+                        <span x-show="!m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email"></span>
+                        <span class="v5-member-pending-tag" x-show="!m.last_sign_in_at" style="background: #FEF3C7; color: #92400E;">no entró aún</span>
                       </div>
-                      <div class="v5-member-meta">
-                        <span>agregado </span>
-                        <span x-text="relativeTime(m.joined_at)"></span>
+                      <div class="v5-member-meta" style="display: flex; flex-direction: column; gap: 2px;">
+                        <span x-show="m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email" style="font-family: 'JetBrains Mono', monospace; font-size: 11px;"></span>
+                        <span>
+                          <span x-show="m.last_sign_in_at">Última entrada </span>
+                          <span x-show="!m.last_sign_in_at">Invitado </span>
+                          <span x-text="relativeTime(m.last_sign_in_at || m.joined_at)"></span>
+                        </span>
                       </div>
                     </div>
                     <button class="v5-member-remove" @click="removeMember(m.id)" title="Quitar acceso a este huésped">
@@ -12462,23 +12472,16 @@ function app() {
 
     // === TRIP MEMBERS ===
     // List, add, remove members of the current trip. Used by the share section
-    // in the meta editor.
+    // in the meta editor. We use get_trip_members_with_user_info() RPC so we
+    // can show full_name + last_sign_in_at (data that lives in auth.users
+    // and is not reachable from the client via direct table queries).
     async loadTripMembers() {
       if (!this.TRIP_ID || !this._client) return;
       this.tripMembersLoading = true;
       try {
-        // Fetch memberships with embedded user info via auth.users join
         const { data, error } = await this._client
-          .from('trip_members')
-          .select('id, user_id, role, joined_at, invited_email')
-          .eq('trip_id', this.TRIP_ID);
+          .rpc('get_trip_members_with_user_info', { p_trip_id: this.TRIP_ID });
         if (error) throw error;
-        // For each member, also fetch their email + display_name from auth.users.
-        // auth schema isn't directly queryable from the client, so we rely on the
-        // member's own row in `auth.users` being readable. Workaround: store the
-        // user info we already know (current user is in auth.uid()), and for
-        // other members just show invited_email or "Sin nombre".
-        // For now show whoever we have via direct user_id reference; richer UX next iteration.
         this.tripMembers = data || [];
       } catch (e) {
         console.warn('loadTripMembers failed:', e);
