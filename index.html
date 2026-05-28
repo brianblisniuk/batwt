@@ -34,35 +34,102 @@
 </script>
 <style>
 :root {
+  /* ===== V5 CANONICAL TOKENS ===== */
+  /* Surfaces */
+  --surface-0: #f3ebdc;
+  --surface-1: #faf6ee;
+  --surface-2: #f1e9d8;
+  --surface-3: #e9dfca;
+
+  /* Text */
+  --text-1: #1c1410;
+  --text-2: #4a3a30;
+  --text-3: #8b7868;
+  --text-4: #c4b5a3;
+
+  /* Lines */
+  --line: rgba(28,20,16,0.10);
+  --line-strong: rgba(28,20,16,0.22);
+
+  /* Brand · accent (V5) */
+  --accent: #2563eb;
+  --accent-soft: #60a5fa;
+  --accent-deep: #1d4ed8;
+
+  /* Gold / Olive */
+  --gold-v5: #b8893a;
+  --gold-soft-v5: #d4a85a;
+  --olive-v5: #5a6b3a;
+  --olive-deep: #3c6b3c;
+
+  /* Tints (V5 opacities) */
+  --tint-ok: rgba(60,107,60,0.10);
+  --tint-warn: rgba(184,137,58,0.12);
+  --tint-bad: rgba(168,42,31,0.10);
+  --tint-info: rgba(58,90,139,0.10);
+  --tint-accent: rgba(37,99,235,0.10);
+
+  /* Shadows (V5) */
+  --shadow-1: 0 1px 2px rgba(28,20,16,0.06);
+  --shadow-2: 0 2px 4px rgba(28,20,16,0.06), 0 8px 24px rgba(28,20,16,0.08);
+  --shadow-3: 0 8px 16px rgba(28,20,16,0.10), 0 24px 48px rgba(28,20,16,0.14);
+
+  /* Geometry · radius */
+  --radius: 6px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+
+  /* Geometry · layout */
+  --sidebar-w: 240px;
+  --topbar-h: 60px;
+  --bottomnav-h: 68px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Effects */
+  --grain-opacity: 0.32;
+  --noise-blend: multiply;
+
+  /* ===== LEGACY STANDALONE (sin equivalente V5, o valor distinto) ===== */
+  /* Backgrounds */
   --bg: #f5efe5;
-  --paper: #faf6ee;
-  --paper-warm: #f1e9d8;
-  --ink: #1c1410;
-  --ink-soft: #4a3a30;
-  --ink-mute: #8b7868;
-  --ink-faint: #c4b5a3;
+  --cream: #f0e6d2;
+
+  /* Brand palette legacy */
   --terracotta: #b8512e;
   --terracotta-soft: #d97851;
   --borgona: #6e1a1f;
   --borgona-deep: #3d0d11;
-  --gold: #b8893a;
-  --gold-soft: #d4a85a;
-  --olive: #5a6b3a;
-  --cream: #f0e6d2;
-  --rule: rgba(28, 20, 16, 0.10);
-  --rule-strong: rgba(28, 20, 16, 0.22);
-  --rule-ink: #1c1410;
-  --ok: #3c6b3c;
-  --ok-bg: rgba(60, 107, 60, 0.08);
-  --warn: #b8893a;
-  --warn-bg: rgba(184, 137, 58, 0.10);
+
+  /* Semantic (sin equivalente V5) */
   --bad: #a82a1f;
-  --bad-bg: rgba(168, 42, 31, 0.08);
   --info: #3a5a8b;
+
+  /* Semantic backgrounds (opacidades legacy, distintas de --tint-*) */
+  --ok-bg: rgba(60, 107, 60, 0.08);
+  --warn-bg: rgba(184, 137, 58, 0.10);
+  --bad-bg: rgba(168, 42, 31, 0.08);
   --info-bg: rgba(58, 90, 139, 0.08);
+
+  /* Shadows legacy (opacidades menores que --shadow-1/2/3) */
   --shadow-sm: 0 1px 2px rgba(28,20,16,0.04);
   --shadow: 0 1px 2px rgba(28,20,16,0.04), 0 4px 12px rgba(28,20,16,0.06);
   --shadow-lg: 0 4px 8px rgba(28,20,16,0.06), 0 16px 32px rgba(28,20,16,0.10);
+
+  /* ===== LEGACY ALIASES → V5 (valor idéntico en light, espeja dark mode) ===== */
+  --paper: var(--surface-1);
+  --paper-warm: var(--surface-2);
+  --ink: var(--text-1);
+  --ink-soft: var(--text-2);
+  --ink-mute: var(--text-3);
+  --ink-faint: var(--text-4);
+  --rule: var(--line);
+  --rule-strong: var(--line-strong);
+  --rule-ink: var(--text-1);
+  --gold: var(--gold-v5);
+  --gold-soft: var(--gold-soft-v5);
+  --olive: var(--olive-v5);
+  --warn: var(--gold-v5);
+  --ok: var(--olive-deep);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -1445,45 +1512,10 @@ main { padding: 20px; max-width: none; }
 }
 
 /* ==========================================================================
-   V5a · Shell · Tokens · Dark mode · Pantalla "Hoy" · Drawer · Confirm · Toast
+   V5a · Shell · Dark mode · Pantalla "Hoy" · Drawer · Confirm · Toast
+   (Design tokens consolidados arriba en el primer :root)
    ========================================================================== */
 
-:root {
---surface-0: #f3ebdc;
---surface-1: #faf6ee;
---surface-2: #f1e9d8;
---surface-3: #e9dfca;
---line: rgba(28,20,16,0.10);
---line-strong: rgba(28,20,16,0.22);
---text-1: #1c1410;
---text-2: #4a3a30;
---text-3: #8b7868;
---text-4: #c4b5a3;
---accent: #2563eb;
---accent-soft: #60a5fa;
---accent-deep: #1d4ed8;
---gold-v5: #b8893a;
---gold-soft-v5: #d4a85a;
---olive-v5: #5a6b3a;
---olive-deep: #3c6b3c;
---tint-ok: rgba(60,107,60,0.10);
---tint-warn: rgba(184,137,58,0.12);
---tint-bad: rgba(168,42,31,0.10);
---tint-info: rgba(58,90,139,0.10);
---tint-accent: rgba(37,99,235,0.10);
---shadow-1: 0 1px 2px rgba(28,20,16,0.06);
---shadow-2: 0 2px 4px rgba(28,20,16,0.06), 0 8px 24px rgba(28,20,16,0.08);
---shadow-3: 0 8px 16px rgba(28,20,16,0.10), 0 24px 48px rgba(28,20,16,0.14);
---radius: 6px;
---radius-lg: 10px;
---radius-pill: 999px;
---grain-opacity: 0.32;
---noise-blend: multiply;
---sidebar-w: 240px;
---topbar-h: 60px;
---bottomnav-h: 68px;
---safe-bottom: env(safe-area-inset-bottom, 0px);
-}
 
 [data-theme="dark"] {
 --surface-0: #16110d;
