@@ -12228,6 +12228,81 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
 }
 
 /* =============================================================================
+   REDISEÑO · Phase 16 · Top nav inline operator-wide
+   Nav horizontal con 4 botones: Viajes / Leads / Biblioteca / Regiones.
+   Vive entre el brand y los actions del topbar. Active = laurel-deep pill.
+   ============================================================================= */
+
+.v5-topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+.v5-topnav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+}
+.v5-topnav-btn:hover:not(:disabled) {
+  background: var(--bone);
+  color: var(--ink);
+}
+[data-theme="dark"] .v5-topnav-btn:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.v5-topnav-btn.active {
+  background: var(--laurel-deep);
+  color: var(--bone);
+  font-weight: 600;
+}
+.v5-topnav-btn.active:hover { background: var(--laurel-deep); }
+[data-theme="dark"] .v5-topnav-btn.active {
+  background: var(--accent);
+  color: var(--surface-0);
+}
+[data-theme="dark"] .v5-topnav-btn.active:hover { background: var(--accent); }
+
+.v5-topnav-btn:disabled {
+  color: var(--stone-soft);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.v5-topnav-count {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0;
+  opacity: 0.65;
+}
+.v5-topnav-btn.active .v5-topnav-count {
+  opacity: 0.75;
+  color: var(--brass-soft);
+}
+[data-theme="dark"] .v5-topnav-btn.active .v5-topnav-count {
+  color: var(--surface-0);
+  opacity: 0.7;
+}
+
+/* Mobile: la nav inline desaparece (hay bottom nav abajo) */
+@media (max-width: 880px) {
+  .v5-topbar-nav { display: none; }
+}
+
+/* =============================================================================
    REDISEÑO · Phase 9 · Pestaña Hoy (Today/Dashboard)
    Reemplaza el gradiente marrón legacy por hero card laurel-deep limpio
    y pulido alineado con el sistema nuevo.
@@ -12558,10 +12633,31 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
       <button class="v5-icon-btn" @click="navigateToHome()" style="margin-left: -8px;" title="Volver a la home">
         <span class="v5-topbar-brand-mark">BA × <em>TWT</em></span>
       </button>
-      <span class="v5-topbar-sub" x-show="currentView === 'trip'" x-text="`${data.meta.region || data.meta.tripShortLabel || ''} · ${data.meta.shortPeriod || ''}`"></span>
-      <span class="v5-topbar-sub" x-show="currentView === 'home'" x-text="(operator?.brand_config?.tagline || '')"></span>
-      <span class="v5-topbar-sub" x-show="currentView === 'library'">Biblioteca · proveedores compartidos</span>
     </div>
+
+    <!-- Top nav inline operator-wide (Phase 16) -->
+    <nav class="v5-topbar-nav" aria-label="Navegación principal">
+      <button class="v5-topnav-btn" :class="{active: currentView === 'home' || currentView === 'trip'}"
+              @click="navigateToHome()">
+        <span>Viajes</span>
+        <span class="v5-topnav-count" x-show="tripList && tripList.length > 0" x-text="tripList.length"></span>
+      </button>
+      <button class="v5-topnav-btn" :class="{active: currentView === 'trip' && tab === 'leads'}"
+              :disabled="currentView !== 'trip'"
+              :title="currentView !== 'trip' ? 'Abrí un viaje para ver sus leads' : 'Leads del viaje'"
+              @click="if (currentView === 'trip') { tab = 'leads'; loadLeads(); }">
+        <span>Leads</span>
+      </button>
+      <button class="v5-topnav-btn" :class="{active: currentView === 'library'}"
+              @click="navigateToLibrary()">
+        <span>Biblioteca</span>
+        <span class="v5-topnav-count" x-show="library && library.length > 0" x-text="library.length"></span>
+      </button>
+      <button class="v5-topnav-btn" disabled title="Próximamente">
+        <span>Regiones</span>
+      </button>
+    </nav>
+
     <div class="v5-topbar-spacer"></div>
     <div class="v5-topbar-actions">
       <span class="v5-sync-pill" x-show="currentView === 'trip'" :title="syncLabel + (lastUpdatedBy ? (' · ' + lastUpdatedBy + ' ' + relativeTime(lastUpdatedAt)) : '')">
