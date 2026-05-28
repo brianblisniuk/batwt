@@ -11451,6 +11451,444 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
 [data-theme="dark"] .v5c-deploy-note p code { background: var(--surface-1) !important; }
 
 /* =============================================================================
+   REDISEÑO · Phase 14 · Modales
+   Confirm, Clone, Save/Apply template, Lib import, Places scan,
+   Manual pin, Client invite result.
+   ============================================================================= */
+
+/* Overlay (confirm uses .v5-confirm-overlay; otros usan x-if con backdrop body click) */
+.v5-confirm-overlay {
+  background: rgba(28, 20, 16, 0.45) !important;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 1100;
+}
+[data-theme="dark"] .v5-confirm-overlay {
+  background: rgba(0, 0, 0, 0.65) !important;
+}
+
+/* Confirm dialog (chico, decisión sí/no) */
+.v5-confirm {
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  padding: 28px !important;
+  max-width: 440px !important;
+  box-shadow: 0 24px 60px rgba(28,20,16,0.18) !important;
+}
+[data-theme="dark"] .v5-confirm { background: var(--surface-1) !important; }
+.v5-confirm h3 {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+  color: var(--ink) !important;
+  margin: 0 0 10px !important;
+  line-height: 1.2 !important;
+}
+.v5-confirm p {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: normal !important;
+  font-size: 14px !important;
+  color: var(--ink-2) !important;
+  line-height: 1.5 !important;
+  margin: 0 0 24px !important;
+}
+.v5-confirm p strong { color: var(--ink); font-weight: 600; }
+.v5-confirm-actions {
+  display: flex !important;
+  gap: 8px !important;
+  justify-content: flex-end !important;
+}
+
+/* === Generic Modal (clone, template, lib import, etc.) === */
+/* La mayoría usa <aside class="v5-modal ..."> sin overlay wrap.
+   Forzo posicionamiento centrado + dim de background body via ::before
+   sobre html cuando el modal está visible. */
+.v5-modal {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 80px rgba(28,20,16,0.22) !important;
+  width: min(640px, calc(100vw - 32px)) !important;
+  max-height: calc(100vh - 64px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 1100 !important;
+  animation: v5-modalIn 0.22s cubic-bezier(0.22,1,0.36,1);
+}
+[data-theme="dark"] .v5-modal { background: var(--surface-1) !important; }
+
+.v5-modal-header {
+  padding: 18px 24px !important;
+  border-bottom: 1px solid var(--line) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.v5-modal-title {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+  color: var(--ink) !important;
+  margin: 0;
+  line-height: 1.2;
+}
+.v5-modal-title em {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: italic !important;
+  color: var(--laurel) !important;
+  font-weight: 500 !important;
+}
+[data-theme="dark"] .v5-modal-title em { color: var(--accent) !important; }
+
+.v5-modal-body {
+  padding: 20px 24px !important;
+  overflow-y: auto !important;
+  flex: 1;
+}
+.v5-modal-body .hint {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: italic !important;
+  font-size: 13px !important;
+  color: var(--stone) !important;
+  line-height: 1.55;
+}
+.v5-modal-body .hint strong {
+  font-style: normal;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.v5-modal-foot {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  padding: 16px 24px !important;
+  border-top: 1px solid var(--line) !important;
+  flex-shrink: 0;
+  background: var(--white) !important;
+  border-radius: 0 0 16px 16px;
+}
+[data-theme="dark"] .v5-modal-foot { background: var(--surface-1) !important; }
+
+/* Clone options checkbox list */
+.v5-clone-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.v5-clone-option {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  background: var(--bone) !important;
+  border-radius: 10px !important;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.v5-clone-option:hover { background: var(--bone-2) !important; }
+[data-theme="dark"] .v5-clone-option { background: var(--surface-2) !important; }
+.v5-clone-option input[type="checkbox"] {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--laurel);
+}
+.v5-clone-option-text {
+  flex: 1;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  color: var(--ink) !important;
+  line-height: 1.4;
+}
+.v5-clone-option-text strong {
+  font-weight: 600;
+  color: var(--ink);
+  display: block;
+}
+.v5-clone-option-text small {
+  display: block;
+  font-size: 11px;
+  color: var(--stone);
+  margin-top: 2px;
+}
+
+/* Modal-specific widths */
+.v5-modal-lib-import      { width: min(720px, calc(100vw - 32px)) !important; max-height: 80vh !important; }
+.v5-modal-clone           { width: min(540px, calc(100vw - 32px)) !important; }
+.v5-modal-template        { width: min(480px, calc(100vw - 32px)) !important; }
+.v5-modal-template-picker { width: min(560px, calc(100vw - 32px)) !important; max-height: 80vh !important; }
+
+/* === Places Scan Modal === */
+.v5-ps-modal {
+  width: min(880px, calc(100vw - 32px)) !important;
+  max-height: 86vh !important;
+}
+.v5-ps-head {
+  padding: 20px 26px !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+.v5-ps-head h2 {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+  color: var(--ink) !important;
+  margin: 0 0 4px !important;
+}
+.v5-ps-head h2 em {
+  font-style: italic !important;
+  color: var(--laurel) !important;
+  font-weight: 500 !important;
+}
+[data-theme="dark"] .v5-ps-head h2 em { color: var(--accent) !important; }
+.v5-ps-sub {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: italic !important;
+  font-size: 13px !important;
+  color: var(--stone) !important;
+  line-height: 1.5;
+}
+
+.v5-ps-progress { padding: 28px 26px !important; }
+.v5-ps-pbar {
+  height: 6px !important;
+  background: var(--bone-2) !important;
+  border-radius: 3px;
+  overflow: hidden;
+}
+[data-theme="dark"] .v5-ps-pbar { background: var(--surface-2) !important; }
+.v5-ps-pbar-fill {
+  height: 100%;
+  background: var(--laurel) !important;
+  transition: width 0.3s ease;
+}
+[data-theme="dark"] .v5-ps-pbar-fill { background: var(--accent) !important; }
+.v5-ps-pmeta {
+  margin-top: 10px;
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 11px !important;
+  color: var(--stone) !important;
+  letter-spacing: 0.06em;
+}
+
+.v5-ps-body {
+  padding: 18px 26px !important;
+  overflow-y: auto;
+  flex: 1;
+}
+.v5-ps-actions-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.v5-ps-count {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 12px !important;
+  color: var(--stone) !important;
+  letter-spacing: 0.04em;
+}
+.v5-ps-count strong { color: var(--laurel) !important; font-weight: 600; }
+[data-theme="dark"] .v5-ps-count strong { color: var(--accent) !important; }
+
+.v5-ps-rows { display: flex; flex-direction: column; gap: 8px; }
+.v5-ps-row {
+  display: grid;
+  grid-template-columns: 22px 1fr auto auto;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px;
+}
+.v5-ps-row.found {
+  background: var(--laurel-tint) !important;
+  border-color: transparent !important;
+}
+.v5-ps-row.not-found {
+  background: var(--bad-bg) !important;
+  border-color: transparent !important;
+}
+.v5-ps-row.found.skip { opacity: 0.5; }
+[data-theme="dark"] .v5-ps-row { background: var(--surface-2) !important; }
+[data-theme="dark"] .v5-ps-row.found { background: var(--tint-ok) !important; }
+[data-theme="dark"] .v5-ps-row.not-found { background: var(--tint-bad) !important; }
+
+.v5-ps-foot {
+  padding: 16px 26px !important;
+  border-top: 1px solid var(--line) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center;
+}
+.v5-ps-foot-info {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 11px !important;
+  color: var(--stone) !important;
+  letter-spacing: 0.04em;
+}
+.v5-ps-foot-actions { display: flex; gap: 8px; }
+
+/* === Manual Pin Modal === */
+.v5-mp-modal {
+  width: min(720px, calc(100vw - 32px)) !important;
+  height: min(620px, calc(100vh - 64px)) !important;
+  max-height: calc(100vh - 64px) !important;
+}
+.v5-mp-head {
+  padding: 18px 22px !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+.v5-mp-head h2 {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+  color: var(--ink) !important;
+  margin: 0 0 2px !important;
+}
+.v5-mp-head h2 em {
+  font-style: italic !important;
+  color: var(--laurel) !important;
+  font-weight: 500 !important;
+}
+[data-theme="dark"] .v5-mp-head h2 em { color: var(--accent) !important; }
+.v5-mp-sub {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: italic !important;
+  font-size: 13px !important;
+  color: var(--stone) !important;
+}
+.v5-mp-mapwrap {
+  flex: 1;
+  min-height: 0;
+  background: var(--bone-2) !important;
+}
+.v5-mp-foot {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 14px 22px !important;
+  border-top: 1px solid var(--line) !important;
+}
+.v5-mp-coords {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 11px !important;
+  color: var(--ink-2) !important;
+  letter-spacing: 0.04em;
+}
+.v5-mp-coords code {
+  font-family: 'Geist Mono', monospace !important;
+  padding: 2px 7px;
+  background: var(--bone) !important;
+  border-radius: 5px;
+  color: var(--ink) !important;
+}
+[data-theme="dark"] .v5-mp-coords code { background: var(--surface-2) !important; }
+.v5-mp-coords-empty {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: italic !important;
+  font-size: 12px !important;
+  color: var(--stone) !important;
+}
+.v5-mp-coords-empty em {
+  font-style: italic !important;
+  color: var(--stone) !important;
+}
+
+/* === Client invite result modal === */
+.v5-invite-result {
+  width: min(540px, calc(100vw - 32px)) !important;
+}
+.v5-invite-result h3 {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  margin: 0 0 12px !important;
+  color: var(--ink) !important;
+}
+.v5-invite-cred {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bone) !important;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+[data-theme="dark"] .v5-invite-cred { background: var(--surface-2) !important; }
+.v5-invite-cred .lbl {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--stone) !important;
+}
+.v5-invite-cred .val {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 13px !important;
+  color: var(--ink) !important;
+  word-break: break-all;
+}
+
+/* Generic modal forms */
+.v5-modal-body label {
+  display: block;
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--stone) !important;
+  margin-bottom: 6px;
+  margin-top: 12px;
+  font-weight: 500;
+}
+.v5-modal-body label:first-of-type { margin-top: 0; }
+.v5-modal-body input[type="text"],
+.v5-modal-body input[type="email"],
+.v5-modal-body input[type="number"],
+.v5-modal-body input[type="date"],
+.v5-modal-body textarea,
+.v5-modal-body select {
+  width: 100%;
+  padding: 10px 12px !important;
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  color: var(--ink) !important;
+  outline: none;
+}
+[data-theme="dark"] .v5-modal-body input,
+[data-theme="dark"] .v5-modal-body textarea,
+[data-theme="dark"] .v5-modal-body select {
+  background: var(--surface-2) !important;
+}
+.v5-modal-body input:focus,
+.v5-modal-body textarea:focus,
+.v5-modal-body select:focus {
+  border-color: var(--laurel) !important;
+}
+[data-theme="dark"] .v5-modal-body input:focus,
+[data-theme="dark"] .v5-modal-body textarea:focus {
+  border-color: var(--accent) !important;
+}
+
+/* =============================================================================
    REDISEÑO · Phase 9 · Pestaña Hoy (Today/Dashboard)
    Reemplaza el gradiente marrón legacy por hero card laurel-deep limpio
    y pulido alineado con el sistema nuevo.
