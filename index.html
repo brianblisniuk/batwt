@@ -8204,6 +8204,245 @@ body {
     radial-gradient(circle at 5% 90%, rgba(61,90,62,0.04) 0%, transparent 45%);
 }
 
+/* =============================================================================
+   REDISEÑO · Phase 2 · Home view
+   ============================================================================= */
+
+.v5-home-head {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr;
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 24px;
+}
+@media (max-width: 880px) {
+  .v5-home-head { grid-template-columns: 1fr; gap: 16px; }
+}
+.v5-home-head-text { min-width: 0; }
+.v5-home-nav { display: none; } /* nav button viejo, lo manejamos desde topbar/nav futura */
+
+/* === KPI tiles row (en .v5-home-head, columna derecha) === */
+.v5-home-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 720px) {
+  .v5-home-kpis { grid-template-columns: repeat(2, 1fr); }
+}
+.v5-kpi-tile {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  min-width: 0;
+}
+.v5-kpi-tile.t-ok      { background: var(--laurel-tint); border-color: transparent; }
+.v5-kpi-tile.t-white   { background: var(--white); }
+.v5-kpi-tile.t-warn    { background: var(--warn-bg); border-color: transparent; }
+.v5-kpi-tile.t-info    { background: var(--info-bg); border-color: transparent; }
+.v5-kpi-tile.t-danger  { background: var(--bad-bg); border-color: transparent; }
+.v5-kpi-tile.t-neutral { background: var(--bone); border-color: transparent; }
+[data-theme="dark"] .v5-kpi-tile.t-white { background: var(--surface-2); }
+.v5-kpi-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--stone);
+}
+.v5-kpi-value {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin-top: 4px;
+  color: var(--ink);
+}
+.v5-kpi-tile.t-ok     .v5-kpi-value { color: var(--laurel); }
+.v5-kpi-tile.t-warn   .v5-kpi-value { color: var(--brass-deep); }
+.v5-kpi-tile.t-danger .v5-kpi-value { color: var(--bad); }
+.v5-kpi-tile.t-info   .v5-kpi-value { color: var(--info); }
+[data-theme="dark"] .v5-kpi-tile.t-ok     .v5-kpi-value { color: var(--accent); }
+[data-theme="dark"] .v5-kpi-tile.t-warn   .v5-kpi-value { color: var(--brass); }
+.v5-kpi-sub {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 11px;
+  color: var(--ink-2);
+  margin-top: 2px;
+  min-height: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* === Hero card del viaje activo (laurel-deep) === */
+.v5-home-hero {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+@media (max-width: 880px) {
+  .v5-home-hero { grid-template-columns: 1fr; }
+  .v5-home-hero-side { display: none; }
+}
+.v5-home-hero-main {
+  background: var(--laurel-deep);
+  color: var(--bone);
+  border-radius: 16px;
+  padding: 28px 32px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.v5-home-hero-main:hover { transform: translateY(-1px); }
+.v5-home-hero-main::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 90px;
+  background:
+    radial-gradient(ellipse at 30% 100%, rgba(61,90,62,0.4) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 100%, rgba(184,148,90,0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+.v5-home-hero-main > * { position: relative; z-index: 1; }
+.v5-home-hero-eyebrow {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.v5-home-hero-eyebrow::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--brass);
+  transform: rotate(45deg);
+  display: inline-block;
+  border-radius: 1px;
+}
+.v5-home-hero-title {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin: 0;
+  color: var(--bone);
+}
+.v5-home-hero-title em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--brass-soft);
+  font-weight: 400;
+}
+.v5-home-hero-meta {
+  margin-top: 8px;
+  font-size: 14px;
+  color: rgba(245,241,232,0.75);
+}
+.v5-home-hero-cta {
+  margin-top: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--bone);
+  color: var(--laurel-deep);
+  border: none;
+  border-radius: 10px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.v5-home-hero-cta:hover { background: var(--white); }
+.v5-home-hero-cta em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Side card: lista breve de "Otros próximos" o "Acceso rápido" */
+.v5-home-hero-side {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  min-width: 0;
+}
+.v5-home-hero-side-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+.v5-home-hero-side-title h3 {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--ink);
+}
+.v5-home-hero-side-action {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--laurel);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.v5-home-hero-side-action:hover { text-decoration: underline; text-underline-offset: 3px; }
+.v5-home-hero-quick {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.v5-home-hero-quick-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bone);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  border: none;
+  text-align: left;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+.v5-home-hero-quick-item:hover { background: var(--bone-2); }
+[data-theme="dark"] .v5-home-hero-quick-item { background: var(--surface-2); }
+[data-theme="dark"] .v5-home-hero-quick-item:hover { background: var(--surface-3); }
+.v5-home-hero-quick-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.v5-home-hero-quick-meta {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--stone);
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
 </style>
 
 </head>
@@ -8340,23 +8579,86 @@ body {
   <main class="v5-home" x-show="currentView === 'home'" x-cloak>
     <div class="v5-home-inner">
       <header class="v5-home-head">
-        <div class="v5-home-eyebrow"><span x-text="operator?.brand_config?.tagline || 'Blisniuk &amp; Amanov'"></span></div>
-        <h1 class="v5-home-title">
-          <span x-show="identity" x-text="(new Date().getHours() < 13 ? 'Buen día, ' : (new Date().getHours() < 20 ? 'Buenas tardes, ' : 'Buenas noches, '))"></span>
-          <em x-text="identity || 'Hola'"></em>.
-        </h1>
-        <p class="v5-home-sub">
-          <span x-show="tripList.length > 0"><span x-text="tripList.length"></span> <span x-text="tripList.length === 1 ? 'viaje' : 'viajes'"></span> · elegí uno o creá uno nuevo.</span>
-          <span x-show="tripList.length === 0 && !tripListLoading">No hay viajes aún. Arrancá creando el primero.</span>
-          <span x-show="tripListLoading">Cargando viajes…</span>
-        </p>
-        <div class="v5-home-nav">
-          <button class="v5-home-nav-btn" @click="navigateToLibrary()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            Biblioteca de proveedores →
-          </button>
+        <div class="v5-home-head-text">
+          <div class="v5-home-eyebrow"><span x-text="operator?.brand_config?.tagline || 'Blisniuk &amp; Amanov · Operaciones'"></span></div>
+          <h1 class="v5-home-title">
+            <span x-show="identity" x-text="(new Date().getHours() < 13 ? 'Buen día, ' : (new Date().getHours() < 20 ? 'Buenas tardes, ' : 'Buenas noches, '))"></span>
+            <em x-text="identity || 'Hola'"></em>.
+          </h1>
+          <p class="v5-home-sub">
+            <span x-show="tripList.length > 0 && tripsByStatus.active.length > 0">Tenés <span x-text="tripsByStatus.active.length"></span> <span x-text="tripsByStatus.active.length === 1 ? 'viaje en curso' : 'viajes en curso'"></span>.</span>
+            <span x-show="tripList.length > 0 && tripsByStatus.active.length === 0"><span x-text="tripList.length"></span> <span x-text="tripList.length === 1 ? 'viaje' : 'viajes'"></span> · ninguno en curso ahora mismo.</span>
+            <span x-show="tripList.length === 0 && !tripListLoading">No hay viajes aún. Arrancá creando el primero.</span>
+            <span x-show="tripListLoading">Cargando viajes…</span>
+          </p>
+        </div>
+
+        <!-- KPI tiles (4 contadores con bg por estado) -->
+        <div class="v5-home-kpis" x-show="!tripListLoading && tripList.length > 0">
+          <div class="v5-kpi-tile t-ok">
+            <div class="v5-kpi-label">En curso</div>
+            <div class="v5-kpi-value" x-text="String(tripsByStatus.active.length).padStart(2,'0')"></div>
+            <div class="v5-kpi-sub" x-text="tripsByStatus.active[0]?.title || '—'"></div>
+          </div>
+          <div class="v5-kpi-tile t-white">
+            <div class="v5-kpi-label">Confirmados</div>
+            <div class="v5-kpi-value" x-text="String(tripsByStatus.confirmed.length).padStart(2,'0')"></div>
+            <div class="v5-kpi-sub" x-text="tripsByStatus.confirmed[0]?.title || 'sin próximos'"></div>
+          </div>
+          <div class="v5-kpi-tile t-warn">
+            <div class="v5-kpi-label">Planeando</div>
+            <div class="v5-kpi-value" x-text="String(tripsByStatus.planning.length + tripsByStatus.draft.length).padStart(2,'0')"></div>
+            <div class="v5-kpi-sub">borradores + en armado</div>
+          </div>
+          <div class="v5-kpi-tile t-neutral">
+            <div class="v5-kpi-label">Total</div>
+            <div class="v5-kpi-value" x-text="String(tripList.length).padStart(2,'0')"></div>
+            <div class="v5-kpi-sub"><span x-text="tripsByStatus.past.length"></span> pasados · <span x-text="tripsByStatus.archived.length"></span> archivados</div>
+          </div>
         </div>
       </header>
+
+      <!-- Hero card del viaje activo (sólo si hay uno) -->
+      <template x-if="tripsByStatus.active.length > 0">
+        <section class="v5-home-hero">
+          <div class="v5-home-hero-main" @click="navigateToTrip(tripsByStatus.active[0].id)" tabindex="0" @keydown.enter="navigateToTrip(tripsByStatus.active[0].id)">
+            <div class="v5-home-hero-eyebrow">
+              <span>Viaje activo</span>
+              <span x-show="tripCardCountdown(tripsByStatus.active[0])"> · <span x-text="tripCardCountdown(tripsByStatus.active[0])"></span></span>
+            </div>
+            <h2 class="v5-home-hero-title" x-text="tripsByStatus.active[0].title"></h2>
+            <div class="v5-home-hero-meta">
+              <span x-show="tripsByStatus.active[0].region_label" x-text="tripsByStatus.active[0].region_label"></span>
+              <span x-show="tripsByStatus.active[0].region_label"> · </span>
+              <span x-text="tripCardDates(tripsByStatus.active[0])"></span>
+              <span x-show="tripsByStatus.active[0].pax_count"> · <span x-text="tripsByStatus.active[0].pax_count"></span> pax</span>
+            </div>
+            <button class="v5-home-hero-cta" @click.stop="navigateToTrip(tripsByStatus.active[0].id)">
+              Abrir viaje <em>→</em>
+            </button>
+          </div>
+
+          <aside class="v5-home-hero-side">
+            <div class="v5-home-hero-side-title">
+              <h3>Próximos</h3>
+              <button class="v5-home-hero-side-action" @click="document.querySelector('.v5-home-group')?.scrollIntoView({ behavior: 'smooth' })" x-show="tripsByStatus.confirmed.length + tripsByStatus.planning.length > 0">Ver todos</button>
+            </div>
+            <div class="v5-home-hero-quick">
+              <template x-for="t in [...tripsByStatus.confirmed, ...tripsByStatus.planning].slice(0,4)" :key="t.id">
+                <button class="v5-home-hero-quick-item" @click="navigateToTrip(t.id)">
+                  <span class="v5-home-hero-quick-name" x-text="t.title"></span>
+                  <span class="v5-home-hero-quick-meta" x-text="tripCardCountdown(t) || tripCardDates(t)"></span>
+                </button>
+              </template>
+              <template x-if="tripsByStatus.confirmed.length + tripsByStatus.planning.length === 0">
+                <div class="v5-home-hero-quick-item" style="cursor: default; justify-content: center; color: var(--stone); font-size: 12px;">
+                  Sin viajes próximos
+                </div>
+              </template>
+            </div>
+          </aside>
+        </section>
+      </template>
 
       <!-- Grouped trip list -->
       <template x-for="group in [
