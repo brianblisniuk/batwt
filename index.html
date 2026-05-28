@@ -62,7 +62,9 @@
   --shadow-lg: 0 4px 8px rgba(28,20,16,0.06), 0 16px 32px rgba(28,20,16,0.10);
 }
 
-- { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
 
 html { scroll-behavior: smooth; }
 
@@ -8421,7 +8423,7 @@ textarea:focus-visible {
                 <!-- Travel chip · only between consecutive slots that both resolve coords -->
                 <template x-if="sIdx < day.slots.length - 1 && travelBetween(slot, day.slots[sIdx+1])">
                   <a class="v5b-travel-chip" :class="travelChipClass(travelBetween(slot, day.slots[sIdx+1])?.duration_min)"
-                     :href="travelGmapsUrl(slot, day.slots[sIdx+1])" target="_blank" rel="noopener"
+                     :href="travelGmapsUrl(slot, day.slots[sIdx+1])" target="_blank" rel="noopener noreferrer"
                      @click.stop
                      :title="travelBetween(slot, day.slots[sIdx+1])?.estimated ? 'Estimado · click para tiempo exacto en Google Maps' : 'Abrir ruta en Google Maps'">
                     <template x-if="travelBetween(slot, day.slots[sIdx+1])?.same_location">
@@ -8850,7 +8852,7 @@ textarea:focus-visible {
                     <a :href="provider.email ? 'mailto:' + provider.email : '#'" :class="{disabled: !provider.email}" :title="provider.email || 'Sin email'" aria-label="Email">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                     </a>
-                    <a :href="provider.web ? (provider.web.startsWith('http') ? provider.web : 'https://' + provider.web) : '#'" target="_blank" rel="noopener" :class="{disabled: !provider.web}" :title="provider.web || 'Sin web'" aria-label="Web">
+                    <a :href="provider.web ? (provider.web.startsWith('http') ? provider.web : 'https://' + provider.web) : '#'" target="_blank" rel="noopener noreferrer" :class="{disabled: !provider.web}" :title="provider.web || 'Sin web'" aria-label="Web">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                     </a>
                   </div>
@@ -8958,7 +8960,7 @@ textarea:focus-visible {
 </section>
 
 <!-- ====== CLIENTES (LEADS) ====== -->
-<section x-show="tab === 'leads'" x-init="loadLeads()">
+<section x-show="tab === 'leads'">
   <div class="section-header">
     <div>
       <h1>Clientes <em>funnel</em></h1>
@@ -9265,7 +9267,7 @@ textarea:focus-visible {
               </div>
             </div>
             <template x-if="dayFullRouteUrl(mapSelectedDay) !== '#'">
-              <a class="v5c-ruta-open-maps" :href="dayFullRouteUrl(mapSelectedDay)" target="_blank" rel="noopener" title="Abrir el día completo en Google Maps con todos los waypoints">
+              <a class="v5c-ruta-open-maps" :href="dayFullRouteUrl(mapSelectedDay)" target="_blank" rel="noopener noreferrer" title="Abrir el día completo en Google Maps con todos los waypoints">
                 🗺 Abrir día en Maps →
               </a>
             </template>
@@ -9383,7 +9385,7 @@ textarea:focus-visible {
               </div>
               <div class="v5c-bsh-actions">
                 <button class="btn btn-sm" @click="openSlotDrawer(mapBottomSheet.slotId); mapBottomSheet = null">Abrir slot →</button>
-                <a class="btn btn-sm btn-ghost" :href="mapBottomSheet.gmapsUrl" target="_blank" rel="noopener">Ver en Google Maps</a>
+                <a class="btn btn-sm btn-ghost" :href="mapBottomSheet.gmapsUrl" target="_blank" rel="noopener noreferrer">Ver en Google Maps</a>
               </div>
             </div>
           </template>
@@ -9473,7 +9475,7 @@ textarea:focus-visible {
           </div>
 
           <template x-if="p2p.from && p2p.to">
-            <a class="btn v5c-p2p-open" :href="p2pGmapsUrl()" target="_blank" rel="noopener">Abrir en Maps →</a>
+            <a class="btn v5c-p2p-open" :href="p2pGmapsUrl()" target="_blank" rel="noopener noreferrer">Abrir en Maps →</a>
           </template>
         </div>
 
@@ -10055,7 +10057,7 @@ textarea:focus-visible {
                 </span>
               </div>
               <div class="v5b-field" x-show="TRIP_ID === 'mundial-arg-2026'">
-                <a class="v5b-client-preview-btn" :href="'https://expedicionmundial.netlify.app/?preview=' + TRIP_ID + '&day=' + (data.itinerary.findIndex(d => d.id === drawerSlotDay?.id) + 1)" target="_blank" rel="noopener">
+                <a class="v5b-client-preview-btn" :href="'https://expedicionmundial.netlify.app/?preview=' + TRIP_ID + '&day=' + (data.itinerary.findIndex(d => d.id === drawerSlotDay?.id) + 1)" target="_blank" rel="noopener noreferrer">
                   Previsualizar como cliente →
                 </a>
                 <span class="v5b-client-hint">solo Mundial 2026 por ahora · multi-trip viene en Fase 4</span>
@@ -10130,7 +10132,7 @@ textarea:focus-visible {
                   <span class="v5b-att-spinner" x-show="att.uploading" aria-label="Subiendo">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-dasharray="42" stroke-dashoffset="32"/></svg>
                   </span>
-                  <a class="v5b-att-name" x-show="!att.uploading" :href="att.url" target="_blank" rel="noopener" x-text="att.name" :title="att.url"></a>
+                  <a class="v5b-att-name" x-show="!att.uploading" :href="att.url" target="_blank" rel="noopener noreferrer" x-text="att.name" :title="att.url"></a>
                   <span class="v5b-att-name" x-show="att.uploading" x-text="'Subiendo · ' + att.name"></span>
                   <span class="v5b-att-meta" x-show="!att.uploading && att.kind === 'file' && att.size" x-text="_humanSize(att.size)"></span>
                   <span class="v5b-att-meta v5b-att-meta-up" x-show="att.uploading">…</span>
@@ -10269,7 +10271,7 @@ textarea:focus-visible {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 Email
               </a>
-              <a class="v5b-action-btn" :href="drawerProvider.web ? (drawerProvider.web.startsWith('http') ? drawerProvider.web : 'https://' + drawerProvider.web) : '#'" target="_blank" rel="noopener" :style="!drawerProvider.web && 'opacity: 0.4; pointer-events: none;'">
+              <a class="v5b-action-btn" :href="drawerProvider.web ? (drawerProvider.web.startsWith('http') ? drawerProvider.web : 'https://' + drawerProvider.web) : '#'" target="_blank" rel="noopener noreferrer" :style="!drawerProvider.web && 'opacity: 0.4; pointer-events: none;'">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 Web
               </a>
@@ -10427,7 +10429,7 @@ textarea:focus-visible {
                   <span class="v5b-att-spinner" x-show="att.uploading" aria-label="Subiendo">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-dasharray="42" stroke-dashoffset="32"/></svg>
                   </span>
-                  <a class="v5b-att-name" x-show="!att.uploading" :href="att.url" target="_blank" rel="noopener" x-text="att.name" :title="att.url"></a>
+                  <a class="v5b-att-name" x-show="!att.uploading" :href="att.url" target="_blank" rel="noopener noreferrer" x-text="att.name" :title="att.url"></a>
                   <span class="v5b-att-name" x-show="att.uploading" x-text="'Subiendo · ' + att.name"></span>
                   <span class="v5b-att-meta" x-show="!att.uploading && att.kind === 'file' && att.size" x-text="_humanSize(att.size)"></span>
                   <span class="v5b-att-meta v5b-att-meta-up" x-show="att.uploading">…</span>
@@ -10760,7 +10762,7 @@ textarea:focus-visible {
                       <div class="v5-ps-col-label">Google sugiere</div>
                       <div x-text="r.found?.address || '—'"></div>
                       <div x-text="r.found?.phone || '— sin tel —'" class="muted"></div>
-                      <a x-show="r.found?.lat && r.found?.lon" :href="`https://www.google.com/maps?q=${r.found.lat},${r.found.lon}`" target="_blank" rel="noopener" class="v5-ps-coords">
+                      <a x-show="r.found?.lat && r.found?.lon" :href="`https://www.google.com/maps?q=${r.found.lat},${r.found.lon}`" target="_blank" rel="noopener noreferrer" class="v5-ps-coords">
                         📍 <span x-text="r.found?.lat?.toFixed(4) + ', ' + r.found?.lon?.toFixed(4)"></span> · ver →
                       </a>
                     </div>
@@ -11306,7 +11308,7 @@ textarea:focus-visible {
                             <div>
                               <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px;">Teléfono</div>
                               <div style="font-family: 'JetBrains Mono', monospace;">
-                                <a :href="`https://wa.me/${m.profile.preferred_phone.replace(/[^0-9]/g, '')}`" target="_blank" rel="noopener" x-text="m.profile.preferred_phone" style="color: var(--accent); text-decoration: none;"></a>
+                                <a :href="`https://wa.me/${m.profile.preferred_phone.replace(/[^0-9]/g, '')}`" target="_blank" rel="noopener noreferrer" x-text="m.profile.preferred_phone" style="color: var(--accent); text-decoration: none;"></a>
                               </div>
                             </div>
                           </template>
@@ -14682,6 +14684,7 @@ function app() {
         var res = await this._client.rpc('lead_full_detail', { p_lead_id: leadId });
         if (res.error) throw res.error;
         this.leadDrawerLead = (res.data && res.data.lead) || null;
+        if (this.leadDrawerLead) this.leadDrawerLead._newNote = '';
         this.leadDrawerEvents = (res.data && res.data.events) || [];
       } catch (e) {
         console.error('openLeadDrawer error:', e);
