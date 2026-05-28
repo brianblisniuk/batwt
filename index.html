@@ -12303,6 +12303,422 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
 }
 
 /* =============================================================================
+   REDISEÑO · Phase 18 · Cierre · 4 items finales
+   1) Print styles
+   2) Hoy sub-components (weather card)
+   3) Mapa skin (Leaflet popups + zoom controls)
+   4) Login split desktop con panel visual laurel-deep
+   ============================================================================= */
+
+/* ===== 1. Print styles (reescritos con sistema nuevo) ===== */
+@media print {
+  /* Reset background and force light mode regardless of theme */
+  html, body {
+    background: #FFFFFF !important;
+    color: #1A1A1A !important;
+  }
+  body::before { display: none !important; }
+  body { background-image: none !important; }
+
+  /* Hide all UI chrome */
+  .v5-topbar, .v5-topbar-nav, .v5-sidebar, .v5-bottomnav, .v5-drawer, .v5-drawer-overlay,
+  .v5-toast-stack, .v5-confirm-overlay, .v5-mention-banner, .v5-modal, .v5-fab,
+  .app-header, .v5-trip-subheader, .v5-home-hero-side, .v5-home-hero-cta,
+  .v5b-toolbar, .v5b-segmented, .v5-segmented, .v5d-tb-view, .v5d-tb-sort,
+  .v5d-michelin-chip, .v5b-search-wrap, .v5c-currency-bar, .v5b-add-slot,
+  .v5b-day-delete, .v5b-day-chevron, .v5b-slot-handle, .v5b-slot-arrow,
+  .v5b-day-template-row, .v5b-comment-pill, .v5-day-strip,
+  .v5c-places-scan-banner, .v5c-library-promote-banner,
+  .v5c-snap-form, .v5c-set-card .actions, .v5c-set-card.danger,
+  .v5c-deploy-note { display: none !important; }
+
+  /* Show shell as plain block */
+  .v5-shell { display: block !important; }
+  .v5-content {
+    padding: 0 !important;
+    max-width: none !important;
+    width: auto !important;
+    margin: 0 !important;
+  }
+  .v5-home-inner { padding: 0 !important; max-width: none !important; width: auto !important; }
+
+  /* Typography: ensure Geist + reasonable sizes */
+  * {
+    font-family: 'Geist', Helvetica, Arial, sans-serif !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  .font-mono, .v5-trip-sub-stat-label, .v5-hoy-label, .v5d-stat .lb, .v5b-day-eyebrow,
+  .v5b-day-num::before { font-family: 'Geist Mono', monospace !important; }
+
+  /* Headings tightened for print */
+  h1 { font-size: 24pt !important; margin: 0 0 6pt !important; }
+  h2 { font-size: 16pt !important; margin: 12pt 0 6pt !important; }
+  h3 { font-size: 13pt !important; margin: 10pt 0 4pt !important; }
+  p, li, span { font-size: 10pt !important; line-height: 1.4 !important; }
+
+  /* Hero section: keep laurel-deep with bone text for print impact */
+  .v5-home-hero-main, .v5-hoy-hero, .v5c-res-hero {
+    background: #1F2E20 !important;
+    color: #F5F1E8 !important;
+  }
+  .v5-home-hero-main *, .v5-hoy-hero *, .v5c-res-hero * { color: inherit !important; }
+  .v5-home-hero-eyebrow, .v5-hoy-label { color: #B8945A !important; }
+
+  /* Cards: remove shadow, keep borders */
+  .v5-trip-card, .v5b-day, .v5b-slot, .v5b-prov-card, .v5c-bhero, .v5c-budget-card,
+  .v5d-stat, .v5d-pp-card, .v5-kpi-tile, .v5-kpi, .v5-next-action, .v5-lib-card,
+  .v5c-set-card, .v5c-snap-section, .v5-alert-row, .v5-progress-card {
+    box-shadow: none !important;
+    border: 1px solid #DDD !important;
+    background: #FFFFFF !important;
+    color: #1A1A1A !important;
+  }
+
+  /* Status pills keep their colors for legibility */
+  .status-pill, .pill-ok, .v5d-stat .num, .v5-trip-card-status,
+  .v5d-pp-head::before, .v5b-status-dot { print-color-adjust: exact !important; }
+
+  /* Itinerario: page-break safety */
+  .v5b-day { page-break-inside: avoid; margin-bottom: 18pt !important; }
+  .v5b-day-title-input { page-break-after: avoid; }
+  .v5b-slot { page-break-inside: avoid; }
+  .v5-trip-card { page-break-inside: avoid; }
+  .v5c-budget-card { page-break-inside: avoid; }
+
+  /* Tabs/segmented bar muted to allow flow */
+  .v5b-itin .v5b-day-head { border-bottom: 1px solid #DDD !important; }
+
+  /* Links: keep visible but no color override */
+  a { color: #3D5A3E !important; text-decoration: underline !important; }
+
+  /* Pages */
+  @page { margin: 1.5cm 1.2cm; }
+  @page :first { margin-top: 1.5cm; }
+}
+
+/* ===== 2. Hoy sub-components polish ===== */
+
+/* Weather card */
+.v5-weather-card {
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  padding: 18px 20px !important;
+  margin-top: 14px !important;
+  box-shadow: var(--shadow-1);
+}
+[data-theme="dark"] .v5-weather-card { background: var(--surface-1) !important; }
+.v5-weather-loading {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: italic !important;
+  color: var(--stone) !important;
+  text-align: center;
+  padding: 20px;
+  font-size: 13px;
+}
+.v5-weather-grid {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 8px !important;
+}
+@media (max-width: 880px) {
+  .v5-weather-grid { grid-template-columns: repeat(4, 1fr) !important; }
+}
+@media (max-width: 540px) {
+  .v5-weather-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+.v5-weather-day {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 12px 6px !important;
+  background: var(--bone) !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  text-align: center;
+  transition: all 0.12s ease;
+}
+[data-theme="dark"] .v5-weather-day { background: var(--surface-2) !important; }
+.v5-weather-day:hover {
+  background: var(--bone-2) !important;
+  border-color: var(--line) !important;
+}
+[data-theme="dark"] .v5-weather-day:hover { background: var(--surface-3) !important; }
+.v5-weather-dow {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 0.10em !important;
+  text-transform: uppercase !important;
+  color: var(--stone) !important;
+}
+.v5-weather-icon {
+  font-size: 24px !important;
+  line-height: 1 !important;
+  margin: 2px 0;
+}
+.v5-weather-temps {
+  display: flex !important;
+  gap: 5px !important;
+  align-items: baseline !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+}
+.v5-weather-temps .hi {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em;
+  color: var(--ink) !important;
+}
+.v5-weather-temps .lo {
+  font-size: 12px !important;
+  color: var(--stone) !important;
+  font-weight: 500;
+}
+
+/* Alert empty state */
+.v5-alert-empty {
+  padding: 18px 16px !important;
+  background: var(--laurel-tint) !important;
+  border-radius: 10px !important;
+  color: var(--laurel) !important;
+  font-size: 13px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Geist', system-ui, sans-serif !important;
+}
+[data-theme="dark"] .v5-alert-empty { color: var(--accent) !important; }
+.v5-alert-empty::before {
+  content: '✓';
+  font-weight: 700;
+}
+
+/* ===== 3. Mapa skin (Leaflet popups + zoom controls) =====
+   La app usa primary Google Maps pero Leaflet existe en algunos componentes.
+   También polish para los marker labels y popups. */
+
+/* Leaflet popups */
+.leaflet-popup-content-wrapper {
+  background: var(--white) !important;
+  color: var(--ink) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-3) !important;
+  padding: 0 !important;
+  border: 1px solid var(--line) !important;
+}
+[data-theme="dark"] .leaflet-popup-content-wrapper {
+  background: var(--surface-1) !important;
+}
+.leaflet-popup-content {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  margin: 12px 14px !important;
+  line-height: 1.45 !important;
+  color: var(--ink) !important;
+}
+.leaflet-popup-content strong {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-weight: 600 !important;
+  color: var(--ink) !important;
+  display: block;
+  font-size: 14px;
+  letter-spacing: -0.015em;
+  margin-bottom: 4px;
+}
+.leaflet-popup-content .pop-type {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 0.10em !important;
+  text-transform: uppercase !important;
+  color: var(--stone) !important;
+  margin-bottom: 6px !important;
+}
+.leaflet-popup-content .pop-meta {
+  font-size: 12px !important;
+  color: var(--stone) !important;
+  margin-top: 4px !important;
+}
+.leaflet-popup-tip {
+  background: var(--white) !important;
+  box-shadow: var(--shadow-3) !important;
+}
+[data-theme="dark"] .leaflet-popup-tip { background: var(--surface-1) !important; }
+
+.leaflet-popup-close-button {
+  color: var(--stone) !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 16px !important;
+  padding: 8px !important;
+  width: 24px !important;
+  height: 24px !important;
+}
+.leaflet-popup-close-button:hover { color: var(--ink) !important; }
+
+/* Leaflet zoom control buttons */
+.leaflet-control-zoom {
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: var(--shadow-2) !important;
+  overflow: hidden;
+}
+.leaflet-control-zoom a {
+  background: var(--white) !important;
+  color: var(--ink) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--line-soft) !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 500 !important;
+}
+.leaflet-control-zoom a:last-child { border-bottom: none !important; }
+.leaflet-control-zoom a:hover { background: var(--bone) !important; }
+[data-theme="dark"] .leaflet-control-zoom a {
+  background: var(--surface-1) !important;
+  color: var(--ink) !important;
+  border-bottom-color: var(--line) !important;
+}
+[data-theme="dark"] .leaflet-control-zoom a:hover { background: var(--surface-2) !important; }
+
+/* Leaflet attribution discreta */
+.leaflet-control-attribution {
+  background: rgba(255,255,255,0.85) !important;
+  color: var(--stone) !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 10px !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+}
+.leaflet-control-attribution a { color: var(--laurel) !important; }
+[data-theme="dark"] .leaflet-control-attribution {
+  background: rgba(20,20,20,0.85) !important;
+  color: var(--stone) !important;
+}
+
+/* Google Maps Info Window — limited targeting */
+.gm-style .gm-style-iw-c {
+  border-radius: 12px !important;
+  padding: 12px !important;
+  box-shadow: var(--shadow-3) !important;
+  background: var(--white) !important;
+}
+.gm-style .gm-style-iw-d {
+  overflow: auto !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+}
+.gm-style .gm-style-iw-tc::after {
+  background: var(--white) !important;
+}
+[data-theme="dark"] .gm-style .gm-style-iw-c,
+[data-theme="dark"] .gm-style .gm-style-iw-tc::after {
+  background: var(--surface-1) !important;
+}
+
+/* Google Maps custom zoom buttons (.gm-control-active etc. live inside shadow DOM;
+   limited override capability) */
+.gm-bundled-control .gm-control-active {
+  border-radius: 8px !important;
+}
+
+/* ===== 4. Login split desktop con panel visual =====
+   Approach: .v5-login es grid 2 cols en desktop. Panel izquierdo es
+   .v5-login-inner (form). Panel derecho es ::after pseudo con SVG laurel.
+   En mobile/tablet: single column, .v5-login-inner full width. */
+
+.v5-login {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  align-items: stretch !important;
+  background: var(--bone-2) !important;
+  min-height: 100vh;
+  position: relative;
+  font-family: 'Geist', system-ui, sans-serif !important;
+}
+
+/* Desktop split */
+@media (min-width: 900px) {
+  .v5-login {
+    grid-template-columns: 1fr 1.05fr !important;
+    place-items: stretch !important;
+  }
+  .v5-login-inner {
+    /* Form panel · left */
+    background: var(--bone-2) !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 56px 64px !important;
+    max-width: none !important;
+    width: 100% !important;
+    align-self: center;
+    margin: 0 !important;
+  }
+  /* Visual panel · right, generado con ::after */
+  .v5-login::after {
+    content: '';
+    display: block;
+    background-color: var(--laurel-deep);
+    background-image:
+      /* Sun glow */
+      radial-gradient(circle at 80% 22%, rgba(212,181,131,0.45) 0%, transparent 28%),
+      radial-gradient(circle at 80% 22%, rgba(184,148,90,0.35) 0%, transparent 18%),
+      /* Vineyard rows SVG */
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 720' preserveAspectRatio='xMidYMid slice'><path d='M0,520 Q150,420 300,460 T600,440 V720 H0 Z' fill='%23152018'/><path d='M0,560 Q200,490 380,520 T600,510 V720 H0 Z' fill='%230A130C'/><g stroke='%23B8945A' stroke-width='0.6' opacity='0.45'><line x1='-50' y1='560' x2='40' y2='720'/><line x1='10' y1='560' x2='110' y2='720'/><line x1='70' y1='560' x2='180' y2='720'/><line x1='130' y1='560' x2='250' y2='720'/><line x1='190' y1='560' x2='320' y2='720'/><line x1='250' y1='560' x2='390' y2='720'/><line x1='310' y1='560' x2='460' y2='720'/><line x1='370' y1='560' x2='530' y2='720'/><line x1='430' y1='560' x2='600' y2='720'/><line x1='490' y1='560' x2='670' y2='720'/></g></svg>"),
+      /* Base gradient */
+      linear-gradient(180deg, var(--laurel-deep) 0%, #0E1810 100%);
+    background-size: auto, auto, cover, cover;
+    background-position: center, center, bottom, center;
+    background-repeat: no-repeat;
+    position: relative;
+  }
+  /* Quote/tagline overlay on right panel */
+  .v5-login::before {
+    content: '"Luxury as access, never excess."';
+    position: absolute;
+    bottom: 56px;
+    right: 56px;
+    width: calc(50% - 112px);
+    max-width: 380px;
+    color: var(--brass-soft);
+    font-family: 'Geist', system-ui, sans-serif;
+    font-style: italic;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: -0.015em;
+    z-index: 2;
+    text-align: right;
+  }
+}
+
+@media (max-width: 899px) {
+  /* Mobile/tablet: card centrado como antes */
+  .v5-login {
+    display: grid !important;
+    place-items: center !important;
+    padding: 24px !important;
+  }
+  .v5-login-inner {
+    background: var(--white) !important;
+    border-radius: 16px !important;
+    padding: 32px 28px !important;
+    border: 1px solid var(--line) !important;
+    box-shadow: var(--shadow-2) !important;
+    max-width: 440px !important;
+    width: 100% !important;
+  }
+  .v5-login::after, .v5-login::before { display: none !important; }
+}
+
+/* Login title bigger on desktop split */
+@media (min-width: 900px) {
+  .v5-login-title { font-size: 52px !important; line-height: 1.0 !important; }
+}
+
+/* =============================================================================
    REDISEÑO · Phase 9 · Pestaña Hoy (Today/Dashboard)
    Reemplaza el gradiente marrón legacy por hero card laurel-deep limpio
    y pulido alineado con el sistema nuevo.
