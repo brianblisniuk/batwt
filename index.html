@@ -11889,6 +11889,345 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
 }
 
 /* =============================================================================
+   REDISEÑO · Phase 15 · Mobile patterns
+   FAB, bottom sheet, header compacto, tabs scrollable, nav refinement.
+   ============================================================================= */
+
+/* ===== Bottom nav refinement (mobile) ===== */
+.v5-bottomnav {
+  background: var(--white) !important;
+  backdrop-filter: saturate(140%) blur(12px);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  border-top: 1px solid var(--line) !important;
+  padding: 4px 4px calc(4px + var(--safe-bottom)) !important;
+  height: calc(var(--bottomnav-h) + var(--safe-bottom)) !important;
+  z-index: 80 !important;
+}
+[data-theme="dark"] .v5-bottomnav { background: var(--surface-1) !important; }
+
+.v5-bottomnav-item {
+  color: var(--stone) !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  gap: 4px !important;
+  transition: color 0.12s ease;
+}
+.v5-bottomnav-item:active { background: var(--bone) !important; }
+.v5-bottomnav-item svg { width: 20px !important; height: 20px !important; stroke-width: 2; }
+.v5-bottomnav-item.active {
+  color: var(--laurel) !important;
+}
+[data-theme="dark"] .v5-bottomnav-item.active { color: var(--accent) !important; }
+.v5-bottomnav-item.active::after {
+  width: 26px !important;
+  height: 2.5px !important;
+  background: var(--laurel) !important;
+  border-radius: 0 0 3px 3px !important;
+  top: 0 !important;
+}
+[data-theme="dark"] .v5-bottomnav-item.active::after { background: var(--accent) !important; }
+
+.v5-bottomnav-item .v5-bn-badge {
+  background: var(--bad) !important;
+  border: 2px solid var(--white) !important;
+  color: var(--white) !important;
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  border-radius: 999px !important;
+  top: 4px !important;
+  right: calc(50% - 22px) !important;
+}
+[data-theme="dark"] .v5-bottomnav-item .v5-bn-badge { border-color: var(--surface-1) !important; }
+
+/* ===== FAB (Floating Action Button) — patron del diseño nuevo =====
+   Botón circular laurel-deep flotante bottom-right encima del bottomnav.
+   Markup: cualquier <button class="v5-fab"> dentro de una pantalla mobile. */
+.v5-fab {
+  position: fixed;
+  right: 20px;
+  bottom: calc(var(--bottomnav-h) + var(--safe-bottom) + 16px);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--laurel-deep);
+  color: var(--bone);
+  border: none;
+  box-shadow: 0 8px 20px rgba(31,46,32,0.40), 0 2px 6px rgba(0,0,0,0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 70;
+  transition: all 0.15s ease;
+}
+.v5-fab:hover { transform: scale(1.05); background: var(--laurel); }
+.v5-fab:active { transform: scale(0.95); }
+.v5-fab svg { width: 22px; height: 22px; stroke-width: 2.4; }
+[data-theme="dark"] .v5-fab {
+  background: var(--accent);
+  color: var(--surface-0);
+  box-shadow: 0 8px 20px rgba(110,148,86,0.35), 0 2px 6px rgba(0,0,0,0.4);
+}
+[data-theme="dark"] .v5-fab:hover { background: var(--accent-soft); }
+/* Desktop: el FAB no debería verse en general (los botones primarios viven
+   en toolbars / hero cards). Si querés mostrarlo siempre, sobreescribí
+   en el componente. */
+@media (min-width: 981px) {
+  .v5-fab { display: none; }
+}
+
+/* ===== Bottom sheet (patrón del Mapa mobile y otros) =====
+   Container que sube desde abajo con grip. Markup:
+   <div class="v5-bottomsheet"><div class="v5-bottomsheet-grip"/><div class="v5-bottomsheet-body">...</div></div> */
+.v5-bottomsheet {
+  position: fixed;
+  bottom: calc(var(--bottomnav-h) + var(--safe-bottom));
+  left: 0; right: 0;
+  background: var(--white);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -10px 40px rgba(28,20,16,0.16);
+  padding: 12px 18px 18px;
+  z-index: 70;
+  max-height: 60vh;
+  overflow-y: auto;
+  animation: v5-sheetUp 0.28s cubic-bezier(0.22,1,0.36,1);
+}
+[data-theme="dark"] .v5-bottomsheet { background: var(--surface-1); }
+@keyframes v5-sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+.v5-bottomsheet-grip {
+  width: 40px;
+  height: 4px;
+  background: var(--line-strong);
+  border-radius: 2px;
+  margin: 0 auto 12px;
+}
+.v5-bottomsheet-title {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+.v5-bottomsheet-sub {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--stone);
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+/* ===== Mobile topbar compactness ===== */
+@media (max-width: 720px) {
+  .v5-topbar {
+    min-height: 52px !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+  .v5-topbar-brand-mark { font-size: 14px !important; }
+  .v5-topbar-brand-mark::before {
+    width: 10px !important;
+    height: 10px !important;
+  }
+  .v5-topbar-sub {
+    display: none !important; /* en mobile saco el sub para dar aire */
+  }
+  .v5-avatar-name { display: none !important; } /* sólo avatar circle en mobile */
+  .v5-avatar-btn { padding: 4px !important; }
+  .v5-sync-pill .v5-sync-text { display: none; } /* sólo el dot */
+}
+
+/* ===== Mobile trip subheader compactness ===== */
+@media (max-width: 720px) {
+  .v5-trip-subheader { padding-top: 16px !important; }
+  .v5-trip-sub-titles h1 { font-size: 24px !important; }
+  .v5-trip-sub-sub { display: none; }
+  .v5-trip-sub-stats {
+    flex-wrap: wrap;
+    gap: 0;
+    margin-top: 10px;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 10px;
+  }
+  .v5-trip-sub-stat { padding: 0 12px !important; }
+  .v5-trip-sub-stat:first-child { padding-left: 0 !important; }
+  .v5-trip-sub-stat-value { font-size: 18px !important; }
+}
+
+/* ===== Mobile tabs (v5-sidebar) ===== */
+@media (max-width: 720px) {
+  .v5-sidebar {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .v5-nav-item {
+    padding: 12px 12px !important;
+    font-size: 12px !important;
+    flex-shrink: 0;
+  }
+  .v5-nav-item svg { width: 14px !important; height: 14px !important; }
+  .v5-nav-item span:not(.v5-nav-count) { /* ocultar texto en mobile, sólo icono + count */
+    /* lo dejamos visible — pero más chico */
+  }
+  .v5-nav-count { font-size: 9px !important; min-width: 16px !important; height: 16px !important; }
+}
+
+/* ===== Mobile content padding ===== */
+@media (max-width: 720px) {
+  .v5-content {
+    padding-bottom: calc(var(--bottomnav-h) + var(--safe-bottom) + 24px) !important;
+  }
+  .v5-home-inner {
+    padding-bottom: 80px !important;
+  }
+}
+
+/* ===== Mobile drawer full-screen ===== */
+@media (max-width: 720px) {
+  .v5-drawer, .v5b-detail-drawer, .v5-meta-editor {
+    width: 100vw !important;
+    height: 100vh !important;
+    top: 0;
+    border-left: none !important;
+    border-radius: 0;
+  }
+  .v5-drawer-header {
+    padding: 14px 16px 12px !important;
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    z-index: 5;
+  }
+  [data-theme="dark"] .v5-drawer-header { background: var(--surface-1) !important; }
+  .v5-drawer-body { padding: 16px !important; }
+  .v5-drawer-close {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
+/* ===== Mobile modals full-width minus margin ===== */
+@media (max-width: 720px) {
+  .v5-modal,
+  .v5-ps-modal,
+  .v5-mp-modal {
+    width: calc(100vw - 16px) !important;
+    max-height: calc(100vh - 32px) !important;
+    border-radius: 14px !important;
+  }
+  .v5-modal-header { padding: 14px 16px !important; }
+  .v5-modal-body { padding: 14px 16px !important; }
+  .v5-modal-foot { padding: 12px 16px !important; }
+  .v5-confirm { padding: 22px !important; max-width: calc(100vw - 32px) !important; }
+}
+
+/* ===== Mobile hero cards compactness ===== */
+@media (max-width: 720px) {
+  .v5-home-hero { grid-template-columns: 1fr !important; }
+  .v5-home-hero-main { padding: 22px 20px !important; }
+  .v5-home-hero-title { font-size: 32px !important; }
+  .v5-home-hero-side { display: none !important; }
+
+  .v5-home-head { grid-template-columns: 1fr !important; }
+  .v5-home-kpis { grid-template-columns: repeat(2, 1fr) !important; }
+  .v5-home-title { font-size: 32px !important; }
+
+  .v5-hoy-row-1 { grid-template-columns: 1fr !important; }
+  .v5-kpi-stack { grid-template-columns: 1fr 1fr !important; }
+  .v5-hoy-hero-content { padding: 22px 18px !important; }
+
+  .v5c-res-hero { grid-template-columns: 1fr !important; padding: 20px !important; gap: 16px !important; }
+  .v5c-res-hero-num { font-size: 56px !important; }
+}
+
+/* ===== Toast stack (notificaciones) ===== */
+.v5-toast-stack {
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 24px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1200;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  pointer-events: none;
+  max-width: calc(100vw - 32px);
+}
+.v5-toast {
+  pointer-events: auto;
+  padding: 12px 18px;
+  background: var(--ink);
+  color: var(--bone);
+  border-radius: 10px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(28,20,16,0.20);
+  max-width: 360px;
+  animation: v5-toastIn 0.25s cubic-bezier(0.22,1,0.36,1);
+}
+[data-theme="dark"] .v5-toast { background: var(--surface-3); color: var(--ink); border: 1px solid var(--line); }
+.v5-toast.success { background: var(--laurel); color: var(--bone); }
+.v5-toast.error { background: var(--bad); color: var(--white); }
+.v5-toast.warn { background: var(--brass-deep); color: var(--bone); }
+@keyframes v5-toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 720px) {
+  .v5-toast-stack {
+    bottom: calc(var(--bottomnav-h) + var(--safe-bottom) + 16px);
+  }
+}
+
+/* ===== Mention banner (en cualquier vista) ===== */
+.v5-mention-banner {
+  background: var(--warn-bg) !important;
+  border: 1px solid transparent !important;
+  border-left: 3px solid var(--brass) !important;
+  border-radius: 10px !important;
+  padding: 12px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px;
+  margin: 0 0 14px !important;
+}
+[data-theme="dark"] .v5-mention-banner { background: var(--tint-warn) !important; }
+.v5-mention-banner-text {
+  flex: 1;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  color: var(--brass-deep) !important;
+  line-height: 1.4;
+}
+[data-theme="dark"] .v5-mention-banner-text { color: var(--brass) !important; }
+.v5-mention-banner-text strong { color: var(--ink); font-weight: 600; }
+.v5-mention-banner button {
+  background: var(--white) !important;
+  border: 1px solid var(--brass-deep) !important;
+  color: var(--brass-deep) !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.v5-mention-banner button:hover {
+  background: var(--brass-deep) !important;
+  color: var(--white) !important;
+}
+[data-theme="dark"] .v5-mention-banner button {
+  background: var(--surface-1) !important;
+  border-color: var(--brass) !important;
+  color: var(--brass) !important;
+}
+
+/* =============================================================================
    REDISEÑO · Phase 9 · Pestaña Hoy (Today/Dashboard)
    Reemplaza el gradiente marrón legacy por hero card laurel-deep limpio
    y pulido alineado con el sistema nuevo.
