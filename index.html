@@ -11682,6 +11682,37 @@ function app() {
     dragOverCol: null,
     sortOptions: [ { key: 'name', label: 'Nombre (A→Z)' }, { key: 'status', label: 'Estado de reserva' }, { key: 'type', label: 'Tipo' }, { key: 'location', label: 'Lugar' }, { key: 'michelin', label: 'Estrellas Michelin' }, { key: 'comments', label: 'Más comentados' } ],
     pipelineColumns: [ { key: 'pending', label: 'Pendientes' }, { key: 'contacted', label: 'En conversación' }, { key: 'confirmed', label: 'Confirmados' }, { key: 'cancelled', label: 'Cancelados' } ],
+    // V5D · Leads CRM state (Phase 2)
+    leadView: 'pipeline',
+    leadStats: [],
+    leadsList: [],
+    leadsPipeline: {},
+    leadFilterOptions: { sources: [], campaigns: [], trips: [], operators: [] },
+    leadSearch: '',
+    leadStageFilter: 'all',
+    leadAssignedFilter: 'all',
+    leadSourceFilter: 'all',
+    leadTripFilter: 'all',
+    leadSort: 'days_stale',
+    leadSortDir: 'desc',
+    leadDrawerOpen: false,
+    leadDrawerLead: null,
+    leadDrawerEvents: [],
+    leadsLoading: false,
+    leadsLoaded: false,
+    leadsError: null,
+    leadsBulkSelected: new Set(),
+    leadsDragging: null,
+    leadsDragOverStage: null,
+    leadStages: [
+      { key: 'new', label: 'Nuevos', color: '#2563eb' },
+      { key: 'contacted', label: 'Contactados', color: '#d97706' },
+      { key: 'qualified', label: 'Calificados', color: '#0891b2' },
+      { key: 'proposal', label: 'Propuesta', color: '#9333ea' },
+      { key: 'negotiating', label: 'Negociando', color: '#db2777' },
+      { key: 'booked', label: 'Reservados', color: '#16a34a' },
+      { key: 'lost', label: 'Perdidos', color: '#dc2626' }
+    ],
     actionFilter: 'all',
     actionTypeFilter: '',
     // Slot title autocomplete state
@@ -14332,6 +14363,182 @@ function app() {
         p.reservationStatus = targetStatus;
         if (typeof this.save === 'function') this.save();
       }
+    },
+
+    // V5D · Leads CRM methods (Phase 2)
+    async loadLeads(force) {
+      if (this.leadsLoading) return;
+      if (this.leadsLoaded && !force) return;
+      this.leadsLoading = true;
+      this.leadsError = null;
+      try {
+        if (!this._client) { this.leadsError = 'Cliente Supabase no inicializado'; return; }
+        var trip_id = this.leadTripFilter === 'all' ? null : this.leadTripFilter;
+        var source = this.leadSourceFilter === 'all' ? null : this.leadSourceFilter;
+        var assigned_to = this.leadAssignedFilter === 'all' ? null : this.leadAssignedFilter;
+        var search = this.leadSearch || null;
+        var stage = this.leadStageFilter === 'all' ? null : this.leadStageFilter;
+        var results = await Promise.all([
+          this._client.rpc('leads_crm_stats'),
+          this._client.rpc('leads_crm_list', { p_search: search, p_stage: stage, p_assigned_to: assigned_to, p_source: source, p_trip_id: trip_id, p_min_potential_usd: null, p_sort: this.leadSort, p_sort_dir: this.leadSortDir, p_limit: 200, p_offset: 0 }),
+          this._client.rpc('leads_crm_pipeline', { p_search: search, p_assigned_to: assigned_to, p_source: source, p_trip_id: trip_id }),
+          this.leadsLoaded ? Promise.resolve({ data: null, error: null }) : this._client.rpc('leads_crm_filter_options')
+        ]);
+        if (results[0].error) throw results[0].error;
+        if (results[1].error) throw results[1].error;
+        if (results[2].error) throw results[2].error;
+        if (results[3].error) throw results[3].error;
+        this.leadStats = results[0].data || [];
+        this.leadsList = results[1].data || [];
+        var pipelineMap = {};
+        (results[2].data || []).forEach(function (row) {
+          if (!pipelineMap[row.stage]) pipelineMap[row.stage] = [];
+          pipelineMap[row.stage].push(row);
+        });
+        this.leadsPipeline = pipelineMap;
+        if (!this.leadsLoaded && results[3].data) {
+          this.leadFilterOptions = results[3].data;
+        }
+        this.leadsLoaded = true;
+      } catch (e) {
+        console.error('loadLeads error:', e);
+        this.leadsError = (e && e.message) || String(e);
+        if (typeof this.toast === 'function') this.toast('Error cargando clientes: ' + this.leadsError, 'error');
+      } finally {
+        this.leadsLoading = false;
+      }
+    },
+    async openLeadDrawer(leadId) {
+      this.leadDrawerOpen = true;
+      this.leadDrawerLead = null;
+      this.leadDrawerEvents = [];
+      try {
+        var res = await this._client.rpc('lead_full_detail', { p_lead_id: leadId });
+        if (res.error) throw res.error;
+        this.leadDrawerLead = (res.data && res.data.lead) || null;
+        this.leadDrawerEvents = (res.data && res.data.events) || [];
+      } catch (e) {
+        console.error('openLeadDrawer error:', e);
+        if (typeof this.toast === 'function') this.toast('No se pudo abrir el lead: ' + (e.message || e), 'error');
+        this.leadDrawerOpen = false;
+      }
+    },
+    closeLeadDrawer() {
+      this.leadDrawerOpen = false;
+      this.leadDrawerLead = null;
+      this.leadDrawerEvents = [];
+    },
+    async changeLeadStage(leadId, newStage, note) {
+      try {
+        var res = await this._client.rpc('lead_change_stage', { p_lead_id: leadId, p_new_stage: newStage, p_note: note || null });
+        if (res.error) throw res.error;
+        await this.loadLeads(true);
+        if (typeof this.toast === 'function') this.toast('Lead actualizado a ' + this.leadStageLabel(newStage), 'success');
+      } catch (e) {
+        console.error('changeLeadStage error:', e);
+        if (typeof this.toast === 'function') this.toast('Error: ' + (e.message || e), 'error');
+      }
+    },
+    async bulkChangeLeadStage(newStage) {
+      var ids = Array.from(this.leadsBulkSelected);
+      if (!ids.length) return;
+      try {
+        var res = await this._client.rpc('leads_bulk_change_stage', { p_lead_ids: ids, p_new_stage: newStage });
+        if (res.error) throw res.error;
+        var changed = (res.data || []).filter(function (r) { return r.changed; }).length;
+        await this.loadLeads(true);
+        this.clearLeadSelection();
+        if (typeof this.toast === 'function') this.toast(changed + ' lead(s) movidos a ' + this.leadStageLabel(newStage), 'success');
+      } catch (e) {
+        console.error('bulkChangeLeadStage error:', e);
+        if (typeof this.toast === 'function') this.toast('Error: ' + (e.message || e), 'error');
+      }
+    },
+    async assignLead(leadId, userId) {
+      try {
+        var res = await this._client.rpc('lead_assign', { p_lead_id: leadId, p_assigned_to: userId || null });
+        if (res.error) throw res.error;
+        await this.loadLeads(true);
+        if (typeof this.toast === 'function') this.toast('Asignación actualizada', 'success');
+      } catch (e) {
+        console.error('assignLead error:', e);
+        if (typeof this.toast === 'function') this.toast('Error: ' + (e.message || e), 'error');
+      }
+    },
+    async addLeadNote(leadId, text) {
+      if (!text || !text.trim()) return;
+      try {
+        var res = await this._client.rpc('lead_add_note', { p_lead_id: leadId, p_text: text.trim() });
+        if (res.error) throw res.error;
+        if (this.leadDrawerOpen && this.leadDrawerLead && this.leadDrawerLead.id === leadId) {
+          await this.openLeadDrawer(leadId);
+        }
+        if (typeof this.toast === 'function') this.toast('Nota agregada', 'success');
+      } catch (e) {
+        console.error('addLeadNote error:', e);
+        if (typeof this.toast === 'function') this.toast('Error: ' + (e.message || e), 'error');
+      }
+    },
+    leadStageLabel(stageKey) {
+      var s = this.leadStages.find(function (x) { return x.key === stageKey; });
+      return s ? s.label : stageKey;
+    },
+    leadStageColor(stageKey) {
+      var s = this.leadStages.find(function (x) { return x.key === stageKey; });
+      return s ? s.color : '#8b7868';
+    },
+    leadStatsForStage(stageKey) {
+      var s = (this.leadStats || []).find(function (x) { return x.stage === stageKey; });
+      return s || { stage: stageKey, lead_count: 0, total_pax: 0, total_potential_usd: 0, pct_of_active: 0 };
+    },
+    leadsByStage(stageKey) {
+      return this.leadsPipeline[stageKey] || [];
+    },
+    formatLeadDaysStale(days) {
+      if (days === null || days === undefined) return '—';
+      if (days < 1) return 'Hoy';
+      if (days < 2) return 'Hace 1 día';
+      if (days < 7) return 'Hace ' + Math.floor(days) + ' días';
+      if (days < 30) return 'Hace ' + Math.floor(days / 7) + ' semanas';
+      return 'Hace ' + Math.floor(days / 30) + ' meses';
+    },
+    formatLeadPotential(usd) {
+      if (!usd || usd === 0) return '—';
+      if (usd >= 1000) return '$' + (Math.round(usd / 100) / 10) + 'k';
+      return '$' + Math.round(usd);
+    },
+    toggleSelectLead(id) {
+      var next = new Set(this.leadsBulkSelected);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      this.leadsBulkSelected = next;
+    },
+    clearLeadSelection() {
+      this.leadsBulkSelected = new Set();
+    },
+    onLeadPipelineDrop(targetStage) {
+      if (!this.leadsDragging) return;
+      var leadId = this.leadsDragging;
+      this.leadsDragging = null;
+      this.leadsDragOverStage = null;
+      var lead = (this.leadsList || []).find(function (x) { return x.id === leadId; });
+      if (!lead && this.leadsPipeline) {
+        var keys = Object.keys(this.leadsPipeline);
+        for (var i = 0; i < keys.length; i++) {
+          var match = this.leadsPipeline[keys[i]].find(function (x) { return x.id === leadId; });
+          if (match) { lead = match; break; }
+        }
+      }
+      if (!lead || lead.stage === targetStage) return;
+      this.changeLeadStage(leadId, targetStage, null);
+    },
+    resetLeadFilters() {
+      this.leadSearch = '';
+      this.leadStageFilter = 'all';
+      this.leadAssignedFilter = 'all';
+      this.leadSourceFilter = 'all';
+      this.leadTripFilter = 'all';
+      this.loadLeads(true);
     },
 
     get providersGrouped() {
