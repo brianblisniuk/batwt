@@ -12642,11 +12642,11 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
         <span>Viajes</span>
         <span class="v5-topnav-count" x-show="tripList && tripList.length > 0" x-text="tripList.length"></span>
       </button>
-      <button class="v5-topnav-btn" :class="{active: currentView === 'trip' && tab === 'leads'}"
-              :disabled="currentView !== 'trip'"
-              :title="currentView !== 'trip' ? 'Abrí un viaje para ver sus leads' : 'Leads del viaje'"
-              @click="if (currentView === 'trip') { tab = 'leads'; loadLeads(); }">
+      <button class="v5-topnav-btn" :class="{active: currentView === 'leads' || (currentView === 'trip' && tab === 'leads')}"
+              @click="navigateToLeads()"
+              title="Leads · operator-wide">
         <span>Leads</span>
+        <span class="v5-topnav-count" x-show="leadStats && leadStats.length > 0" x-text="leadStats.reduce((a, s) => a + (s.lead_count || 0), 0)"></span>
       </button>
       <button class="v5-topnav-btn" :class="{active: currentView === 'library'}"
               @click="navigateToLibrary()">
@@ -14934,6 +14934,143 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
 
     </main><!-- /.v5-content -->
   </div><!-- /.v5-shell -->
+
+  <!-- ====== LEADS GLOBAL VIEW (Phase 17 · operator-wide) ====== -->
+  <main class="v5-home v5-leads-global" x-show="currentView === 'leads'" x-init="$watch('currentView', v => { if (v === 'leads') loadLeads(true); })" x-cloak>
+    <div class="v5-home-inner">
+      <header class="v5-home-head">
+        <div class="v5-home-head-text">
+          <div class="v5-home-eyebrow">Pipeline · operator-wide</div>
+          <h1 class="v5-home-title">Leads <em>funnel</em></h1>
+          <p class="v5-home-sub">
+            <span x-show="!leadsLoading && leadStats.length > 0">
+              <strong x-text="leadStats.reduce((a, s) => a + (s.lead_count || 0), 0)"></strong> leads abiertos · <strong x-text="formatLeadPotential(leadStats.reduce((a, s) => a + (s.total_potential_usd || 0), 0))"></strong> en pipeline
+            </span>
+            <span x-show="leadsLoading">Cargando leads…</span>
+            <span x-show="!leadsLoading && leadStats.length === 0">Aún no hay leads cargados.</span>
+          </p>
+        </div>
+        <div style="display: flex; gap: 8px; align-self: flex-end;">
+          <button class="btn btn-ghost" @click="loadLeads(true)" :disabled="leadsLoading">
+            <span x-text="leadsLoading ? 'Cargando…' : '↻ Refrescar'"></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Error banner -->
+      <div x-show="leadsError" style="padding: 12px 16px; margin-bottom: 14px; background: var(--bad-bg); border-radius: 12px; color: var(--bad); font-size: 13px;">
+        <strong>Error:</strong> <span x-text="leadsError"></span>
+      </div>
+
+      <!-- KPI stats: 7 cards, one per stage -->
+      <div class="v5d-stats" style="grid-template-columns: repeat(7, 1fr); gap: 8px;">
+        <template x-for="stage in leadStages" :key="stage.key">
+          <div class="v5d-stat"
+               :class="{active: leadStageFilter === stage.key}"
+               :style="'--accent: ' + stage.color"
+               @click="leadStageFilter = leadStageFilter === stage.key ? 'all' : stage.key; loadLeads(true)">
+            <div class="num" x-text="leadStatsForStage(stage.key).lead_count"></div>
+            <div class="lb" x-text="stage.label"></div>
+            <span class="pct" x-text="formatLeadPotential(leadStatsForStage(stage.key).total_potential_usd)"></span>
+          </div>
+        </template>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="v5b-toolbar">
+        <div class="v5b-search-wrap">
+          <svg class="v5b-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" x-model="leadSearch" @keyup.enter="loadLeads(true)" placeholder="Buscar nombre, email, empresa, notas... (Enter)">
+          <button class="v5b-search-clear" x-show="leadSearch" @click="leadSearch = ''; loadLeads(true)" aria-label="Limpiar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="v5b-spacer"></div>
+        <div class="v5d-tb-view" role="tablist" aria-label="Vista">
+          <button :class="{active: leadView === 'pipeline'}" @click="leadView = 'pipeline'" title="Pipeline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="6" rx="1"/></svg>
+            <span>Pipeline</span>
+          </button>
+          <button :class="{active: leadView === 'cards'}" @click="leadView = 'cards'" title="Tarjetas">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <span>Tarjetas</span>
+          </button>
+          <button :class="{active: leadView === 'table'}" @click="leadView = 'table'" title="Tabla">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            <span>Tabla</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- PIPELINE VIEW (kanban 7 columnas) -->
+      <div x-show="leadView === 'pipeline'">
+        <div class="v5d-pipeline" style="grid-template-columns: repeat(7, minmax(180px, 1fr));">
+          <template x-for="stage in leadStages" :key="stage.key">
+            <div class="v5d-pp-col"
+                 :class="{'drag-over': leadsDragOverStage === stage.key}"
+                 :style="'--col-c: ' + stage.color"
+                 @dragover.prevent="leadsDragOverStage = stage.key"
+                 @dragleave="leadsDragOverStage = leadsDragOverStage === stage.key ? null : leadsDragOverStage"
+                 @drop.prevent="onLeadPipelineDrop(stage.key)">
+              <header class="v5d-pp-head">
+                <span class="title" x-text="stage.label"></span>
+                <span class="count" x-text="leadsByStage(stage.key).length"></span>
+              </header>
+              <div class="v5d-pp-list">
+                <template x-for="lead in leadsByStage(stage.key)" :key="lead.id">
+                  <article class="v5d-pp-card"
+                           :class="{dragging: leadsDragging === lead.id}"
+                           draggable="true"
+                           @dragstart="leadsDragging = lead.id; $event.dataTransfer.effectAllowed = 'move'"
+                           @dragend="leadsDragging = null; leadsDragOverStage = null"
+                           @click="openLeadDrawer(lead.id)">
+                    <div class="top">
+                      <span x-show="lead.pax_count" x-text="lead.pax_count + ' pax'"></span>
+                      <span class="ml" x-show="lead.potential_total_usd" x-text="formatLeadPotential(lead.potential_total_usd)"></span>
+                    </div>
+                    <div class="ttl" x-text="lead.full_name || 'Sin nombre'"></div>
+                    <div class="loc" x-show="lead.company" x-text="lead.company"></div>
+                    <div class="foot">
+                      <span x-text="formatLeadDaysStale(lead.days_stale)"></span>
+                      <span x-show="lead.source" x-text="lead.source"></span>
+                    </div>
+                  </article>
+                </template>
+                <div x-show="leadsByStage(stage.key).length === 0" class="v5d-pp-empty">Vacío</div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- CARDS VIEW -->
+      <div x-show="leadView === 'cards'">
+        <div class="v5b-prov-grid">
+          <template x-for="lead in leadsList" :key="lead.id">
+            <article class="v5b-prov-card" @click="openLeadDrawer(lead.id)">
+              <div class="v5b-prov-eyebrow">
+                <span :style="'color: ' + leadStageColor(lead.stage) + '; font-weight: 600'" x-text="leadStageLabel(lead.stage)"></span>
+                <span class="v5b-spacer"></span>
+                <span x-text="formatLeadDaysStale(lead.days_stale)"></span>
+              </div>
+              <h3 class="v5b-prov-name" x-text="lead.full_name || 'Sin nombre'"></h3>
+              <div class="v5b-prov-meta">
+                <div class="row" x-show="lead.email"><span class="k">Email</span><span class="v" x-text="lead.email"></span></div>
+                <div class="row" x-show="lead.phone"><span class="k">Tel</span><span class="v" x-text="lead.phone"></span></div>
+                <div class="row" x-show="lead.company"><span class="k">Empresa</span><span class="v" x-text="lead.company"></span></div>
+                <div class="row" x-show="lead.pax_count"><span class="k">Pax</span><span class="v" x-text="lead.pax_count"></span></div>
+                <div class="row" x-show="lead.potential_total_usd"><span class="k">Potencial</span><span class="v" x-text="formatLeadPotential(lead.potential_total_usd)"></span></div>
+                <div class="row" x-show="lead.assigned_to_name"><span class="k">Asignado</span><span class="v" x-text="lead.assigned_to_name"></span></div>
+              </div>
+            </article>
+          </template>
+        </div>
+        <template x-if="leadsList.length === 0 && !leadsLoading">
+          <div class="empty-state">Sin leads con estos filtros. <button class="btn btn-sm" @click="resetLeadFilters && resetLeadFilters()" style="margin-left: 8px;">↻ Limpiar filtros</button></div>
+        </template>
+      </div>
+    </div>
+  </main>
 
   <!-- ====== V5 BOTTOM NAV (mobile, TRIP VIEW only) ====== -->
   <nav class="v5-bottomnav" aria-label="Navegación inferior" x-show="currentView === 'trip'" x-cloak>
@@ -17318,6 +17455,7 @@ function app() {
       const h = (window.location.hash || '').replace(/^#\/?/, '').replace(/\/$/, '');
       if (!h) return { view: 'home', tripSlug: null };
       if (h === 'library') return { view: 'library', tripSlug: null };
+      if (h === 'leads') return { view: 'leads', tripSlug: null };
       // Sanitize: only allow slug-safe chars (lowercase, digits, hyphen)
       const safe = h.match(/^[a-z0-9-]+$/);
       if (!safe) return { view: 'home', tripSlug: null };
@@ -17336,6 +17474,10 @@ function app() {
     navigateToLibrary() {
       if (window.location.hash === '#/library/' || window.location.hash === '#/library') return;
       window.location.hash = '#/library/';
+    },
+    navigateToLeads() {
+      if (window.location.hash === '#/leads/' || window.location.hash === '#/leads') return;
+      window.location.hash = '#/leads/';
     },
     async _onRouteChange() {
       // Gate: if not authenticated, force login view (ignore the hash for now)
@@ -17356,6 +17498,13 @@ function app() {
         this.TRIP_ID = '';
         document.title = (this.operator?.name || 'Blisniuk & Amanov') + ' · Biblioteca';
         await this.loadLibrary();
+      } else if (route.view === 'leads') {
+        this.currentView = 'leads';
+        this.TRIP_ID = '';
+        document.title = (this.operator?.name || 'Blisniuk & Amanov') + ' · Leads';
+        // Reset leadsLoaded flag for global view so it refreshes
+        this.leadsLoaded = false;
+        await this.loadLeads(true);
       } else {
         // Trip view
         this.TRIP_ID = route.tripSlug;
