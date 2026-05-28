@@ -8040,6 +8040,10 @@ textarea:focus-visible {
         <span>Proveedores</span>
         <span class="v5-nav-count" x-text="data.providers.length"></span>
       </button>
+      <button class="v5-nav-item" :class="{active: tab === 'leads'}" @click="tab = 'leads'; loadLeads()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Clientes</span>
+      </button>
       <button class="v5-nav-item" :class="{active: tab === 'actions'}" @click="tab = 'actions'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
         <span>To-Do</span>
@@ -8953,6 +8957,263 @@ textarea:focus-visible {
   </template>
 </section>
 
+<!-- ====== CLIENTES (LEADS) ====== -->
+<section x-show="tab === 'leads'" x-init="loadLeads()">
+  <div class="section-header">
+    <div>
+      <h1>Clientes <em>funnel</em></h1>
+      <p class="lead">Pipeline de prospectos. Drag-and-drop entre estados. Click una card para abrir el detalle.</p>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-ghost" @click="loadLeads(true)" :disabled="leadsLoading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: -2px;"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.5 2.6L21 8"/><path d="M21 3v5h-5"/></svg>
+        <span x-text="leadsLoading ? 'Cargando…' : 'Refrescar'"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Error banner -->
+  <div x-show="leadsError" style="padding: 12px 16px; margin-bottom: 16px; background: var(--tint-bad); border: 1px solid var(--bad); border-radius: var(--radius); color: var(--bad); font-size: 13px;">
+    <strong>Error:</strong> <span x-text="leadsError"></span>
+  </div>
+
+  <!-- KPI stats: 7 cards, one per stage, clickable as filter -->
+  <div class="v5d-stats" style="grid-template-columns: repeat(7, 1fr); gap: 8px;">
+    <template x-for="stage in leadStages" :key="stage.key">
+      <div class="v5d-stat"
+           :class="{active: leadStageFilter === stage.key}"
+           :style="'--accent: ' + stage.color"
+           @click="leadStageFilter = leadStageFilter === stage.key ? 'all' : stage.key; loadLeads(true)">
+        <div class="num" x-text="leadStatsForStage(stage.key).lead_count"></div>
+        <div class="lb" x-text="stage.label"></div>
+        <span class="pct" x-text="formatLeadPotential(leadStatsForStage(stage.key).total_potential_usd)"></span>
+      </div>
+    </template>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="v5b-toolbar">
+    <div class="v5b-search-wrap">
+      <svg class="v5b-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" x-model="leadSearch" @keyup.enter="loadLeads(true)" placeholder="Buscar nombre, email, empresa, notas... (Enter)">
+      <button class="v5b-search-clear" x-show="leadSearch" @click="leadSearch = ''; loadLeads(true)" aria-label="Limpiar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="v5b-spacer"></div>
+    <div class="v5d-tb-view" role="tablist" aria-label="Vista">
+      <button :class="{active: leadView === 'pipeline'}" @click="leadView = 'pipeline'" title="Pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="6" rx="1"/></svg>
+        <span>Pipeline</span>
+      </button>
+      <button :class="{active: leadView === 'cards'}" @click="leadView = 'cards'" title="Tarjetas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Tarjetas</span>
+      </button>
+      <button :class="{active: leadView === 'table'}" @click="leadView = 'table'" title="Tabla">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span>Tabla</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PIPELINE VIEW (kanban 7 columnas) -->
+  <div x-show="leadView === 'pipeline'">
+    <div class="v5d-pipeline" style="grid-template-columns: repeat(7, minmax(180px, 1fr));">
+      <template x-for="stage in leadStages" :key="stage.key">
+        <div class="v5d-pp-col"
+             :class="{'drag-over': leadsDragOverStage === stage.key}"
+             :style="'--col-c: ' + stage.color"
+             @dragover.prevent="leadsDragOverStage = stage.key"
+             @dragleave="leadsDragOverStage = leadsDragOverStage === stage.key ? null : leadsDragOverStage"
+             @drop.prevent="onLeadPipelineDrop(stage.key)">
+          <header class="v5d-pp-head">
+            <span class="title" x-text="stage.label"></span>
+            <span class="count" x-text="leadsByStage(stage.key).length"></span>
+          </header>
+          <div class="v5d-pp-list">
+            <template x-for="lead in leadsByStage(stage.key)" :key="lead.id">
+              <article class="v5d-pp-card"
+                       :class="{dragging: leadsDragging === lead.id}"
+                       draggable="true"
+                       @dragstart="leadsDragging = lead.id; $event.dataTransfer.effectAllowed = 'move'"
+                       @dragend="leadsDragging = null; leadsDragOverStage = null"
+                       @click="openLeadDrawer(lead.id)">
+                <div class="top">
+                  <span x-show="lead.pax_count" x-text="lead.pax_count + ' pax'"></span>
+                  <span class="ml" x-show="lead.potential_total_usd" x-text="formatLeadPotential(lead.potential_total_usd)"></span>
+                </div>
+                <div class="ttl" x-text="lead.full_name || 'Sin nombre'"></div>
+                <div class="loc" x-show="lead.company" x-text="lead.company"></div>
+                <div class="foot">
+                  <span x-text="formatLeadDaysStale(lead.days_stale)"></span>
+                  <span x-show="lead.source" x-text="lead.source"></span>
+                </div>
+              </article>
+            </template>
+            <div x-show="leadsByStage(stage.key).length === 0" class="v5d-pp-empty">Vacío</div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- CARDS VIEW -->
+  <div x-show="leadView === 'cards'">
+    <div class="v5b-prov-grid">
+      <template x-for="lead in leadsList" :key="lead.id">
+        <article class="v5b-prov-card" @click="openLeadDrawer(lead.id)">
+          <div class="v5b-prov-eyebrow">
+            <span :style="'color: ' + leadStageColor(lead.stage) + '; font-weight: 600'" x-text="leadStageLabel(lead.stage)"></span>
+            <span class="v5b-spacer"></span>
+            <span x-text="formatLeadDaysStale(lead.days_stale)"></span>
+          </div>
+          <h3 class="v5b-prov-name" x-text="lead.full_name || 'Sin nombre'"></h3>
+          <div class="v5b-prov-meta">
+            <div class="row" x-show="lead.email"><span class="k">Email</span><span class="v" x-text="lead.email"></span></div>
+            <div class="row" x-show="lead.phone"><span class="k">Tel</span><span class="v" x-text="lead.phone"></span></div>
+            <div class="row" x-show="lead.company"><span class="k">Empresa</span><span class="v" x-text="lead.company"></span></div>
+            <div class="row" x-show="lead.pax_count"><span class="k">Pax</span><span class="v" x-text="lead.pax_count"></span></div>
+            <div class="row" x-show="lead.potential_total_usd"><span class="k">Potencial</span><span class="v" x-text="formatLeadPotential(lead.potential_total_usd)"></span></div>
+            <div class="row" x-show="lead.assigned_to_name"><span class="k">Asignado</span><span class="v" x-text="lead.assigned_to_name"></span></div>
+          </div>
+        </article>
+      </template>
+    </div>
+    <template x-if="leadsList.length === 0 && !leadsLoading">
+      <div class="empty-state">Sin clientes con estos filtros. <button class="btn btn-sm" @click="resetLeadFilters()" style="margin-left: 8px;">↻ Limpiar filtros</button></div>
+    </template>
+  </div>
+
+  <!-- TABLE VIEW -->
+  <div x-show="leadView === 'table'">
+    <div class="v5d-table-wrap">
+      <div class="v5d-table-scroll">
+        <table class="v5d-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Stage</th>
+              <th>Pax</th>
+              <th>Potencial</th>
+              <th>Source</th>
+              <th>Asignado</th>
+              <th>Días sin contacto</th>
+              <th>Eventos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="lead in leadsList" :key="lead.id">
+              <tr @click="openLeadDrawer(lead.id)">
+                <td>
+                  <div class="v5d-name">
+                    <div class="v5d-name-text">
+                      <div class="v5d-name-title" x-text="lead.full_name || 'Sin nombre'"></div>
+                      <div class="v5d-name-sub" x-show="lead.email" x-text="lead.email"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="v5d-status-pill" :style="'color: ' + leadStageColor(lead.stage) + '; border-color: ' + leadStageColor(lead.stage) + '40'">
+                    <span class="d" :style="'background: ' + leadStageColor(lead.stage)"></span>
+                    <span x-text="leadStageLabel(lead.stage)"></span>
+                  </span>
+                </td>
+                <td><span class="v5d-cell-mute" x-text="lead.pax_count || '—'"></span></td>
+                <td><span x-text="formatLeadPotential(lead.potential_total_usd)"></span></td>
+                <td><span class="v5d-cell-mute" x-text="lead.source || '—'"></span></td>
+                <td><span class="v5d-cell-mute" x-text="lead.assigned_to_name || 'sin asignar'"></span></td>
+                <td><span class="v5d-cell-mute" x-text="formatLeadDaysStale(lead.days_stale)"></span></td>
+                <td><span class="v5d-cell-comm" x-text="lead.event_count || 0"></span></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+      <template x-if="leadsList.length === 0 && !leadsLoading">
+        <div class="v5d-table-empty">
+          <h3>Sin clientes</h3>
+          <p>No hay resultados con estos filtros.</p>
+          <button class="btn btn-sm" @click="resetLeadFilters()">↻ Limpiar filtros</button>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- DRAWER: lead detail -->
+  <template x-if="leadDrawerOpen">
+    <div style="position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.45); display: flex; justify-content: flex-end;" @click.self="closeLeadDrawer()">
+      <div style="width: min(560px, 100%); height: 100%; background: var(--surface-1); padding: 24px; overflow-y: auto; box-shadow: -8px 0 30px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+          <h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 400;" x-text="leadDrawerLead ? (leadDrawerLead.full_name || 'Sin nombre') : 'Cargando…'"></h2>
+          <button @click="closeLeadDrawer()" style="background: var(--surface-2); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px;">✕</button>
+        </div>
+        <template x-if="leadDrawerLead">
+          <div>
+            <div style="margin-bottom: 16px;">
+              <span class="v5d-status-pill" :style="'color: ' + leadStageColor(leadDrawerLead.stage)">
+                <span class="d" :style="'background: ' + leadStageColor(leadDrawerLead.stage)"></span>
+                <span x-text="leadStageLabel(leadDrawerLead.stage)"></span>
+              </span>
+            </div>
+            <div class="v5b-prov-meta" style="margin-bottom: 24px;">
+              <div class="row" x-show="leadDrawerLead.email"><span class="k">Email</span><span class="v" x-text="leadDrawerLead.email"></span></div>
+              <div class="row" x-show="leadDrawerLead.phone"><span class="k">Teléfono</span><span class="v" x-text="leadDrawerLead.phone"></span></div>
+              <div class="row" x-show="leadDrawerLead.company"><span class="k">Empresa</span><span class="v" x-text="leadDrawerLead.company"></span></div>
+              <div class="row" x-show="leadDrawerLead.trip_id"><span class="k">Trip ID</span><span class="v" x-text="leadDrawerLead.trip_id"></span></div>
+              <div class="row" x-show="leadDrawerLead.pax_count"><span class="k">Pax</span><span class="v" x-text="leadDrawerLead.pax_count"></span></div>
+              <div class="row" x-show="leadDrawerLead.potential_total_usd"><span class="k">Potencial</span><span class="v" x-text="formatLeadPotential(leadDrawerLead.potential_total_usd)"></span></div>
+              <div class="row" x-show="leadDrawerLead.source"><span class="k">Source</span><span class="v" x-text="leadDrawerLead.source + (leadDrawerLead.source_campaign ? ' · ' + leadDrawerLead.source_campaign : '')"></span></div>
+              <div class="row" x-show="leadDrawerLead.assigned_to_name"><span class="k">Asignado</span><span class="v" x-text="leadDrawerLead.assigned_to_name"></span></div>
+              <div class="row" x-show="leadDrawerLead.notes"><span class="k">Notas</span><span class="v" x-text="leadDrawerLead.notes"></span></div>
+            </div>
+
+            <!-- Quick stage change buttons -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">Cambiar estado</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <template x-for="stage in leadStages" :key="stage.key">
+                  <button class="btn btn-sm" :disabled="leadDrawerLead.stage === stage.key" @click="changeLeadStage(leadDrawerLead.id, stage.key, null)" :style="leadDrawerLead.stage === stage.key ? 'opacity: 0.4' : ''" x-text="stage.label"></button>
+                </template>
+              </div>
+            </div>
+
+            <!-- Add note -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">Agregar nota</div>
+              <textarea x-model="leadDrawerLead._newNote" placeholder="Escribí una nota…" rows="2" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>
+              <button class="btn btn-sm" style="margin-top: 6px;" @click="addLeadNote(leadDrawerLead.id, leadDrawerLead._newNote); leadDrawerLead._newNote = ''">Agregar</button>
+            </div>
+
+            <!-- Events timeline -->
+            <div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;" x-text="'Historial (' + leadDrawerEvents.length + ')'"></div>
+              <template x-if="leadDrawerEvents.length === 0">
+                <div style="color: var(--text-3); font-size: 13px; font-style: italic;">Sin eventos todavía.</div>
+              </template>
+              <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                <template x-for="ev in leadDrawerEvents" :key="ev.id">
+                  <li style="padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius);">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                      <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3);" x-text="ev.kind"></span>
+                      <span style="font-size: 11px; color: var(--text-3);" x-text="ev.occurred_at ? new Date(ev.occurred_at).toLocaleString('es-AR') : ''"></span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-1);" x-text="ev.summary || ev.body || ''"></div>
+                    <div x-show="ev.actor_name" style="margin-top: 4px; font-size: 11px; color: var(--text-3);" x-text="'por ' + (ev.actor_name || '')"></div>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </div>
+        </template>
+        <template x-if="!leadDrawerLead">
+          <div style="text-align: center; padding: 40px; color: var(--text-3);">Cargando…</div>
+        </template>
+      </div>
+    </div>
+  </template>
+</section>
+
 <!-- ====== MAPA ====== -->
 <section x-show="tab === 'map'">
   <div class="section-header">
@@ -9599,6 +9860,11 @@ textarea:focus-visible {
         </header>
         <div class="v5-drawer-body">
           <div class="v5-more-grid">
+            <button class="v5-more-tile" :class="{active: tab === 'leads'}" @click="tab = 'leads'; moreDrawerOpen = false; loadLeads()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <div class="v5-more-label">Clientes</div>
+              <div class="v5-more-meta">funnel de ventas</div>
+            </button>
             <button class="v5-more-tile" :class="{active: tab === 'actions'}" @click="tab = 'actions'; moreDrawerOpen = false">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
               <span class="v5-more-label">To-Do</span>
