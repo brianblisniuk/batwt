@@ -2960,18 +2960,22 @@ color: var(--text-1);
 .v5b-day.is-collapsed .v5b-day-chevron { transform: rotate(-90deg); }
 
 .v5b-day-head {
-  position: sticky; top: var(--topbar-h); z-index: 6;
+  /* FIX BUG · removido `position: sticky; top: var(--topbar-h); z-index: 6`
+     que tapaba el primer slot al scrollear o incluso en render inicial
+     cuando el day-head se solapa con el body. El dev original ya lo
+     había detectado pero no llegó a fixearlo (comentario L2954).
+     También removido backdrop-filter que generaba stacking context raro.
+     La definición visual real está abajo en el bloque REDISEÑO. */
   display: grid;
   grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 20px;
   padding: 18px 22px 16px;
-  background: color-mix(in oklab, var(--surface-1) 96%, transparent);
-  backdrop-filter: saturate(140%) blur(8px);
-  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  background: var(--surface-1);
   border-bottom: 1px solid var(--line);
   cursor: pointer;
   user-select: none;
+  position: static;
 }
 .v5b-day-head:hover { background: color-mix(in oklab, var(--surface-2) 80%, transparent); }
 .v5b-day-num {
@@ -10118,6 +10122,284 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
 [data-theme="dark"] .v5-home-new-btn em {
   color: var(--brass) !important;
 }
+
+/* =============================================================================
+   REDISEÑO · Phase 10 · Presupuesto
+   ============================================================================= */
+
+/* Currency bar arriba */
+.v5c-currency-bar {
+  display: flex !important;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px !important;
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  margin-bottom: 14px !important;
+  flex-wrap: wrap;
+}
+[data-theme="dark"] .v5c-currency-bar { background: var(--surface-1) !important; }
+.v5c-currency-bar .lbl {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--stone) !important;
+}
+.v5c-currency-segmented {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px !important;
+  background: var(--bone-2) !important;
+  border-radius: 8px !important;
+}
+[data-theme="dark"] .v5c-currency-segmented { background: var(--surface-2) !important; }
+.v5c-currency-segmented button {
+  padding: 6px 14px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--stone) !important;
+  cursor: pointer;
+}
+.v5c-currency-segmented button.active {
+  background: var(--white) !important;
+  color: var(--ink) !important;
+  font-weight: 600 !important;
+  box-shadow: var(--shadow-1);
+}
+[data-theme="dark"] .v5c-currency-segmented button.active { background: var(--surface-0) !important; }
+.v5c-fx-rates {
+  display: flex !important;
+  align-items: center;
+  gap: 8px !important;
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 11px !important;
+  color: var(--stone) !important;
+  margin-left: auto;
+}
+.v5c-fx-rates input {
+  width: 80px !important;
+  padding: 5px 8px !important;
+  background: var(--bone) !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 12px !important;
+  color: var(--ink) !important;
+}
+.v5c-fx-rates input:focus { background: var(--white) !important; border-color: var(--laurel) !important; outline: none; }
+[data-theme="dark"] .v5c-fx-rates input { background: var(--surface-2) !important; }
+
+/* Hero KPIs: 4 cards en grid */
+.v5c-budget-hero {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px !important;
+  margin-bottom: 16px !important;
+}
+@media (max-width: 900px) { .v5c-budget-hero { grid-template-columns: repeat(2, 1fr) !important; } }
+@media (max-width: 480px) { .v5c-budget-hero { grid-template-columns: 1fr !important; } }
+
+.v5c-bhero {
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  padding: 18px 20px !important;
+  box-shadow: var(--shadow-1);
+}
+[data-theme="dark"] .v5c-bhero { background: var(--surface-1) !important; }
+.v5c-bhero.margin {
+  background: var(--laurel-tint) !important;
+  border-color: transparent !important;
+}
+[data-theme="dark"] .v5c-bhero.margin { background: var(--tint-ok) !important; }
+.v5c-bhero-label {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--stone) !important;
+  margin-bottom: 6px;
+}
+.v5c-bhero-value {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: clamp(24px, 3vw, 36px) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1.05 !important;
+  color: var(--ink) !important;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.v5c-bhero.margin .v5c-bhero-value { color: var(--laurel) !important; }
+[data-theme="dark"] .v5c-bhero.margin .v5c-bhero-value { color: var(--accent) !important; }
+.v5c-bhero-value .cur {
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic;
+  font-size: 0.5em !important;
+  color: var(--stone);
+  font-weight: 400;
+}
+.v5c-bhero-statement {
+  font-size: 12px !important;
+  color: var(--ink-2) !important;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+.v5c-bhero-statement strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Budget grid (table + chart side by side) */
+.v5c-budget-grid {
+  display: grid !important;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 12px !important;
+  margin-bottom: 16px;
+}
+@media (max-width: 900px) { .v5c-budget-grid { grid-template-columns: 1fr !important; } }
+
+.v5c-budget-card {
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  padding: 18px 20px !important;
+  box-shadow: var(--shadow-1);
+}
+[data-theme="dark"] .v5c-budget-card { background: var(--surface-1) !important; }
+.v5c-budget-card h3 {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin: 0 0 14px !important;
+  padding: 0 !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--ink) !important;
+}
+.v5c-budget-card h3 .add {
+  padding: 5px 10px !important;
+  background: var(--laurel-deep) !important;
+  color: var(--bone) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+.v5c-budget-card h3 .add:hover { background: var(--laurel) !important; }
+[data-theme="dark"] .v5c-budget-card h3 .add { background: var(--accent) !important; color: var(--surface-0) !important; }
+
+/* Budget table rows */
+.v5c-btable-row {
+  display: grid !important;
+  grid-template-columns: 32px 1fr 100px 100px 28px !important;
+  gap: 10px !important;
+  align-items: center !important;
+  padding: 10px 0 !important;
+  border-bottom: 1px solid var(--line-soft) !important;
+}
+.v5c-btable-row:last-child { border-bottom: none !important; }
+.v5c-btable-row .idx {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 11px !important;
+  color: var(--stone) !important;
+  text-align: center;
+}
+.v5c-btable-row .cat input {
+  background: transparent !important;
+  border: none !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--ink) !important;
+  padding: 2px 0 !important;
+  outline: none;
+  width: 100%;
+  display: block;
+}
+.v5c-btable-row .cat input.notes {
+  font-size: 11px !important;
+  color: var(--stone) !important;
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  margin-top: 2px !important;
+}
+.v5c-btable-row .amt {
+  background: var(--bone-2) !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  padding: 6px 10px !important;
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--ink) !important;
+  text-align: right !important;
+  outline: none;
+}
+.v5c-btable-row .amt:focus { background: var(--white) !important; border-color: var(--laurel) !important; }
+[data-theme="dark"] .v5c-btable-row .amt { background: var(--surface-2) !important; }
+
+.v5c-btable-row .status {
+  padding: 4px 8px !important;
+  background: var(--bone) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: var(--stone) !important;
+  cursor: pointer;
+  text-transform: lowercase;
+}
+.v5c-btable-row .status.confirmed { background: var(--ok-bg) !important; color: var(--ok) !important; }
+.v5c-btable-row .status.estimated { background: var(--warn-bg) !important; color: var(--brass-deep) !important; }
+.v5c-btable-row .status.pending { background: var(--info-bg) !important; color: var(--info) !important; }
+[data-theme="dark"] .v5c-btable-row .status { background: var(--surface-2) !important; }
+
+.v5c-btable-row .del {
+  width: 22px !important;
+  height: 22px !important;
+  background: transparent !important;
+  border: none !important;
+  color: var(--stone-soft) !important;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.v5c-btable-row .del:hover { background: var(--bad-bg) !important; color: var(--bad) !important; }
+
+.v5c-btable-foot {
+  margin-top: 14px;
+  padding: 14px 16px !important;
+  background: var(--laurel-deep) !important;
+  border-radius: 10px !important;
+  color: var(--bone) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center;
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 12px !important;
+  letter-spacing: 0.04em;
+}
+.v5c-btable-foot strong {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  letter-spacing: -0.02em;
+}
+[data-theme="dark"] .v5c-btable-foot { background: var(--accent-deep) !important; color: var(--ink) !important; }
 
 /* =============================================================================
    REDISEÑO · Phase 9 · Pestaña Hoy (Today/Dashboard)
