@@ -5619,32 +5619,9 @@ textarea:focus-visible {
   padding-top: 32px;
   border-top: 1px solid var(--line);
 }
-.v5-home-new-btn {
-  width: 100%;
-  padding: 24px 28px;
-  background: transparent;
-  border: 1px dashed var(--line-strong);
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-.v5-home-new-btn:hover { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 4%, transparent); }
-.v5-home-new-btn span {
-  font-family: 'Geist', serif;
-  font-size: 20px;
-  font-weight: 500;
-  color: var(--text-1);
-  letter-spacing: -0.01em;
-}
-.v5-home-new-btn em {
-  font-family: 'Instrument Serif', serif;
-  font-style: italic;
-  font-size: 14px;
-  color: var(--text-3);
-}
+/* Legacy .v5-home-new-btn eliminado: el sistema real está en Phase 1 +
+   FIX 3 con bg laurel-deep + color bone. Las span/em rules viejas
+   ponían color text-1 (negro) con mayor specificity que vencía mi fix. */
 .v5-home-newform {
   background: var(--surface-1);
   border: 1px solid var(--line);
@@ -8817,49 +8794,13 @@ body {
 }
 
 .v5b-slot {
-  display: grid;
-  grid-template-columns: 56px 36px 1fr auto;
-  gap: 14px;
-  align-items: center;
-  padding: 12px 14px;
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  position: relative;
-  z-index: 1;
-  box-shadow: var(--shadow-1);
+  /* Eliminado: el grid de Phase 4 (4 cols) rompía el slot. El sistema
+     real está abajo en el bloque "REDISEÑO · FIXES" con grid 5 cols.
+     Dejo este selector vacío para no cambiar línea numbers de markup. */
 }
-.v5b-slot:hover {
-  border-color: var(--line-strong);
-  box-shadow: var(--shadow-2);
-}
-[data-theme="dark"] .v5b-slot { background: var(--surface-2); }
-.v5b-slot.has-conflict { border-color: var(--bad); background: var(--bad-bg); }
-.v5b-slot.client-hidden { opacity: 0.6; }
-
 .v5b-slot-handle {
-  cursor: grab;
-  color: var(--stone-soft);
-  display: inline-flex;
-  align-items: center;
-  position: absolute;
-  left: 6px;
-  opacity: 0;
-  transition: opacity 0.12s ease;
-}
-.v5b-slot:hover .v5b-slot-handle { opacity: 0.6; }
-.v5b-slot-handle:active { cursor: grabbing; opacity: 1; }
-.v5b-slot-handle svg { width: 14px; height: 14px; }
-
-.v5b-slot-time {
-  font-family: 'Geist Mono', monospace;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink);
-  text-align: right;
-  padding-left: 18px;
+  /* Eliminado position:absolute de Phase 4 (movía el handle fuera del
+     grid). Sistema real abajo. */
 }
 .v5b-slot.is-untimed .v5b-slot-time { color: var(--stone-soft); }
 
@@ -10002,19 +9943,55 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
    REDISEÑO · FIXES post-smoke-test
    ============================================================================= */
 
-/* FIX 1 · Padding consistente más generoso · alineá topbar / subheader /
-   tabs / content en el mismo eje izquierdo. */
-.v5-topbar             { padding: 12px 40px; }
-.v5-trip-subheader     { padding: 20px 40px 0; }
-.v5-sidebar            { padding: 0 32px; }   /* tabs row */
-.v5-content            { padding: 28px 40px 80px; max-width: none; margin: 0; }
-.v5-home-inner         { padding: 32px 40px 80px; max-width: none; }
+/* FIX 1 · Padding generoso + max-width container.
+   Cada bloque toma EL MAYOR de: 40px de padding mínimo (mobile/medium),
+   o lo que falte para centrar el contenido en 1440px (desktop ancho).
+   Las cards / componentes adentro respiran y no se pegan al borde. */
+.v5-topbar {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+  padding-left: max(40px, calc((100vw - 1440px) / 2)) !important;
+  padding-right: max(40px, calc((100vw - 1440px) / 2)) !important;
+}
+.v5-trip-subheader {
+  padding-top: 20px !important;
+  padding-bottom: 0 !important;
+  padding-left: max(40px, calc((100vw - 1440px) / 2)) !important;
+  padding-right: max(40px, calc((100vw - 1440px) / 2)) !important;
+}
+.v5-sidebar {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: max(40px, calc((100vw - 1440px) / 2)) !important;
+  padding-right: max(40px, calc((100vw - 1440px) / 2)) !important;
+}
+.v5-content {
+  padding-top: 28px !important;
+  padding-bottom: 80px !important;
+  padding-left: max(40px, calc((100vw - 1440px) / 2)) !important;
+  padding-right: max(40px, calc((100vw - 1440px) / 2)) !important;
+  max-width: none !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+.v5-home-inner {
+  padding-top: 32px !important;
+  padding-bottom: 80px !important;
+  padding-left: max(40px, calc((100vw - 1440px) / 2)) !important;
+  padding-right: max(40px, calc((100vw - 1440px) / 2)) !important;
+  max-width: none !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+.v5-login-inner {
+  /* el login es un card centrado pequeño, no necesita el container ancho */
+}
 @media (max-width: 720px) {
-  .v5-topbar         { padding: 12px 16px; }
-  .v5-trip-subheader { padding: 16px 16px 0; }
-  .v5-sidebar        { padding: 0 12px; }
-  .v5-content        { padding: 20px 16px 80px; }
-  .v5-home-inner     { padding: 24px 16px 80px; }
+  .v5-topbar         { padding-left: 16px !important; padding-right: 16px !important; }
+  .v5-trip-subheader { padding-left: 16px !important; padding-right: 16px !important; }
+  .v5-sidebar        { padding-left: 12px !important; padding-right: 12px !important; }
+  .v5-content        { padding-left: 16px !important; padding-right: 16px !important; padding-top: 20px !important; }
+  .v5-home-inner     { padding-left: 16px !important; padding-right: 16px !important; padding-top: 24px !important; }
 }
 
 /* FIX 2 · v5b-slot grid: el markup tiene 5 hijos (handle, time, glyph, body,
@@ -10115,6 +10092,31 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
 [data-theme="dark"] .btn.btn-ghost {
   background: var(--surface-2) !important;
   color: var(--ink) !important;
+}
+
+/* FIX 5 · v5-home-new-btn span/em colores explícitos.
+   El legacy en L5635/5642 ponía color text-1 (negro) y text-3 con
+   specificity .v5-home-new-btn span (0,1,1) que vencía mi override en
+   .v5-home-new-btn (0,1,0). Las eliminé del archivo pero por seguridad
+   añado override con !important en span/em también. */
+.v5-home-new-btn,
+.v5-home-new-btn span,
+.v5-home-new-btn > span {
+  color: var(--bone) !important;
+}
+.v5-home-new-btn em {
+  color: var(--brass-soft) !important;
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+}
+[data-theme="dark"] .v5-home-new-btn,
+[data-theme="dark"] .v5-home-new-btn span,
+[data-theme="dark"] .v5-home-new-btn > span {
+  color: var(--ink) !important;
+}
+[data-theme="dark"] .v5-home-new-btn em {
+  color: var(--brass) !important;
 }
 
 /* =============================================================================
