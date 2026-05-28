@@ -1271,62 +1271,6 @@ display: inline-block;
 border: 2px solid white;
 box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
 }
-/* Custom Leaflet pin styles */
-.leaflet-pin {
-display: flex;
-align-items: center;
-justify-content: center;
-width: 28px;
-height: 28px;
-border-radius: 50% 50% 50% 0;
-transform: rotate(-45deg);
-border: 2px solid white;
-box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-font-family: 'JetBrains Mono', monospace;
-font-size: 11px;
-font-weight: 700;
-color: white;
-}
-.leaflet-pin span { transform: rotate(45deg); }
-.pin-villa {
-  background: var(--gold);
-  width: 48px; height: 48px;
-  font-size: 18px;
-  border: 2px solid var(--cream);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 0 0 4px rgba(184,137,58,0.25);
-  z-index: 400;
-}
-.pin-restaurant { background: #b8512e; }
-.pin-winery { background: #6e1a1f; }
-.pin-truffle { background: #8b6914; }
-.pin-activity { background: #3c6b3c; }
-.pin-transfer { background: #5a6378; }
-.pin-service { background: #3a5a8b; }
-.leaflet-popup-content {
-font-family: 'Inter', sans-serif;
-margin: 12px 16px;
-font-size: 13px;
-}
-.leaflet-popup-content strong {
-font-family: 'Fraunces', serif;
-font-size: 16px;
-font-weight: 500;
-display: block;
-margin-bottom: 4px;
-}
-.leaflet-popup-content .pop-type {
-font-family: 'JetBrains Mono', monospace;
-font-size: 9px;
-letter-spacing: 0.16em;
-text-transform: uppercase;
-color: var(--ink-mute);
-margin-bottom: 6px;
-}
-.leaflet-popup-content .pop-meta {
-font-size: 12px;
-color: var(--ink-soft);
-margin-top: 4px;
-}
 
 /* === COMMENTS === */
 .comments-toggle {
@@ -1614,14 +1558,8 @@ radial-gradient(circle at 85% 95%, rgba(110,26,31,0.06) 0%, transparent 50%);
 [data-theme="dark"] input:hover,
 [data-theme="dark"] textarea:hover,
 [data-theme="dark"] select:hover { background: rgba(255,255,255,0.04); }
-[data-theme="dark"] .leaflet-popup-content-wrapper,
-[data-theme="dark"] .leaflet-popup-tip { background: var(--surface-1); color: var(--text-1); }
-[data-theme="dark"] .leaflet-popup-content-wrapper { box-shadow: var(--shadow-3); }
-[data-theme="dark"] .leaflet-popup-content .pop-meta { color: var(--text-2); }
-[data-theme="dark"] .leaflet-popup-content .pop-type { color: var(--text-3); }
 [data-theme="dark"] .checkbox { background: var(--surface-2); }
 [data-theme="dark"] .countdown-card { background: linear-gradient(135deg, #2a1518 0%, #4a1a20 100%); }
-[data-theme="dark"] .leaflet-tile { filter: brightness(0.62) hue-rotate(15deg) contrast(0.92); }
 [data-theme="dark"] .v5-hoy-hero-img { opacity: 0.32; }
 [data-theme="dark"] .summary-card.highlight { background: var(--accent-deep); color: var(--cream); border-color: var(--accent-deep); }
 
@@ -8074,43 +8012,6 @@ textarea:focus-visible {
     <!-- Content -->
     <main class="v5-content">
 
-  <!-- ====== Legacy header markup (hidden in V5 shell, kept for compat) ====== -->
-  <header class="app-header" style="display:none;">
-    <div class="header-top">
-      <div class="brand"><div class="brand-mark">BA × <em>TWT</em></div></div>
-    </div>
-    <nav class="tabs">
-      <button class="tab" :class="{ active: tab === 'dashboard' }" @click="tab = 'dashboard'">
-        <span>Dashboard</span>
-      </button>
-      <button class="tab" :class="{ active: tab === 'itinerary' }" @click="tab = 'itinerary'">
-        <span>Itinerario</span>
-        <span class="tab-badge" x-text="data.itinerary.length"></span>
-      </button>
-      <button class="tab" :class="{ active: tab === 'budget' }" @click="tab = 'budget'">
-        <span>Presupuesto</span>
-      </button>
-      <button class="tab" :class="{ active: tab === 'providers' }" @click="tab = 'providers'">
-        <span>Proveedores</span>
-        <span class="tab-badge" x-text="data.providers.length"></span>
-      </button>
-      <button class="tab" :class="{ active: tab === 'map' }" @click="tab = 'map'; $nextTick(() => initMap())">
-        <span>Ruta</span>
-      </button>
-      <button class="tab" :class="{ active: tab === 'actions' }" @click="tab = 'actions'">
-        <span>To-Do</span>
-        <span class="tab-badge" x-text="data.actions.filter(a => !a.done).length"></span>
-      </button>
-      <button class="tab" :class="{ active: tab === 'history' }" @click="tab = 'history'; markHistorySeen()">
-        <span>Historial</span>
-        <span class="tab-badge" x-show="unseenChanges > 0" x-text="unseenChanges"></span>
-      </button>
-      <button class="tab" :class="{ active: tab === 'backup' }" @click="tab = 'backup'">
-        <span>Backup</span>
-      </button>
-    </nav>
-  </header>
-
   <!-- ====== MENTION BANNER (v5) ====== -->
   <div class="v5-mention-banner" x-show="unreadMentions.length > 0" x-cloak>
     <div class="v5-mention-banner-text">
@@ -8121,7 +8022,7 @@ textarea:focus-visible {
 </div>
 
 <!-- ====== HOY (ex-Dashboard) ====== -->
-<section x-show="tab === 'today' || tab === 'dashboard'">
+<section x-show="tab === 'today'">
 
   <!-- Hero editorial -->
   <div class="v5-hoy-hero">
@@ -9622,42 +9523,6 @@ textarea:focus-visible {
         </template>
         <div x-show="group.items.length === 0" class="v5b-empty-tiny" style="padding: 16px 0;">Ninguna tarea <span x-text="group.key"></span> con el filtro actual.</div>
       </div>
-    </div>
-  </template>
-</section>
-
-<!-- ====== HISTORIAL ====== -->
-<section x-show="tab === 'history'">
-  <div class="section-header">
-    <div>
-      <h1>Historial <em>de cambios</em></h1>
-      <p class="lead">Bitácora de todas las acciones: quién hizo qué y cuándo. Útil para auditar y volver atrás.</p>
-    </div>
-  </div>
-
-  <div class="event-filter-chips">
-    <button class="chip" :class="{ active: historyFilter === 'all' }" @click="historyFilter = 'all'">Todo (<span x-text="changes.length"></span>)</button>
-    <button class="chip" :class="{ active: historyFilter === 'Brian' }" @click="historyFilter = 'Brian'">Brian (<span x-text="changes.filter(c => c.author === 'Brian').length"></span>)</button>
-    <button class="chip" :class="{ active: historyFilter === 'Federico' }" @click="historyFilter = 'Federico'">Federico (<span x-text="changes.filter(c => c.author === 'Federico').length"></span>)</button>
-    <button class="chip" :class="{ active: historyFilter === 'comments' }" @click="historyFilter = 'comments'">Comentarios</button>
-    <button class="chip" :class="{ active: historyFilter === 'edits' }" @click="historyFilter = 'edits'">Ediciones</button>
-  </div>
-
-  <template x-for="c in filteredChanges" :key="c.id">
-    <div class="event-row">
-      <div class="event-avatar" :class="(c.author || '').toLowerCase()" x-text="(c.author || '?').substring(0,1)"></div>
-      <div class="event-summary">
-        <span class="event-icon" x-text="eventIcon(c.event_type)"></span>
-        <strong x-text="c.author"></strong> <span x-text="c.summary"></span>
-      </div>
-      <div class="event-time" x-text="relativeTime(c.created_at)"></div>
-    </div>
-  </template>
-
-  <template x-if="filteredChanges.length === 0">
-    <div class="empty-state">
-      <span x-show="changes.length === 0">Aún no hay eventos registrados.<br>Las acciones futuras (agregar/eliminar/cambiar estado, comentarios, snapshots) van a aparecer acá.</span>
-      <span x-show="changes.length > 0">Sin resultados con este filtro.</span>
     </div>
   </template>
 </section>
