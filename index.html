@@ -11155,6 +11155,302 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
 .v5-meta-row > * { flex: 1; min-width: 100px; }
 
 /* =============================================================================
+   REDISEÑO · Phase 13 · Backup / Ajustes
+   ============================================================================= */
+
+/* Snapshots section header */
+.v5c-snap-section {
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  padding: 22px 24px !important;
+  margin-bottom: 14px !important;
+  box-shadow: var(--shadow-1);
+}
+[data-theme="dark"] .v5c-snap-section { background: var(--surface-1) !important; }
+
+.v5c-snap-head {
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  align-items: flex-start !important;
+  gap: 16px !important;
+  margin-bottom: 16px !important;
+  padding-bottom: 16px !important;
+  border-bottom: 1px solid var(--line-soft) !important;
+}
+@media (max-width: 720px) {
+  .v5c-snap-head { grid-template-columns: 1fr !important; }
+}
+.v5c-snap-head h2 {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+  color: var(--ink) !important;
+  margin: 0 0 4px !important;
+}
+.v5c-snap-head h2 em {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: italic !important;
+  color: var(--laurel) !important;
+  font-weight: 500 !important;
+}
+[data-theme="dark"] .v5c-snap-head h2 em { color: var(--accent) !important; }
+.v5c-snap-head .lead {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: normal !important;
+  font-size: 13px !important;
+  color: var(--stone) !important;
+  margin: 0 !important;
+}
+
+.v5c-snap-form {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+.v5c-snap-form input {
+  padding: 9px 12px !important;
+  background: var(--bone-2) !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  color: var(--ink) !important;
+  outline: none;
+  min-width: 240px;
+  transition: all 0.12s ease;
+}
+.v5c-snap-form input:focus {
+  background: var(--white) !important;
+  border-color: var(--laurel) !important;
+}
+[data-theme="dark"] .v5c-snap-form input { background: var(--surface-2) !important; }
+[data-theme="dark"] .v5c-snap-form input:focus {
+  background: var(--surface-1) !important;
+  border-color: var(--accent) !important;
+}
+
+/* Snap timeline rows */
+.v5c-snap-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.v5c-snap-row {
+  display: grid !important;
+  grid-template-columns: 1fr auto auto !important;
+  gap: 12px !important;
+  align-items: center !important;
+  padding: 12px 14px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  transition: all 0.12s ease;
+}
+.v5c-snap-row:hover {
+  background: var(--bone) !important;
+  border-color: var(--line) !important;
+}
+[data-theme="dark"] .v5c-snap-row:hover { background: var(--surface-2) !important; }
+
+/* Coloreá el row por autor (Luca/Brian = laurel; Esteban/Federico = brass) */
+.v5c-snap-row.luca,
+.v5c-snap-row.brian {
+  border-left: 3px solid var(--user-luca);
+}
+.v5c-snap-row.esteban,
+.v5c-snap-row.federico {
+  border-left: 3px solid var(--user-esteban);
+}
+
+.v5c-snap-name {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em !important;
+  color: var(--ink) !important;
+  line-height: 1.25;
+}
+.v5c-snap-meta {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 11px !important;
+  color: var(--stone) !important;
+  margin-top: 3px;
+  letter-spacing: 0;
+}
+.v5c-snap-meta .author {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.v5c-snap-empty {
+  padding: 24px;
+  background: var(--bone) !important;
+  border: 1px dashed var(--line) !important;
+  border-radius: 10px;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: italic !important;
+  font-size: 13px !important;
+  color: var(--stone) !important;
+  text-align: center;
+}
+[data-theme="dark"] .v5c-snap-empty { background: var(--surface-2) !important; }
+
+/* Settings cards grid */
+.v5c-settings-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 12px !important;
+  margin-bottom: 14px;
+}
+@media (max-width: 900px) {
+  .v5c-settings-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 540px) {
+  .v5c-settings-grid { grid-template-columns: 1fr !important; }
+}
+
+.v5c-set-card {
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  padding: 18px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: var(--shadow-1);
+  transition: all 0.12s ease;
+}
+.v5c-set-card:hover {
+  border-color: var(--line-strong) !important;
+  box-shadow: var(--shadow-2);
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .v5c-set-card { background: var(--surface-1) !important; }
+
+.v5c-set-card .ic {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 10px !important;
+  background: var(--laurel-tint) !important;
+  color: var(--laurel) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+[data-theme="dark"] .v5c-set-card .ic { color: var(--accent) !important; }
+.v5c-set-card .ic svg {
+  width: 18px;
+  height: 18px;
+}
+
+.v5c-set-card h3 {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--ink) !important;
+  margin: 0 0 6px !important;
+  padding: 0 !important;
+  display: block !important;
+}
+.v5c-set-card h3 em {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: italic !important;
+  color: var(--laurel) !important;
+  font-weight: 500 !important;
+}
+[data-theme="dark"] .v5c-set-card h3 em { color: var(--accent) !important; }
+
+.v5c-set-card p {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 12px !important;
+  color: var(--ink-2) !important;
+  line-height: 1.5 !important;
+  margin: 0 0 14px !important;
+  flex: 1;
+}
+.v5c-set-card p strong { color: var(--ink); font-weight: 600; }
+.v5c-set-card p code {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  padding: 1px 5px;
+  background: var(--bone-2);
+  border-radius: 4px;
+  color: var(--ink);
+}
+[data-theme="dark"] .v5c-set-card p code { background: var(--surface-2); }
+
+.v5c-set-card .actions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.v5c-set-card .actions .btn {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Danger card (Reset) — destacar */
+.v5c-set-card.danger {
+  background: var(--bad-bg) !important;
+  border-color: var(--bad) !important;
+  border-width: 1px !important;
+}
+.v5c-set-card.danger .ic {
+  background: var(--bad) !important;
+  color: var(--white) !important;
+}
+.v5c-set-card.danger h3 em {
+  color: var(--bad) !important;
+}
+[data-theme="dark"] .v5c-set-card.danger {
+  background: var(--tint-bad) !important;
+}
+
+/* Deploy note (informacional al final) */
+.v5c-deploy-note {
+  background: var(--bone) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  padding: 18px 20px !important;
+  margin-top: 14px;
+}
+[data-theme="dark"] .v5c-deploy-note { background: var(--surface-2) !important; }
+.v5c-deploy-note h3 {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em !important;
+  color: var(--ink) !important;
+  margin: 0 0 10px !important;
+}
+.v5c-deploy-note p {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 12px !important;
+  color: var(--ink-2) !important;
+  line-height: 1.55 !important;
+  margin: 0 0 6px !important;
+}
+.v5c-deploy-note p:last-child { margin-bottom: 0 !important; }
+.v5c-deploy-note p strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.v5c-deploy-note p code {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 11px !important;
+  padding: 2px 6px !important;
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 4px !important;
+  color: var(--ink) !important;
+}
+[data-theme="dark"] .v5c-deploy-note p code { background: var(--surface-1) !important; }
+
+/* =============================================================================
    REDISEÑO · Phase 9 · Pestaña Hoy (Today/Dashboard)
    Reemplaza el gradiente marrón legacy por hero card laurel-deep limpio
    y pulido alineado con el sistema nuevo.
