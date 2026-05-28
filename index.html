@@ -9514,6 +9514,172 @@ section .section-header:has(+ .v5b-toolbar) {
   line-height: 1.45;
 }
 
+/* =============================================================================
+   REDISEÑO · Phase 6 · Clientes (Leads CRM)
+   ============================================================================= */
+
+/* KPI 7 stages — la stage.color viene inline (--accent: ...). Cada tile usa
+   esa color como dot + accent del number. Background neutro. */
+.v5d-stats[style*="grid-template-columns: repeat(7"] .v5d-stat {
+  background: var(--white);
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+[data-theme="dark"] .v5d-stats[style*="grid-template-columns: repeat(7"] .v5d-stat {
+  background: var(--surface-1);
+}
+.v5d-stats[style*="grid-template-columns: repeat(7"] .v5d-stat:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+}
+.v5d-stats[style*="grid-template-columns: repeat(7"] .v5d-stat::after {
+  content: '';
+  position: absolute;
+  top: 12px; left: 14px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent); /* inline override viene como stage.color */
+}
+.v5d-stats[style*="grid-template-columns: repeat(7"] .v5d-stat .num {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  color: var(--accent); /* hereda stage.color */
+  margin-top: 12px;
+}
+.v5d-stats[style*="grid-template-columns: repeat(7"] .v5d-stat .lb {
+  font-size: 9px;
+  letter-spacing: 0.10em;
+}
+.v5d-stats[style*="grid-template-columns: repeat(7"] .v5d-stat .pct {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  color: var(--stone);
+}
+.v5d-stats[style*="grid-template-columns: repeat(7"] .v5d-stat.active {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+@media (max-width: 1200px) {
+  .v5d-stats[style*="grid-template-columns: repeat(7"] { grid-template-columns: repeat(4, 1fr) !important; }
+}
+@media (max-width: 720px) {
+  .v5d-stats[style*="grid-template-columns: repeat(7"] { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* Pipeline 7 cols — el --col-c viene inline desde stage.color */
+.v5d-pipeline {
+  display: grid;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.v5d-pp-col {
+  border-top: 3px solid var(--col-c);
+}
+.v5d-pp-head::before { background: var(--col-c); }
+.v5d-pp-head .count {
+  background: var(--white);
+  padding: 2px 8px;
+  border-radius: 5px;
+  color: var(--ink);
+}
+[data-theme="dark"] .v5d-pp-head .count { background: var(--surface-0); }
+
+/* Lead cards en pipeline — mejorar foot con source + age */
+.v5d-pp-card .foot {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-family: 'Geist Mono', monospace;
+  color: var(--stone);
+}
+.v5d-pp-empty {
+  padding: 16px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--stone-soft);
+  text-align: center;
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+}
+
+/* Lead cards view (.v5b-prov-card pero con data de lead) */
+.v5b-prov-meta {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.v5b-prov-meta .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.v5b-prov-meta .k {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--stone);
+  flex-shrink: 0;
+}
+.v5b-prov-meta .v {
+  color: var(--ink);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* Lead drawer (panel detail) */
+.v5d-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  background: var(--bone);
+  border-radius: 6px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+}
+.v5d-status-pill .d {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Lead drawer h2 (reemplaza el inline Fraunces) */
+.v5-drawer h2 {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em;
+}
+
+/* Lead leads table - cuando lo veas el segmented cambia, hereda restyle */
+
+/* Lead refrescar btn ya usa .btn .btn-ghost que está bien estilado */
+
+/* Lead error banner */
+section[x-init="loadLeads()"] [x-show="leadsError"] {
+  background: var(--bad-bg);
+  border-color: transparent;
+  border-radius: 12px;
+  color: var(--bad);
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
 </style>
 
 </head>
@@ -11214,7 +11380,7 @@ section .section-header:has(+ .v5b-toolbar) {
     <div style="position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.45); display: flex; justify-content: flex-end;" @click.self="closeLeadDrawer()">
       <div style="width: min(560px, 100%); height: 100%; background: var(--surface-1); padding: 24px; overflow-y: auto; box-shadow: -8px 0 30px rgba(0,0,0,0.2);">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-          <h2 style="margin: 0; font-family: Fraunces, serif; font-weight: 400;" x-text="leadDrawerLead ? (leadDrawerLead.full_name || 'Sin nombre') : 'Cargando…'"></h2>
+          <h2 style="margin: 0; font-family: Geist, system-ui, sans-serif; font-weight: 400;" x-text="leadDrawerLead ? (leadDrawerLead.full_name || 'Sin nombre') : 'Cargando…'"></h2>
           <button @click="closeLeadDrawer()" style="background: var(--surface-2); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px;">✕</button>
         </div>
         <template x-if="leadDrawerLead">
@@ -17011,7 +17177,7 @@ function app() {
       } catch (e) {
         console.warn('Google Maps init failed:', e);
         const el = document.getElementById('trip-map');
-        if (el) el.innerHTML = '<div style="padding:32px; text-align:center; color: var(--text-3); font-family: Lora, serif; font-style: italic;">El mapa no pudo cargar. Verificá conexión y la API key restringida.</div>';
+        if (el) el.innerHTML = '<div style="padding:32px; text-align:center; color: var(--text-3); font-family: Instrument Serif, serif; font-style: italic;">El mapa no pudo cargar. Verificá conexión y la API key restringida.</div>';
       }
     },
 
