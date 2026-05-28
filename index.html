@@ -9680,6 +9680,324 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
   font-family: 'Geist', system-ui, sans-serif;
 }
 
+/* =============================================================================
+   REDISEÑO · Phase 7 · Mapa · skin alrededor de Leaflet/Google Maps
+   ============================================================================= */
+
+.v5c-ruta-wrap, .v5c-map-wrap {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 0;
+  background: var(--white);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  margin-top: 16px;
+}
+@media (max-width: 880px) {
+  .v5c-ruta-wrap, .v5c-map-wrap { grid-template-columns: 1fr; }
+}
+
+.v5c-map-frame {
+  position: relative;
+  background: var(--bone-2);
+  min-height: 620px;
+}
+.v5c-map-frame #trip-map {
+  width: 100%;
+  height: 100%;
+  min-height: 620px;
+}
+
+/* Day chips arriba del mapa */
+.v5c-map-day-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px;
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.v5c-map-day-tabs::-webkit-scrollbar { display: none; }
+.v5c-map-day-tab {
+  padding: 7px 12px;
+  background: var(--bone-2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 96px;
+  flex-shrink: 0;
+  transition: all 0.12s ease;
+}
+.v5c-map-day-tab:hover { background: var(--bone); }
+.v5c-map-day-tab.active {
+  background: var(--laurel-deep);
+  color: var(--bone);
+}
+[data-theme="dark"] .v5c-map-day-tab.active {
+  background: var(--accent);
+  color: var(--surface-0);
+}
+.v5c-map-day-tab .d-num {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+.v5c-map-day-tab .d-name {
+  font-weight: 600;
+}
+.v5c-map-day-tab .d-meta {
+  font-size: 9px;
+  opacity: 0.7;
+  font-family: 'Geist Mono', monospace;
+}
+
+/* Map sidebar */
+.v5c-map-panel, .v5c-ruta-side {
+  padding: 20px;
+  background: var(--white);
+  border-left: 1px solid var(--line);
+  overflow-y: auto;
+}
+[data-theme="dark"] .v5c-map-panel, [data-theme="dark"] .v5c-ruta-side {
+  background: var(--surface-1);
+}
+@media (max-width: 880px) {
+  .v5c-map-panel, .v5c-ruta-side { border-left: none; border-top: 1px solid var(--line); }
+}
+
+/* Bottom sheet info que flota sobre el mapa */
+.v5c-map-bsh {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: var(--white);
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  z-index: 10;
+}
+[data-theme="dark"] .v5c-map-bsh { background: var(--surface-1); }
+
+/* =============================================================================
+   REDISEÑO · Phase 8 · Biblioteca
+   ============================================================================= */
+
+.v5-library {
+  background: var(--bone-2);
+}
+.v5-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.v5-lib-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow-1);
+  transition: all 0.12s ease;
+  cursor: pointer;
+  position: relative;
+}
+[data-theme="dark"] .v5-lib-card { background: var(--surface-1); }
+.v5-lib-card:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+}
+.v5-lib-card-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background: var(--bone);
+  border-radius: 5px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--stone);
+  margin-bottom: 8px;
+}
+[data-theme="dark"] .v5-lib-card-type { background: var(--surface-2); }
+
+.v5-lib-card-name {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+  margin: 0;
+}
+
+.v5-lib-card-meta {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--stone);
+  margin-top: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.v5-lib-card-contact {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-2);
+  margin-top: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.v5-lib-card-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--stone);
+  flex-wrap: wrap;
+}
+.v5-lib-stars { color: var(--brass); font-family: 'Geist', system-ui, sans-serif; letter-spacing: 0; }
+.v5-lib-coords-tag {
+  padding: 1px 6px;
+  background: var(--laurel-tint);
+  color: var(--laurel);
+  border-radius: 4px;
+  font-size: 9px;
+}
+[data-theme="dark"] .v5-lib-coords-tag { color: var(--accent); }
+.v5-lib-usage-tag {
+  padding: 1px 6px;
+  background: var(--bone);
+  border-radius: 4px;
+  font-size: 9px;
+}
+.v5-lib-usage-tag.used { background: var(--info-bg); color: var(--info); }
+.v5-lib-usage-tag.unused { color: var(--stone-soft); }
+[data-theme="dark"] .v5-lib-usage-tag { background: var(--surface-2); }
+.v5-lib-card-updated {
+  color: var(--stone-soft);
+}
+
+/* =============================================================================
+   Pulido global de elementos misceláneos
+   ============================================================================= */
+
+/* Search wrap (.v5b-search-wrap) en toolbars */
+.v5b-search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 320px;
+}
+.v5b-search-icon {
+  position: absolute;
+  top: 9px;
+  left: 12px;
+  width: 14px;
+  height: 14px;
+  color: var(--stone);
+  pointer-events: none;
+}
+.v5b-search-wrap input {
+  width: 100%;
+  padding: 9px 36px 9px 36px;
+  background: var(--bone-2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.12s ease;
+}
+[data-theme="dark"] .v5b-search-wrap input { background: var(--surface-2); }
+.v5b-search-wrap input:focus { border-color: var(--laurel); background: var(--white); }
+[data-theme="dark"] .v5b-search-wrap input:focus { background: var(--surface-1); border-color: var(--accent); }
+.v5b-search-wrap input::placeholder { color: var(--stone); }
+.v5b-search-clear {
+  position: absolute;
+  top: 9px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  color: var(--stone);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+.v5b-search-clear:hover { background: var(--bone); color: var(--ink); }
+.v5b-search-clear svg { width: 12px; height: 12px; }
+
+/* Mention banner */
+.v5-mention-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  margin: 12px 0;
+  background: var(--warn-bg);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--brass-deep);
+}
+[data-theme="dark"] .v5-mention-banner { color: var(--brass); }
+.v5-mention-banner button {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--brass-deep);
+  color: var(--brass-deep);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+.v5-mention-banner button:hover { background: var(--brass-deep); color: var(--white); }
+
+/* Empty state global */
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--stone);
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 14px;
+}
+
 </style>
 
 </head>
