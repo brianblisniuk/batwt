@@ -1575,25 +1575,26 @@ main { padding: 20px; max-width: none; }
 
 
 [data-theme="dark"] {
-/* Dark mode espeja el nuevo sistema laurel.
-   Surface escalonada desde el laurel-deep hacia más claro.
-   Texto en bone para contraste cálido. */
+/* Dark mode = black mode neutro.
+   Surfaces escalonadas de negro a gris.
+   Laurel verde queda como acento sobre fondo oscuro,
+   un poco más claro para mejor contraste (~6E9456 vs el ~3D5A3E del light). */
 
-/* Sobrescritos: tokens canonical del rediseño */
---white:       #1F2E20;
---bone:        #2A3A2C;
---bone-2:      #1F2E20;
---ink:         #F5F1E8;
---ink-2:       #D4C8B4;
---stone:       #A89F90;
---stone-soft:  #6B5D4D;
---laurel-tint: rgba(122,201,122,0.12);
+/* Tokens canonical en dark */
+--white:       #141414;     /* "white" en dark = card surface */
+--bone:        #1E1E1E;     /* "bone" en dark = warm surface elevation 2 */
+--bone-2:      #0A0A0A;     /* "bone-2" en dark = page background near-black */
+--ink:         #F5F1E8;     /* texto primario bone para contraste cálido */
+--ink-2:       #C4BEB0;     /* texto secundario */
+--stone:       #8B8478;     /* meta · igual que light */
+--stone-soft:  #6B6B6B;
+--laurel-tint: rgba(110,148,86,0.14);
 
-/* V5 surfaces — escalonadas en dark */
---surface-0: #1F2E20;
---surface-1: #2A3A2C;
---surface-2: #324034;
---surface-3: #3D4A3F;
+/* V5 surfaces escalonadas en black */
+--surface-0: #0A0A0A;
+--surface-1: #141414;
+--surface-2: #1E1E1E;
+--surface-3: #282828;
 
 /* Text */
 --text-1: var(--ink);
@@ -1601,31 +1602,34 @@ main { padding: 20px; max-width: none; }
 --text-3: var(--stone);
 --text-4: var(--stone-soft);
 
-/* Lines */
+/* Lines · sutiles sobre negro */
 --line:        rgba(245,241,232,0.10);
 --line-strong: rgba(245,241,232,0.20);
 --line-soft:   rgba(245,241,232,0.06);
 
-/* Accent en dark: laurel un poco más claro para mejor contraste sobre fondos oscuros */
+/* Accent laurel — más claro para contraste sobre negro */
 --accent:      #6E9456;
 --accent-soft: #8FB776;
 --accent-deep: #4A6A4B;
+--laurel:      #6E9456;
+--laurel-soft: #8FB776;
+--laurel-deep: #4A6A4B;
 
-/* Brass en dark: más saturado */
---brass:        var(--gold-soft-v5);
+/* Brass un poco más saturado */
+--brass:        #D4A85A;
 --brass-soft:   #E8C47E;
 --brass-deep:   #B8945A;
 --gold-v5:      #D4A85A;
 --gold-soft-v5: #E8C47E;
---olive-v5:     #7FA05A;
---olive-deep:   #6E9056;
+--olive-v5:     #6E9456;
+--olive-deep:   #6E9456;
 
-/* Status tints darker, más opacidad */
---tint-ok:     rgba(110,148,86,0.14);
---tint-warn:   rgba(212,168,90,0.16);
---tint-bad:    rgba(220,90,75,0.14);
---tint-info:   rgba(120,160,210,0.14);
---tint-accent: rgba(110,148,86,0.16);
+/* Status tints — más opacidad sobre fondo oscuro */
+--tint-ok:     rgba(110,148,86,0.16);
+--tint-warn:   rgba(212,168,90,0.18);
+--tint-bad:    rgba(220,90,75,0.16);
+--tint-info:   rgba(120,160,210,0.16);
+--tint-accent: rgba(110,148,86,0.18);
 
 --ok:      var(--accent);
 --ok-bg:   var(--tint-ok);
@@ -1638,19 +1642,19 @@ main { padding: 20px; max-width: none; }
 --danger:    var(--bad);
 --danger-bg: var(--bad-bg);
 
-/* Shadows fuertes en dark */
---shadow-1:    0 1px 2px rgba(0,0,0,0.4);
---shadow-2:    0 2px 4px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
---shadow-3:    0 8px 16px rgba(0,0,0,0.4), 0 24px 48px rgba(0,0,0,0.5);
---shadow-sm:   var(--shadow-1);
---shadow:      var(--shadow-2);
---shadow-lg:   var(--shadow-3);
---shadow-laurel: 0 8px 20px rgba(110,148,86,0.40);
+/* Shadows pronunciadas sobre negro */
+--shadow-1:      0 1px 2px rgba(0,0,0,0.5);
+--shadow-2:      0 4px 12px rgba(0,0,0,0.4);
+--shadow-3:      0 8px 30px rgba(0,0,0,0.6);
+--shadow-sm:     var(--shadow-1);
+--shadow:        var(--shadow-2);
+--shadow-lg:     var(--shadow-3);
+--shadow-laurel: 0 8px 20px rgba(110,148,86,0.30);
 
---grain-opacity: 0.22;
---noise-blend: screen;
+--grain-opacity: 0;
+--noise-blend: normal;
 
-/* User colors en dark — sólo el laurel se aclara, el brass mantiene */
+/* User colors en dark */
 --user-luca:     var(--accent);
 --user-esteban:  var(--brass);
 --user-brian:    var(--accent);
@@ -1663,7 +1667,7 @@ main { padding: 20px; max-width: none; }
 --cream:           #F5F1E8;
 --terracotta:      var(--accent);
 --terracotta-soft: var(--accent-soft);
---borgona:         var(--accent-deep);
+--borgona:         var(--accent);
 --borgona-deep:    var(--accent-deep);
 --ink-soft:        var(--ink-2);
 --ink-mute:        var(--stone);
@@ -1675,6 +1679,54 @@ main { padding: 20px; max-width: none; }
 --gold-soft:       var(--brass-soft);
 --olive:           var(--accent);
 }
+/* En dark, dejá que el em de los headings mantenga el acento brass (más cálido sobre negro)
+   en vez de laurel verde — el verde se reserva para CTAs y status pills */
+[data-theme="dark"] h1 em,
+[data-theme="dark"] h2 em,
+[data-theme="dark"] h3 em,
+[data-theme="dark"] .font-display em,
+[data-theme="dark"] .v5-home-title em,
+[data-theme="dark"] .v5-login-title em,
+[data-theme="dark"] .v5-home-new-btn em {
+  color: var(--brass-soft);
+}
+/* Body background completamente negro, sin radial gradients verdes */
+[data-theme="dark"] body {
+  background: var(--bone-2);
+  background-image: none;
+}
+[data-theme="dark"] .v5-trip-card.status-active {
+  /* en dark, la card del viaje activo NO es laurel-deep porque toda la app es oscura.
+     Diferenciamos con borde laurel + tinta laurel-tint suave */
+  background: var(--surface-2);
+  border-color: var(--accent-deep);
+  border-width: 1px;
+  color: var(--ink);
+  box-shadow: var(--shadow-2), inset 0 0 0 1px var(--accent-deep);
+}
+[data-theme="dark"] .v5-trip-card.status-active .v5-trip-card-title { color: var(--ink); }
+[data-theme="dark"] .v5-trip-card.status-active .v5-trip-card-region,
+[data-theme="dark"] .v5-trip-card.status-active .v5-trip-card-dates,
+[data-theme="dark"] .v5-trip-card.status-active .v5-trip-card-countdown { color: var(--stone); }
+[data-theme="dark"] .v5-trip-card.status-active .v5-trip-card-status {
+  background: var(--laurel-tint);
+  color: var(--accent-soft);
+}
+[data-theme="dark"] .v5-home-new-btn {
+  background: var(--accent-deep);
+  color: var(--ink);
+}
+[data-theme="dark"] .v5-home-new-btn:hover { background: var(--accent); }
+[data-theme="dark"] .v5-login-btn {
+  background: var(--accent);
+  color: var(--surface-0);
+}
+[data-theme="dark"] .v5-login-btn:hover { background: var(--accent-soft); }
+[data-theme="dark"] .btn {
+  background: var(--accent);
+  color: var(--surface-0);
+}
+[data-theme="dark"] .btn:hover { background: var(--accent-soft); }
 [data-theme="dark"] body {
 background: var(--surface-0);
 background-image:
