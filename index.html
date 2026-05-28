@@ -167,6 +167,12 @@
 body, h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote { margin: 0; padding: 0; }
 ul, ol { list-style: none; }
 
+/* Alpine.js x-cloak: oculta elementos antes de que Alpine inicialice.
+   Sin esta regla, todos los <main x-show="..."> aparecen brevemente
+   stackeados al cargar la página (login + home + trip + etc. visibles
+   en pila). Alpine remueve el attribute x-cloak después de bootear. */
+[x-cloak] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -12629,7 +12635,7 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
    En mobile/tablet: single column, .v5-login-inner full width. */
 
 .v5-login {
-  display: grid !important;
+  display: grid;
   grid-template-columns: 1fr !important;
   align-items: stretch !important;
   background: var(--bone-2) !important;
@@ -12697,7 +12703,7 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
 @media (max-width: 899px) {
   /* Mobile/tablet: card centrado como antes */
   .v5-login {
-    display: grid !important;
+    display: grid;
     place-items: center !important;
     padding: 24px !important;
   }
