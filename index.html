@@ -11668,6 +11668,14 @@ function ensureTravelChipClass() {
   };
 }
 
+// localStorage wrapper safe against private mode / quota exceeded / disabled storage.
+// Reads return null on failure; writes return false. Never throws.
+const safeStorage = {
+  get(key)        { try { return localStorage.getItem(key); }     catch { return null; } },
+  set(key, val)   { try { localStorage.setItem(key, val); return true; } catch { return false; } },
+  remove(key)     { try { localStorage.removeItem(key); }         catch {} },
+};
+
 function app() {
   return {
     // === CONFIG ===
@@ -13156,9 +13164,9 @@ function app() {
       const legacyTrip = 'piemonte-ba-twt-2026';
       const migrateOne = (oldKey, newKey) => {
         try {
-          const v = localStorage.getItem(oldKey);
-          if (v !== null && localStorage.getItem(newKey) === null) {
-            localStorage.setItem(newKey, v);
+          const v = safeStorage.get(oldKey);
+          if (v !== null && safeStorage.get(newKey) === null) {
+            safeStorage.set(newKey, v);
           }
         } catch (e) {}
       };
@@ -13196,7 +13204,7 @@ function app() {
       this.theme = document.documentElement.getAttribute('data-theme') || 'light';
 
       // Load identity (user-scope, applies across trips)
-      this.identity = localStorage.getItem(this._storeKey('identity', 'user'));
+      this.identity = safeStorage.get(this._storeKey('identity', 'user'));
 
       // Tick relative time every 30s
       setInterval(() => { this._now = Date.now(); }, 30000);
@@ -13536,9 +13544,9 @@ function app() {
     // from Supabase + sets up real-time sync + fires weather/geocoding/travel-times.
     async _enterTripView() {
       // Load trip-scoped "seen" timestamps now that TRIP_ID is set
-      this._historySeenAt = parseInt(localStorage.getItem(this._storeKey('history-seen')) || '0', 10);
+      this._historySeenAt = parseInt(safeStorage.get(this._storeKey('history-seen')) || '0', 10);
       if (this.identity) {
-        this._mentionsSeenAt = parseInt(localStorage.getItem(this._storeKey('mentions-seen:' + this.identity)) || '0', 10);
+        this._mentionsSeenAt = parseInt(safeStorage.get(this._storeKey('mentions-seen:' + this.identity)) || '0', 10);
       }
       // Load trip data
       const loadOk = await this.loadFromCloud();
@@ -13571,8 +13579,8 @@ function app() {
     // === IDENTITY ===
     setIdentity(name) {
       this.identity = name;
-      localStorage.setItem(this._storeKey('identity', 'user'), name);
-      this._mentionsSeenAt = parseInt(localStorage.getItem(this._storeKey('mentions-seen:' + name)) || '0', 10);
+      safeStorage.set(this._storeKey('identity', 'user'), name);
+      this._mentionsSeenAt = parseInt(safeStorage.get(this._storeKey('mentions-seen:' + name)) || '0', 10);
     },
     async switchIdentity() {
       const ok = await this.askConfirm({
@@ -13581,7 +13589,7 @@ function app() {
         confirmLabel: 'Cambiar',
       });
       if (ok) {
-        localStorage.removeItem(this._storeKey('identity', 'user'));
+        safeStorage.remove(this._storeKey('identity', 'user'));
         this.identity = null;
       }
     },
@@ -13590,7 +13598,7 @@ function app() {
     toggleTheme() {
       this.theme = (this.theme === 'dark') ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', this.theme);
-      try { localStorage.setItem(this._storeKey('theme', 'user'), this.theme); } catch(e) {}
+      try { safeStorage.set(this._storeKey('theme', 'user'), this.theme); } catch(e) {}
     },
 
     // === V5 · DRAWERS ===
@@ -13760,7 +13768,7 @@ function app() {
       this._syncSlotLayers();
 
       // Always save local as fallback
-      try { localStorage.setItem(this._storeKey('data-cache'), JSON.stringify(this.data)); } catch (e) {}
+      try { safeStorage.set(this._storeKey('data-cache'), JSON.stringify(this.data)); } catch (e) {}
 
       if (!this._client || !this.isOnline) {
         this.syncStatus = 'offline';
@@ -13933,7 +13941,7 @@ function app() {
 
     loadFromLocal() {
       try {
-        const stored = localStorage.getItem(this._storeKey('data-cache'));
+        const stored = safeStorage.get(this._storeKey('data-cache'));
         if (stored) {
           const parsed = JSON.parse(stored);
           this.applyingRemote = true;
@@ -14139,6 +14147,7 @@ function app() {
     },
     async deleteDay(idx) {
       const day = this.data.itinerary[idx];
+      if (!day) return;
       const ok = await this.askConfirm({
         title: `Eliminar el día ${idx + 1}?`,
         body: `Se borran "${day.title || 'sin título'}" y sus ${day.slots.length} slots. No se puede deshacer (excepto restaurando un snapshot).`,
@@ -14152,6 +14161,8 @@ function app() {
       this.toast('Día eliminado');
     },
     addSlot(dayIdx) {
+      const day = this.data.itinerary[dayIdx];
+      if (!day) return;
       const slot = {
         id: 's' + Date.now(),
         timeStart: '09:00',
@@ -14162,16 +14173,17 @@ function app() {
         status: 'info',
         verdict: ''
       };
-      this.data.itinerary[dayIdx].slots.push(slot);
-      const day = this.data.itinerary[dayIdx];
+      day.slots.push(slot);
       this.logEvent('itinerary.slot_added', `agregó un slot en "${day.title}"`, { day_id: day.id, slot_id: slot.id });
       this.save();
       // open the new slot in the drawer for immediate editing
       this.openSlotDrawer(slot.id);
     },
     async deleteSlot(dayIdx, slotIdx) {
-      const slot = this.data.itinerary[dayIdx].slots[slotIdx];
       const day = this.data.itinerary[dayIdx];
+      if (!day) return false;
+      const slot = day.slots[slotIdx];
+      if (!slot) return false;
       const ok = await this.askConfirm({
         title: '¿Eliminar este slot?',
         body: `Se va a borrar "${slot.title || 'sin título'}" del ${day.weekday}. Esta acción no se puede deshacer.`,
@@ -14817,8 +14829,8 @@ function app() {
         this._loadDirectionsCache();
         // Restore last viewed mode/day from localStorage (default: día 0)
         try {
-          const savedView = localStorage.getItem(this._storeKey('map-view'));
-          const savedDay = parseInt(localStorage.getItem(this._storeKey('map-day')) || '0', 10);
+          const savedView = safeStorage.get(this._storeKey('map-view'));
+          const savedDay = parseInt(safeStorage.get(this._storeKey('map-day')) || '0', 10);
           this.mapView = (savedView === 'p2p') ? 'p2p' : 'day';
           this.mapMode = 'day';
           this.mapSelectedDay = Number.isFinite(savedDay) && savedDay >= 0 && savedDay < this.data.itinerary.length ? savedDay : 0;
@@ -14864,8 +14876,8 @@ function app() {
       if (Number.isFinite(dayIdx)) this.mapSelectedDay = dayIdx;
       this.mapBottomSheet = null;
       try {
-        localStorage.setItem(this._storeKey('map-mode'), 'day');
-        localStorage.setItem(this._storeKey('map-day'), String(this.mapSelectedDay));
+        safeStorage.set(this._storeKey('map-mode'), 'day');
+        safeStorage.set(this._storeKey('map-day'), String(this.mapSelectedDay));
       } catch(e) {}
       if (this._gmap) this._renderMapForCurrentMode();
     },
@@ -14873,7 +14885,7 @@ function app() {
     setMapView(view) {
       this.mapView = view;
       this.mapBottomSheet = null;
-      try { localStorage.setItem(this._storeKey('map-view'), view); } catch(e) {}
+      try { safeStorage.set(this._storeKey('map-view'), view); } catch(e) {}
       // Each mode renders its own <div id="trip-map"> inside an x-if template,
       // so when we switch view the DOM element our _gmap is bound to gets
       // removed. Force re-init on the freshly-rendered element.
@@ -14889,8 +14901,8 @@ function app() {
       this.mapView = 'day';
       this.mapBottomSheet = null;
       try {
-        localStorage.setItem(this._storeKey('map-day'), String(dayIdx));
-        localStorage.setItem(this._storeKey('map-view'), 'day');
+        safeStorage.set(this._storeKey('map-day'), String(dayIdx));
+        safeStorage.set(this._storeKey('map-view'), 'day');
       } catch(e) {}
       // Fire async pre-fetch of all segment directions for this day
       this._refreshDayDirections(dayIdx);
@@ -15494,12 +15506,12 @@ function app() {
     // Load directions cache from localStorage on first access (trip-scoped key).
     _loadDirectionsCache() {
       try {
-        const raw = localStorage.getItem(this._storeKey('directions'));
+        const raw = safeStorage.get(this._storeKey('directions'));
         if (raw) this._directionsCache = JSON.parse(raw);
       } catch(e) { this._directionsCache = {}; }
     },
     _saveDirectionsCache() {
-      try { localStorage.setItem(this._storeKey('directions'), JSON.stringify(this._directionsCache)); } catch(e) {}
+      try { safeStorage.set(this._storeKey('directions'), JSON.stringify(this._directionsCache)); } catch(e) {}
     },
     // Async fetch of real driving directions. Returns cached if available, else
     // requests from DirectionsService and stores result.
@@ -17512,7 +17524,7 @@ function app() {
 
     markHistorySeen() {
       const now = Date.now();
-      localStorage.setItem(this._storeKey('history-seen'), String(now));
+      safeStorage.set(this._storeKey('history-seen'), String(now));
       this._historySeenAt = now;
     },
 
@@ -17621,7 +17633,7 @@ function app() {
     markMentionsRead() {
       if (!this.identity) return;
       const now = Date.now();
-      localStorage.setItem(this._storeKey('mentions-seen:' + this.identity), String(now));
+      safeStorage.set(this._storeKey('mentions-seen:' + this.identity), String(now));
       this._mentionsSeenAt = now; // Reactivo
     },
 
