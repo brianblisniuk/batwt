@@ -4,15 +4,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#f5efe5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1a1310" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ECE6D8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1F2E20" media="(prefers-color-scheme: dark)">
 <title>Blisniuk & Amanov · Operaciones</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
 <link rel="preconnect" href="https://ajax.googleapis.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -34,49 +34,95 @@
 </script>
 <style>
 :root {
-  /* ===== V5 CANONICAL TOKENS ===== */
-  /* Surfaces */
-  --surface-0: #f3ebdc;
-  --surface-1: #faf6ee;
-  --surface-2: #f1e9d8;
-  --surface-3: #e9dfca;
+  /* ============================================================
+     REDISEÑO · Operativa Moderna · laurel/bone/brass
+     Los tokens canonical se remapearon al nuevo sistema.
+     Los aliases legacy (--paper, --ink, --accent...) heredan,
+     así toda la app pre-rediseño usa la paleta nueva automáticamente.
+     ============================================================ */
+
+  /* ===== Nuevo sistema · paleta canonical ===== */
+  --laurel:      #3D5A3E;   /* acento principal · botones · links activos */
+  --laurel-deep: #1F2E20;   /* shell oscuro · hero cards · topnav active */
+  --laurel-soft: #4A6A4B;   /* hover de laurel */
+  --laurel-tint: #E8EEE8;   /* fondos verde sutil (ok-bg new) */
+
+  --bone:        #F5F1E8;   /* surface cálido · chips · hover de filas */
+  --bone-2:      #ECE6D8;   /* canvas / page background general */
+  --white:       #FFFFFF;   /* surfaces principales (cards, headers) */
+
+  --ink:         #1A1A1A;   /* texto primario */
+  --ink-2:       #2B2B2B;   /* texto secundario */
+  --stone:       #8B8478;   /* texto muted · meta · etiquetas mono */
+  --stone-soft:  #A89F90;
+
+  --brass:       #B8945A;   /* acento oro · ratings · destaques sobre dark */
+  --brass-deep:  #8A6E40;   /* texto warning */
+  --brass-soft:  #D4B583;   /* sobre fondos oscuros */
+
+  /* ===== V5 tokens · remapeados al nuevo sistema ===== */
+  /* Surfaces — antes café-cremas, ahora bone/white */
+  --surface-0: var(--bone-2);
+  --surface-1: var(--white);
+  --surface-2: var(--bone);
+  --surface-3: #E9DFCA;
 
   /* Text */
-  --text-1: #1c1410;
-  --text-2: #4a3a30;
-  --text-3: #8b7868;
-  --text-4: #c4b5a3;
+  --text-1: var(--ink);
+  --text-2: var(--ink-2);
+  --text-3: var(--stone);
+  --text-4: var(--stone-soft);
 
   /* Lines */
-  --line: rgba(28,20,16,0.10);
-  --line-strong: rgba(28,20,16,0.22);
+  --line: #E5DED0;
+  --line-strong: #D8CFB8;
+  --line-soft: #EFE9DA;
 
-  /* Brand · accent (V5) */
-  --accent: #2563eb;
-  --accent-soft: #60a5fa;
-  --accent-deep: #1d4ed8;
+  /* Brand · accent ahora = laurel (era azul) */
+  --accent:      var(--laurel);
+  --accent-soft: var(--laurel-soft);
+  --accent-deep: var(--laurel-deep);
 
-  /* Gold / Olive */
-  --gold-v5: #b8893a;
-  --gold-soft-v5: #d4a85a;
-  --olive-v5: #5a6b3a;
-  --olive-deep: #3c6b3c;
+  /* Gold/Olive → brass */
+  --gold-v5:      var(--brass);
+  --gold-soft-v5: var(--brass-soft);
+  --olive-v5:     var(--laurel);
+  --olive-deep:   var(--laurel);
 
-  /* Tints (V5 opacities) */
-  --tint-ok: rgba(60,107,60,0.10);
-  --tint-warn: rgba(184,137,58,0.12);
-  --tint-bad: rgba(168,42,31,0.10);
-  --tint-info: rgba(58,90,139,0.10);
-  --tint-accent: rgba(37,99,235,0.10);
+  /* Status tints — nuevo sistema con sus matched bg */
+  --ok:        var(--laurel);
+  --ok-bg:     var(--laurel-tint);
+  --warn:      var(--brass-deep);
+  --warn-bg:   #F5E9D0;
+  --bad:       #9C3B2E;
+  --bad-bg:    #F1DDD8;
+  --info:      #3A5A7B;
+  --info-bg:   #DCE5ED;
+  --danger:    var(--bad);
+  --danger-bg: var(--bad-bg);
 
-  /* Shadows (V5) */
-  --shadow-1: 0 1px 2px rgba(28,20,16,0.06);
-  --shadow-2: 0 2px 4px rgba(28,20,16,0.06), 0 8px 24px rgba(28,20,16,0.08);
-  --shadow-3: 0 8px 16px rgba(28,20,16,0.10), 0 24px 48px rgba(28,20,16,0.14);
+  /* Tints (mantengo para componentes V5 que los usen) */
+  --tint-ok:     var(--ok-bg);
+  --tint-warn:   var(--warn-bg);
+  --tint-bad:    var(--bad-bg);
+  --tint-info:   var(--info-bg);
+  --tint-accent: rgba(61,90,62,0.10);
+
+  /* Shadows (V5 + legacy) */
+  --shadow-1: 0 1px 2px rgba(28,20,16,0.03);
+  --shadow-2: 0 4px 12px rgba(28,20,16,0.04);
+  --shadow-3: 0 8px 30px rgba(28,20,16,0.10);
+  --shadow-sm: var(--shadow-1);
+  --shadow:    var(--shadow-2);
+  --shadow-lg: var(--shadow-3);
+  --shadow-laurel: 0 8px 20px rgba(31,46,32,0.35);
 
   /* Geometry · radius */
-  --radius: 6px;
-  --radius-lg: 10px;
+  --radius-sm:   6px;
+  --radius:      10px;
+  --radius-md:   12px;
+  --radius-lg:   14px;
+  --radius-xl:   16px;
   --radius-pill: 999px;
 
   /* Geometry · layout */
@@ -86,50 +132,35 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
   /* Effects */
-  --grain-opacity: 0.32;
+  --grain-opacity: 0.12;
   --noise-blend: multiply;
 
-  /* ===== LEGACY STANDALONE (sin equivalente V5, o valor distinto) ===== */
-  /* Backgrounds */
-  --bg: #f5efe5;
-  --cream: #f0e6d2;
+  /* ===== Avatares por identidad ===== */
+  --user-luca:    var(--laurel);
+  --user-esteban: var(--brass);
+  --user-brian:   var(--laurel);
+  --user-federico:var(--brass);
 
-  /* Brand palette legacy */
-  --terracotta: #b8512e;
-  --terracotta-soft: #d97851;
-  --borgona: #6e1a1f;
-  --borgona-deep: #3d0d11;
+  /* ===== LEGACY STANDALONE — sin equivalente V5 ===== */
+  --bg:               var(--bone-2);
+  --cream:            var(--bone);
+  --terracotta:       var(--laurel);       /* rebrand: terracota → laurel */
+  --terracotta-soft:  var(--laurel-soft);
+  --borgona:          var(--laurel-deep);
+  --borgona-deep:     var(--laurel-deep);
 
-  /* Semantic (sin equivalente V5) */
-  --bad: #a82a1f;
-  --info: #3a5a8b;
-
-  /* Semantic backgrounds (opacidades legacy, distintas de --tint-*) */
-  --ok-bg: rgba(60, 107, 60, 0.08);
-  --warn-bg: rgba(184, 137, 58, 0.10);
-  --bad-bg: rgba(168, 42, 31, 0.08);
-  --info-bg: rgba(58, 90, 139, 0.08);
-
-  /* Shadows legacy (opacidades menores que --shadow-1/2/3) */
-  --shadow-sm: 0 1px 2px rgba(28,20,16,0.04);
-  --shadow: 0 1px 2px rgba(28,20,16,0.04), 0 4px 12px rgba(28,20,16,0.06);
-  --shadow-lg: 0 4px 8px rgba(28,20,16,0.06), 0 16px 32px rgba(28,20,16,0.10);
-
-  /* ===== LEGACY ALIASES → V5 (valor idéntico en light, espeja dark mode) ===== */
-  --paper: var(--surface-1);
-  --paper-warm: var(--surface-2);
-  --ink: var(--text-1);
-  --ink-soft: var(--text-2);
-  --ink-mute: var(--text-3);
-  --ink-faint: var(--text-4);
-  --rule: var(--line);
+  /* ===== LEGACY ALIASES → nuevo sistema ===== */
+  --paper:       var(--surface-1);
+  --paper-warm:  var(--surface-2);
+  --ink-soft:    var(--ink-2);
+  --ink-mute:    var(--stone);
+  --ink-faint:   var(--stone-soft);
+  --rule:        var(--line);
   --rule-strong: var(--line-strong);
-  --rule-ink: var(--text-1);
-  --gold: var(--gold-v5);
-  --gold-soft: var(--gold-soft-v5);
-  --olive: var(--olive-v5);
-  --warn: var(--gold-v5);
-  --ok: var(--olive-deep);
+  --rule-ink:    var(--ink);
+  --gold:        var(--brass);
+  --gold-soft:   var(--brass-soft);
+  --olive:       var(--laurel);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -141,7 +172,7 @@ html { scroll-behavior: smooth; }
 body {
 background: var(--bg);
 color: var(--ink);
-font-family: 'Inter', system-ui, sans-serif;
+font-family: 'Geist', system-ui, sans-serif;
 font-size: 14px;
 line-height: 1.5;
 -webkit-font-smoothing: antialiased;
@@ -163,13 +194,39 @@ mix-blend-mode: multiply;
 background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/><feColorMatrix values='0 0 0 0 0.11 0 0 0 0 0.08 0 0 0 0 0.06 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
-/* === TYPOGRAPHY === */
-.font-display { font-family: 'Fraunces', serif; font-weight: 400; letter-spacing: -0.015em; }
-.font-serif { font-family: 'Lora', serif; }
-.font-mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 0; }
-.italic { font-style: italic; }
+/* === TYPOGRAPHY · sistema rediseño ============================================
+   Geist 600 con letter-spacing tight para títulos.
+   Instrument Serif italic para énfasis editorial (notas, briefs, citas).
+   Geist Mono para eyebrows, códigos, timestamps. */
+.font-display { font-family: 'Geist', system-ui, sans-serif; font-weight: 600; letter-spacing: -0.025em; line-height: 1.05; }
+.font-serif   { font-family: 'Instrument Serif', 'Times New Roman', serif; font-style: italic; }
+.font-mono    { font-family: 'Geist Mono', monospace; letter-spacing: 0; }
+.italic       { font-style: italic; }
 
-h1, h2, h3, h4 { font-family: 'Fraunces', serif; font-weight: 400; letter-spacing: -0.015em; line-height: 1.1; }
+/* Eyebrow mono UPPER recurrente */
+.eyebrow {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--stone);
+}
+
+h1, h2, h3, h4 { font-family: 'Geist', system-ui, sans-serif; font-weight: 600; letter-spacing: -0.025em; line-height: 1.1; }
+h1 { letter-spacing: -0.035em; }
+h2 { letter-spacing: -0.03em; }
+
+/* Italic <em> dentro de headings = Instrument Serif para el lookup editorial */
+h1 em, h2 em, h3 em, .font-display em {
+  font-family: 'Instrument Serif', 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--laurel);
+  letter-spacing: -0.015em;
+}
+[data-theme="dark"] h1 em, [data-theme="dark"] h2 em, [data-theme="dark"] h3 em, [data-theme="dark"] .font-display em {
+  color: var(--brass-soft);
+}
 
 /* === LAYOUT === */
 .app { position: relative; z-index: 2; min-height: 100vh; }
@@ -199,7 +256,7 @@ align-items: baseline;
 gap: 14px;
 }
 .brand-mark {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 22px;
 font-weight: 400;
 letter-spacing: -0.02em;
@@ -213,7 +270,7 @@ font-size: 10px;
 vertical-align: 3px;
 }
 .brand-sub {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.18em;
 text-transform: uppercase;
@@ -253,7 +310,7 @@ display: block;
 margin-bottom: 16px;
 }
 .identity-modal h2 {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 32px;
 font-weight: 300;
 margin-bottom: 12px;
@@ -261,7 +318,7 @@ letter-spacing: -0.02em;
 }
 .identity-modal h2 em { font-style: italic; color: var(--borgona); }
 .identity-modal p {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-size: 17px;
 font-style: italic;
 color: var(--ink-soft);
@@ -274,7 +331,7 @@ grid-template-columns: 1fr 1fr;
 gap: 12px;
 }
 .identity-btn {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 22px;
 font-weight: 400;
 padding: 24px 16px;
@@ -298,7 +355,7 @@ box-shadow: var(--shadow);
 display: flex;
 align-items: center;
 gap: 16px;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.12em;
 text-transform: uppercase;
@@ -326,7 +383,7 @@ color: var(--terracotta);
 letter-spacing: 0.08em;
 }
 .last-edit {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-size: 13px;
 font-style: italic;
 color: var(--ink-mute);
@@ -349,7 +406,7 @@ margin-right: 8px;
 display: flex;
 align-items: center;
 gap: 16px;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 11px;
 letter-spacing: 0.1em;
 text-transform: uppercase;
@@ -381,7 +438,7 @@ overflow-x: auto;
 scrollbar-width: thin;
 }
 .tab {
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 font-size: 13px;
 font-weight: 500;
 letter-spacing: 0.02em;
@@ -408,7 +465,7 @@ border-bottom-color: var(--terracotta);
 .tab-badge {
 background: var(--rule-strong);
 color: var(--ink);
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 padding: 2px 6px;
 border-radius: 100px;
@@ -438,7 +495,7 @@ font-weight: 300;
 }
 .section-header h1 em { font-style: italic; color: var(--borgona); }
 .section-header .lead {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-size: 18px;
 font-style: italic;
 color: var(--ink-soft);
@@ -482,7 +539,7 @@ background-image: radial-gradient(circle at 80% 20%, rgba(212,168,90,0.15) 0%, t
 pointer-events: none;
 }
 .countdown-label {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.22em;
 text-transform: uppercase;
@@ -490,7 +547,7 @@ color: var(--gold-soft);
 margin-bottom: 16px;
 }
 .countdown-value {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-weight: 300;
 font-size: 96px;
 line-height: 0.9;
@@ -501,10 +558,10 @@ font-size: 28px;
 color: rgba(240,230,210,0.6);
 margin-left: 12px;
 font-style: italic;
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 }
 .countdown-detail {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 18px;
 color: rgba(240,230,210,0.75);
@@ -524,7 +581,7 @@ padding: 18px;
 border-radius: 4px;
 }
 .stat-mini-label {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.18em;
 text-transform: uppercase;
@@ -532,13 +589,13 @@ color: var(--ink-mute);
 margin-bottom: 8px;
 }
 .stat-mini-value {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 28px;
 font-weight: 400;
 letter-spacing: -0.02em;
 color: var(--ink);
 }
-.stat-mini-value small { font-size: 14px; color: var(--ink-mute); margin-left: 4px; font-family: 'Lora', serif; font-style: italic; }
+.stat-mini-value small { font-size: 14px; color: var(--ink-mute); margin-left: 4px; font-family: 'Instrument Serif', serif; font-style: italic; }
 
 .alert-block {
 background: var(--paper);
@@ -551,7 +608,7 @@ border-radius: 0 4px 4px 0;
 .alert-block.info { border-left-color: var(--info); }
 .alert-block.ok { border-left-color: var(--ok); }
 .alert-block-meta {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.16em;
 text-transform: uppercase;
@@ -562,7 +619,7 @@ margin-bottom: 6px;
 .alert-block.info .alert-block-meta { color: var(--info); }
 .alert-block.ok .alert-block-meta { color: var(--ok); }
 .alert-block-title {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 18px;
 font-weight: 500;
 margin-bottom: 4px;
@@ -575,7 +632,7 @@ line-height: 1.5;
 
 /* === FORMS / INPUTS === */
 input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="tel"], input[type="url"], select, textarea {
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 font-size: 14px;
 color: var(--ink);
 background: transparent;
@@ -606,7 +663,7 @@ padding: 2px 4px;
 .input-inline:focus { border-bottom: 1px solid var(--terracotta); }
 
 label.field-label {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.18em;
 text-transform: uppercase;
@@ -617,7 +674,7 @@ margin-bottom: 4px;
 
 /* === BUTTONS === */
 .btn {
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 font-size: 12px;
 font-weight: 500;
 letter-spacing: 0.02em;
@@ -670,14 +727,14 @@ align-items: center;
 background: var(--paper-warm);
 }
 .day-number {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 14px;
 font-style: italic;
 color: var(--terracotta);
 letter-spacing: 0.05em;
 }
 .day-date-big {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 32px;
 font-weight: 300;
 line-height: 1;
@@ -686,7 +743,7 @@ letter-spacing: -0.02em;
 .day-date-big small {
 display: block;
 font-size: 12px;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 color: var(--ink-mute);
 letter-spacing: 0.1em;
 text-transform: uppercase;
@@ -694,7 +751,7 @@ margin-top: 4px;
 font-style: normal;
 }
 .day-title-input {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 22px;
 font-weight: 400;
 letter-spacing: -0.01em;
@@ -707,7 +764,7 @@ padding: 4px 0;
 .day-title-input:focus { background: rgba(255,255,255,0.7); border-bottom-color: var(--terracotta); outline: none; }
 
 .status-pill {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.14em;
 text-transform: uppercase;
@@ -734,7 +791,7 @@ align-items: start;
 }
 .slot:last-child { border-bottom: none; }
 .slot-time-input {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 12px;
 font-weight: 500;
 color: var(--terracotta);
@@ -748,7 +805,7 @@ border-bottom: 1px dashed transparent;
 
 .slot-content { display: flex; flex-direction: column; gap: 6px; }
 .slot-title-input {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 17px;
 font-weight: 500;
 border: none;
@@ -769,7 +826,7 @@ padding: 4px;
 width: 100%;
 border: 1px dashed transparent;
 border-radius: 2px;
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 }
 .slot-desc-input:hover { border-color: var(--rule); }
 .slot-desc-input:focus { outline: none; border-color: var(--terracotta); background: white; }
@@ -782,7 +839,7 @@ width: 100%;
 padding: 12px;
 background: transparent;
 border: 1px dashed var(--rule-strong);
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 11px;
 letter-spacing: 0.14em;
 text-transform: uppercase;
@@ -814,7 +871,7 @@ font-size: 14px;
 .budget-row:last-child { border-bottom: none; }
 .budget-row.header {
 background: var(--paper-warm);
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.16em;
 text-transform: uppercase;
@@ -824,7 +881,7 @@ padding: 12px 20px;
 }
 .budget-row input { padding: 4px 6px; }
 .budget-row .amount-input {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 text-align: right;
 font-weight: 500;
 }
@@ -845,7 +902,7 @@ border-radius: 4px;
 }
 .summary-card.highlight { background: var(--ink); color: var(--cream); border-color: var(--ink); }
 .summary-card-label {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.2em;
 text-transform: uppercase;
@@ -854,7 +911,7 @@ margin-bottom: 10px;
 }
 .summary-card.highlight .summary-card-label { color: var(--gold-soft); }
 .summary-card-value {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 32px;
 font-weight: 300;
 letter-spacing: -0.02em;
@@ -863,7 +920,7 @@ letter-spacing: -0.02em;
 font-size: 14px;
 color: var(--ink-mute);
 margin-left: 6px;
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 }
 .summary-card.highlight .summary-card-value small { color: rgba(240,230,210,0.5); }
@@ -878,10 +935,10 @@ padding: 10px 0;
 border-bottom: 1px solid var(--rule);
 font-size: 13px;
 }
-.bar-row-label { font-family: 'Fraunces', serif; font-size: 15px; }
+.bar-row-label { font-family: 'Geist', serif; font-size: 15px; }
 .bar-track { background: var(--rule); height: 8px; border-radius: 100px; overflow: hidden; }
 .bar-fill { height: 100%; background: var(--terracotta); border-radius: 100px; transition: width 0.4s; }
-.bar-row-value { font-family: 'JetBrains Mono', monospace; text-align: right; font-size: 12px; color: var(--ink-soft); }
+.bar-row-value { font-family: 'Geist Mono', monospace; text-align: right; font-size: 12px; color: var(--ink-soft); }
 
 /* === PROVIDERS === */
 .providers-toolbar {
@@ -905,7 +962,7 @@ font-size: 14px;
 
 .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip {
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 font-size: 12px;
 font-weight: 500;
 padding: 6px 12px;
@@ -944,7 +1001,7 @@ gap: 12px;
 margin-bottom: 4px;
 }
 .provider-name {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 19px;
 font-weight: 500;
 line-height: 1.2;
@@ -952,7 +1009,7 @@ flex: 1;
 }
 .provider-name .stars { color: var(--gold); font-size: 14px; margin-left: 4px; vertical-align: 1px; }
 .provider-type {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.16em;
 text-transform: uppercase;
@@ -968,7 +1025,7 @@ padding: 4px 0;
 align-items: baseline;
 }
 .provider-row dt {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.14em;
 text-transform: uppercase;
@@ -990,7 +1047,7 @@ border-top: 1px solid var(--rule);
 }
 
 .res-status {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.14em;
 text-transform: uppercase;
@@ -1044,7 +1101,7 @@ font-weight: 700;
 }
 
 .priority-tag {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 font-weight: 700;
 letter-spacing: 0.04em;
@@ -1058,7 +1115,7 @@ color: var(--cream);
 .priority-tag.P3 { background: var(--olive); color: var(--cream); }
 
 .action-title {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 16px;
 font-weight: 500;
 border: none;
@@ -1076,7 +1133,7 @@ margin-top: 2px;
 }
 
 .action-contact {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 11px;
 color: var(--ink-soft);
 line-height: 1.5;
@@ -1101,7 +1158,7 @@ font-size: 24px;
 margin-bottom: 12px;
 }
 .backup-card p {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 color: var(--ink-soft);
 margin-bottom: 20px;
@@ -1122,7 +1179,7 @@ line-height: 1.6;
 color: var(--ink-soft);
 }
 .info-box code {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 background: var(--ink);
 color: var(--cream);
 padding: 2px 6px;
@@ -1135,7 +1192,7 @@ font-size: 11px;
 padding: 64px 32px;
 text-align: center;
 color: var(--ink-mute);
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 18px;
 border: 1px dashed var(--rule-strong);
@@ -1152,7 +1209,7 @@ background: var(--ink);
 color: var(--cream);
 padding: 12px 20px;
 border-radius: 4px;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 11px;
 letter-spacing: 0.12em;
 text-transform: uppercase;
@@ -1186,7 +1243,7 @@ border-radius: 50%;
 display: flex;
 align-items: center;
 justify-content: center;
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 14px;
 font-weight: 500;
 color: var(--cream);
@@ -1199,7 +1256,7 @@ font-size: 14px;
 line-height: 1.4;
 }
 .event-summary strong {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-weight: 500;
 color: var(--ink);
 }
@@ -1208,7 +1265,7 @@ font-size: 14px;
 margin-right: 4px;
 }
 .event-time {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.1em;
 color: var(--ink-mute);
@@ -1235,12 +1292,12 @@ margin-bottom: 6px;
 align-items: center;
 }
 .snapshot-item strong {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 16px;
 display: block;
 }
 .snapshot-item small {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 color: var(--ink-mute);
 letter-spacing: 0.08em;
@@ -1272,12 +1329,12 @@ box-shadow: var(--shadow);
 animation: slideIn 0.4s ease;
 }
 .mention-banner-text {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 17px;
 }
 .mention-banner-text strong {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-weight: 600;
 font-style: normal;
 font-size: 18px;
@@ -1287,7 +1344,7 @@ background: rgba(0,0,0,0.2);
 color: var(--cream);
 border: 1px solid rgba(240,230,210,0.4);
 padding: 6px 14px;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 11px;
 letter-spacing: 0.12em;
 text-transform: uppercase;
@@ -1328,7 +1385,7 @@ padding: 4px 10px;
 border-radius: 100px;
 border: 1px solid var(--rule-strong);
 transition: all 0.15s;
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 font-weight: 500;
 }
 .map-legend-item:hover { background: var(--paper-warm); }
@@ -1347,7 +1404,7 @@ box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
 display: inline-flex;
 align-items: center;
 gap: 6px;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 11px;
 letter-spacing: 0.04em;
 padding: 3px 10px;
@@ -1392,7 +1449,7 @@ color: var(--cream);
 display: flex;
 align-items: center;
 justify-content: center;
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 15px;
 font-weight: 500;
 }
@@ -1407,13 +1464,13 @@ margin-bottom: 4px;
 font-size: 11px;
 }
 .comment-author {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-weight: 600;
 font-size: 14px;
 color: var(--ink);
 }
 .comment-time {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 color: var(--ink-mute);
 letter-spacing: 0.06em;
@@ -1442,7 +1499,7 @@ border: 1px solid var(--rule-strong);
 border-radius: 4px;
 padding: 8px 12px;
 font-size: 14px;
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 }
 .comment-input:focus { outline: none; border-color: var(--terracotta); box-shadow: 0 0 0 3px rgba(184,81,46,0.1); }
 
@@ -1518,62 +1575,105 @@ main { padding: 20px; max-width: none; }
 
 
 [data-theme="dark"] {
---surface-0: #16110d;
---surface-1: #1f1813;
---surface-2: #261d17;
---surface-3: #2f241c;
---line: rgba(240,230,210,0.10);
---line-strong: rgba(240,230,210,0.20);
---text-1: #f0e6d2;
---text-2: #d4c8b4;
---text-3: #a89580;
---text-4: #6b5d4d;
---accent: #60a5fa;
---accent-soft: #93c5fd;
---accent-deep: #3b82f6;
---gold-v5: #d4a85a;
---gold-soft-v5: #e8c47e;
---olive-v5: #7fa05a;
---olive-deep: #6e9056;
---tint-ok: rgba(120,180,120,0.14);
---tint-warn: rgba(212,168,90,0.16);
---tint-bad: rgba(220,90,75,0.14);
---tint-info: rgba(120,160,210,0.14);
---tint-accent: rgba(96,165,250,0.18);
---shadow-1: 0 1px 2px rgba(0,0,0,0.4);
---shadow-2: 0 2px 4px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
---shadow-3: 0 8px 16px rgba(0,0,0,0.4), 0 24px 48px rgba(0,0,0,0.5);
---grain-opacity: 0.55;
---noise-blend: screen;
---bg: var(--surface-0);
---paper: var(--surface-1);
---paper-warm: var(--surface-2);
---ink: var(--text-1);
---ink-soft: var(--text-2);
---ink-mute: var(--text-3);
---ink-faint: var(--text-4);
---terracotta: var(--accent);
---terracotta-soft: var(--accent-soft);
---borgona: #a83a3f;
---borgona-deep: #6e1a1f;
---cream: #f0e6d2;
---rule: var(--line);
---rule-strong: var(--line-strong);
---rule-ink: var(--text-1);
---ok: var(--olive-deep);
---ok-bg: var(--tint-ok);
---warn: var(--gold-v5);
+/* Dark mode espeja el nuevo sistema laurel.
+   Surface escalonada desde el laurel-deep hacia más claro.
+   Texto en bone para contraste cálido. */
+
+/* Sobrescritos: tokens canonical del rediseño */
+--white:       #1F2E20;
+--bone:        #2A3A2C;
+--bone-2:      #1F2E20;
+--ink:         #F5F1E8;
+--ink-2:       #D4C8B4;
+--stone:       #A89F90;
+--stone-soft:  #6B5D4D;
+--laurel-tint: rgba(122,201,122,0.12);
+
+/* V5 surfaces — escalonadas en dark */
+--surface-0: #1F2E20;
+--surface-1: #2A3A2C;
+--surface-2: #324034;
+--surface-3: #3D4A3F;
+
+/* Text */
+--text-1: var(--ink);
+--text-2: var(--ink-2);
+--text-3: var(--stone);
+--text-4: var(--stone-soft);
+
+/* Lines */
+--line:        rgba(245,241,232,0.10);
+--line-strong: rgba(245,241,232,0.20);
+--line-soft:   rgba(245,241,232,0.06);
+
+/* Accent en dark: laurel un poco más claro para mejor contraste sobre fondos oscuros */
+--accent:      #6E9456;
+--accent-soft: #8FB776;
+--accent-deep: #4A6A4B;
+
+/* Brass en dark: más saturado */
+--brass:        var(--gold-soft-v5);
+--brass-soft:   #E8C47E;
+--brass-deep:   #B8945A;
+--gold-v5:      #D4A85A;
+--gold-soft-v5: #E8C47E;
+--olive-v5:     #7FA05A;
+--olive-deep:   #6E9056;
+
+/* Status tints darker, más opacidad */
+--tint-ok:     rgba(110,148,86,0.14);
+--tint-warn:   rgba(212,168,90,0.16);
+--tint-bad:    rgba(220,90,75,0.14);
+--tint-info:   rgba(120,160,210,0.14);
+--tint-accent: rgba(110,148,86,0.16);
+
+--ok:      var(--accent);
+--ok-bg:   var(--tint-ok);
+--warn:    var(--brass);
 --warn-bg: var(--tint-warn);
---bad: #dc5a4b;
---bad-bg: var(--tint-bad);
---info: #78a0d2;
+--bad:     #DC5A4B;
+--bad-bg:  var(--tint-bad);
+--info:    #78A0D2;
 --info-bg: var(--tint-info);
---gold: var(--gold-v5);
---gold-soft: var(--gold-soft-v5);
---olive: var(--olive-v5);
---shadow-sm: var(--shadow-1);
---shadow: var(--shadow-2);
---shadow-lg: var(--shadow-3);
+--danger:    var(--bad);
+--danger-bg: var(--bad-bg);
+
+/* Shadows fuertes en dark */
+--shadow-1:    0 1px 2px rgba(0,0,0,0.4);
+--shadow-2:    0 2px 4px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
+--shadow-3:    0 8px 16px rgba(0,0,0,0.4), 0 24px 48px rgba(0,0,0,0.5);
+--shadow-sm:   var(--shadow-1);
+--shadow:      var(--shadow-2);
+--shadow-lg:   var(--shadow-3);
+--shadow-laurel: 0 8px 20px rgba(110,148,86,0.40);
+
+--grain-opacity: 0.22;
+--noise-blend: screen;
+
+/* User colors en dark — sólo el laurel se aclara, el brass mantiene */
+--user-luca:     var(--accent);
+--user-esteban:  var(--brass);
+--user-brian:    var(--accent);
+--user-federico: var(--brass);
+
+/* Legacy aliases */
+--bg:              var(--surface-0);
+--paper:           var(--surface-1);
+--paper-warm:      var(--surface-2);
+--cream:           #F5F1E8;
+--terracotta:      var(--accent);
+--terracotta-soft: var(--accent-soft);
+--borgona:         var(--accent-deep);
+--borgona-deep:    var(--accent-deep);
+--ink-soft:        var(--ink-2);
+--ink-mute:        var(--stone);
+--ink-faint:       var(--stone-soft);
+--rule:            var(--line);
+--rule-strong:     var(--line-strong);
+--rule-ink:        var(--ink);
+--gold:            var(--brass);
+--gold-soft:       var(--brass-soft);
+--olive:           var(--accent);
 }
 [data-theme="dark"] body {
 background: var(--surface-0);
@@ -1633,7 +1733,7 @@ grid-column: 1 / -1;
 }
 .v5-topbar-brand { display: flex; align-items: baseline; gap: 24px; min-width: 0; }
 .v5-topbar-brand-mark {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 19px;
 font-weight: 400;
 letter-spacing: -0.02em;
@@ -1645,7 +1745,7 @@ margin-right: 6px;
 .v5-topbar-brand-mark::before { content: '◆'; color: var(--accent); margin-right: 8px; font-size: 9px; vertical-align: 3px; }
 [data-theme="dark"] .v5-topbar-brand-mark em { color: var(--gold-soft-v5); }
 .v5-topbar-sub {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.16em;
 text-transform: uppercase;
@@ -1660,7 +1760,7 @@ white-space: nowrap;
 display: inline-flex;
 align-items: center;
 gap: 8px;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.12em;
 text-transform: uppercase;
@@ -1705,7 +1805,7 @@ padding: 0 4px;
 border-radius: var(--radius-pill);
 background: var(--accent);
 color: #fff;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 font-weight: 700;
 display: inline-flex;
@@ -1725,7 +1825,7 @@ border: 1px solid var(--line);
 background: var(--surface-1);
 cursor: pointer;
 transition: all 0.15s ease;
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 }
 .v5-avatar-btn:hover { border-color: var(--line-strong); background: var(--surface-2); }
 .v5-avatar-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -1735,7 +1835,7 @@ border-radius: 50%;
 display: inline-flex;
 align-items: center;
 justify-content: center;
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 13px;
 font-weight: 500;
 color: #fff;
@@ -1776,7 +1876,7 @@ border-radius: var(--radius);
 border: none;
 background: transparent;
 color: var(--text-1);
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 font-size: 13px;
 cursor: pointer;
 text-align: left;
@@ -1786,7 +1886,7 @@ text-align: left;
 .v5-identity-menu-divider { height: 1px; background: var(--line); margin: 6px 4px; }
 .v5-last-edit {
 padding: 8px 10px;
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 13px;
 color: var(--text-3);
@@ -1807,7 +1907,7 @@ overflow-y: auto;
 }
 @media (max-width: 980px) { .v5-sidebar { display: none; } }
 .v5-nav-group {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.2em;
 text-transform: uppercase;
@@ -1823,7 +1923,7 @@ border-radius: var(--radius);
 border: none;
 background: transparent;
 color: var(--text-2);
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 font-size: 14px;
 font-weight: 500;
 cursor: pointer;
@@ -1844,7 +1944,7 @@ border-radius: 1px;
 .v5-nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
 .v5-nav-item .v5-nav-count {
 margin-left: auto;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 color: var(--text-3);
 background: var(--surface-2);
@@ -1855,7 +1955,7 @@ border-radius: var(--radius-pill);
 .v5-sidebar-footer {
 margin-top: auto;
 padding: 12px;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.16em;
 text-transform: uppercase;
@@ -1887,7 +1987,7 @@ padding: 4px;
 border: none;
 background: transparent;
 color: var(--text-3);
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 font-size: 10px;
 font-weight: 500;
 letter-spacing: 0.02em;
@@ -1917,7 +2017,7 @@ padding: 0 4px;
 border-radius: var(--radius-pill);
 background: var(--accent);
 color: #fff;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 font-weight: 700;
 display: inline-flex;
@@ -1975,7 +2075,7 @@ padding: 20px 24px 16px;
 border-bottom: 1px solid var(--line);
 gap: 16px;
 }
-.v5-drawer-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400; letter-spacing: -0.015em; color: var(--text-1); }
+.v5-drawer-title { font-family: 'Geist', serif; font-size: 22px; font-weight: 400; letter-spacing: -0.015em; color: var(--text-1); }
 .v5-drawer-title em { font-style: italic; color: var(--accent-deep); }
 [data-theme="dark"] .v5-drawer-title em { color: var(--gold-soft-v5); }
 .v5-drawer-close {
@@ -1995,7 +2095,7 @@ justify-content: center;
 .v5-drawer-filter { display: flex; gap: 6px; flex-wrap: wrap; padding: 12px 24px 16px; border-bottom: 1px solid var(--line); }
 
 .v5-history-group {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.22em;
 text-transform: uppercase;
@@ -2022,7 +2122,7 @@ border-radius: 50%;
 display: inline-flex;
 align-items: center;
 justify-content: center;
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 13px;
 font-weight: 500;
 color: #fff;
@@ -2031,10 +2131,10 @@ color: #fff;
 .v5-history-avatar.federico { background: var(--olive-v5); }
 .v5-history-avatar.sistema { background: var(--text-3); }
 .v5-history-summary { font-size: 13px; line-height: 1.45; color: var(--text-2); }
-.v5-history-summary strong { font-family: 'Fraunces', serif; font-weight: 500; color: var(--text-1); }
-.v5-history-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; white-space: nowrap; }
+.v5-history-summary strong { font-family: 'Geist', serif; font-weight: 500; color: var(--text-1); }
+.v5-history-time { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; white-space: nowrap; }
 .v5-history-empty {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-3);
@@ -2059,14 +2159,14 @@ background: var(--surface-1);
 color: var(--text-1);
 text-align: left;
 cursor: pointer;
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 transition: all 0.15s ease;
 }
 .v5-more-tile:hover { border-color: var(--line-strong); background: var(--surface-2); }
 .v5-more-tile.active { border-color: var(--accent); background: var(--tint-accent); }
 .v5-more-tile svg { width: 18px; height: 18px; color: var(--accent); }
 .v5-more-tile .v5-more-label { font-size: 13px; font-weight: 600; }
-.v5-more-tile .v5-more-meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; }
+.v5-more-tile .v5-more-meta { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; }
 
 .v5-confirm-overlay {
 position: fixed;
@@ -2091,14 +2191,14 @@ animation: v5-modalIn 0.22s cubic-bezier(0.22,1,0.36,1);
 }
 @keyframes v5-modalIn { from { opacity: 0; transform: scale(0.95) translateY(8px); } to { opacity: 1; transform: none; } }
 .v5-confirm h3 {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 22px;
 font-weight: 400;
 margin-bottom: 10px;
 letter-spacing: -0.015em;
 }
 .v5-confirm p {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-2);
@@ -2129,7 +2229,7 @@ background: var(--text-1);
 color: var(--surface-1);
 padding: 12px 18px;
 border-radius: var(--radius-pill);
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 font-size: 13px;
 font-weight: 500;
 box-shadow: var(--shadow-3);
@@ -2158,9 +2258,9 @@ gap: 16px;
 box-shadow: var(--shadow-2);
 animation: v5-toastIn 0.4s ease;
 }
-.v5-mention-banner-text { font-family: 'Lora', serif; font-style: italic; font-size: 16px; }
+.v5-mention-banner-text { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 16px; }
 .v5-mention-banner-text strong {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-weight: 500;
 font-style: normal;
 display: block;
@@ -2172,7 +2272,7 @@ background: rgba(0,0,0,0.22);
 color: #f0e6d2;
 border: 1px solid rgba(240,230,210,0.35);
 padding: 7px 14px;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.14em;
 text-transform: uppercase;
@@ -2217,7 +2317,7 @@ align-content: center;
 .v5-hoy-hero-content { padding: 28px 24px; }
 }
 .v5-hoy-label {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.28em;
 text-transform: uppercase;
@@ -2228,7 +2328,7 @@ gap: 10px;
 }
 .v5-hoy-label .v5-hoy-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-soft-v5); }
 .v5-hoy-greeting {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: clamp(26px, 3.6vw, 38px);
 font-weight: 300;
 letter-spacing: -0.02em;
@@ -2240,7 +2340,7 @@ max-width: 22ch;
 .v5-hoy-greeting em { font-style: italic; color: var(--gold-soft-v5); }
 .v5-hoy-countdown { display: flex; align-items: baseline; gap: 14px; margin-top: 4px; flex-wrap: wrap; }
 .v5-hoy-count-num {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: clamp(72px, 11vw, 124px);
 font-weight: 300;
 line-height: 0.85;
@@ -2248,13 +2348,13 @@ letter-spacing: -0.04em;
 color: #f4e9d2;
 }
 .v5-hoy-count-unit {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: clamp(20px, 2.4vw, 26px);
 color: rgba(244,233,210,0.7);
 }
 .v5-hoy-detail {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 17px;
 color: rgba(244,233,210,0.85);
@@ -2293,7 +2393,7 @@ pointer-events: none;
 display: flex;
 align-items: center;
 gap: 10px;
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.16em;
 text-transform: uppercase;
@@ -2308,7 +2408,7 @@ font-weight: 700;
 letter-spacing: 0.04em;
 }
 .v5-next-action h3 {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 22px;
 font-weight: 500;
 letter-spacing: -0.015em;
@@ -2316,7 +2416,7 @@ line-height: 1.2;
 color: var(--text-1);
 }
 .v5-next-action-desc {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-2);
@@ -2330,7 +2430,7 @@ flex-wrap: wrap;
 margin-top: 4px;
 }
 .v5-next-action-contact {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 11px;
 color: var(--text-3);
 letter-spacing: 0.02em;
@@ -2350,21 +2450,21 @@ display: grid;
 gap: 4px;
 }
 .v5-kpi-label {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.2em;
 text-transform: uppercase;
 color: var(--text-3);
 }
 .v5-kpi-value {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 26px;
 font-weight: 400;
 letter-spacing: -0.02em;
 color: var(--text-1);
 }
 .v5-kpi-value small {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 13px;
 color: var(--text-3);
@@ -2372,7 +2472,7 @@ margin-left: 4px;
 font-weight: 400;
 }
 .v5-kpi-statement {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 13px;
 color: var(--text-2);
@@ -2390,7 +2490,7 @@ gap: 12px;
 flex-wrap: wrap;
 }
 .v5-section-head h2 {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 22px;
 font-weight: 400;
 letter-spacing: -0.015em;
@@ -2399,7 +2499,7 @@ color: var(--text-1);
 .v5-section-head h2 em { font-style: italic; color: var(--accent-deep); }
 [data-theme="dark"] .v5-section-head h2 em { color: var(--gold-soft-v5); }
 .v5-section-meta {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.16em;
 text-transform: uppercase;
@@ -2420,7 +2520,7 @@ cursor: pointer;
 transition: all 0.15s ease;
 text-align: left;
 width: 100%;
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 color: var(--text-1);
 overflow: hidden;
 }
@@ -2435,7 +2535,7 @@ align-self: stretch;
 .v5-alert-row.ok::before { background: var(--olive-deep); }
 .v5-alert-body { padding: 14px 0 14px 16px; min-width: 0; }
 .v5-alert-tag {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 10px;
 letter-spacing: 0.16em;
 text-transform: uppercase;
@@ -2446,7 +2546,7 @@ margin-bottom: 3px;
 .v5-alert-row.info .v5-alert-tag { color: #5a78a8; }
 .v5-alert-row.ok .v5-alert-tag { color: var(--olive-deep); }
 .v5-alert-title {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 17px;
 font-weight: 500;
 letter-spacing: -0.01em;
@@ -2470,7 +2570,7 @@ margin-left: 10px;
 }
 .v5-alert-arrow svg { width: 18px; height: 18px; }
 .v5-alert-empty {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 color: var(--text-3);
 padding: 24px;
@@ -2504,28 +2604,28 @@ border: 1px solid transparent;
 background: transparent;
 cursor: pointer;
 transition: all 0.15s ease;
-font-family: 'Inter', sans-serif;
+font-family: 'Geist', sans-serif;
 color: var(--text-2);
 text-align: center;
 }
 .v5-day-pill:hover { background: var(--surface-2); color: var(--text-1); border-color: var(--line); }
 .v5-day-pill.today { background: var(--tint-accent); border-color: var(--accent); }
 .v5-day-pill-num {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 22px;
 font-weight: 500;
 line-height: 1;
 color: var(--text-1);
 }
 .v5-day-pill-day {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.16em;
 text-transform: uppercase;
 color: var(--text-3);
 }
 .v5-day-pill-title {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 12px;
 color: var(--text-2);
@@ -2560,7 +2660,7 @@ margin-top: 16px;
   margin-top: 16px;
 }
 .v5-weather-loading {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   color: var(--text-3);
   text-align: center;
@@ -2589,7 +2689,7 @@ margin-top: 16px;
   text-align: center;
 }
 .v5-weather-dow {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -2603,7 +2703,7 @@ margin-top: 16px;
   display: flex;
   gap: 6px;
   align-items: baseline;
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
 }
 .v5-weather-temps .hi {
   font-size: 18px;
@@ -2615,7 +2715,7 @@ margin-top: 16px;
   color: var(--text-3);
 }
 .v5-weather-rain {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   color: var(--info);
   letter-spacing: 0.06em;
@@ -2637,20 +2737,20 @@ gap: 12px;
 flex-wrap: wrap;
 }
 .v5-progress-head h3 {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 18px;
 font-weight: 500;
 color: var(--text-1);
 }
 .v5-progress-head .v5-progress-ratio {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 32px;
 font-weight: 300;
 letter-spacing: -0.02em;
 color: var(--text-1);
 }
 .v5-progress-head .v5-progress-ratio small {
-font-family: 'Lora', serif;
+font-family: 'Instrument Serif', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-3);
@@ -2676,14 +2776,14 @@ gap: 8px;
 }
 .v5-progress-foot-item { display: grid; gap: 2px; }
 .v5-progress-foot-label {
-font-family: 'JetBrains Mono', monospace;
+font-family: 'Geist Mono', monospace;
 font-size: 9px;
 letter-spacing: 0.18em;
 text-transform: uppercase;
 color: var(--text-3);
 }
 .v5-progress-foot-value {
-font-family: 'Fraunces', serif;
+font-family: 'Geist', serif;
 font-size: 19px;
 font-weight: 400;
 letter-spacing: -0.01em;
@@ -2718,7 +2818,7 @@ color: var(--text-1);
   gap: 0;
 }
 .v5b-segmented button {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
   padding: 7px 14px; border: none; background: transparent;
   color: var(--text-3); cursor: pointer; border-radius: var(--radius-pill);
@@ -2744,7 +2844,7 @@ color: var(--text-1);
   background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
-  font-family: 'Inter', sans-serif; font-size: 14px;
+  font-family: 'Geist', sans-serif; font-size: 14px;
   color: var(--text-1);
   transition: all 0.18s ease;
 }
@@ -2823,7 +2923,7 @@ color: var(--text-1);
 }
 .v5b-day-head:hover { background: color-mix(in oklab, var(--surface-2) 80%, transparent); }
 .v5b-day-num {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 300;
   font-size: 44px;
   line-height: 0.9;
@@ -2834,7 +2934,7 @@ color: var(--text-1);
 }
 .v5b-day-titlewrap { min-width: 0; }
 .v5b-day-eyebrow {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text-3); display: flex; gap: 10px; align-items: center;
   margin-bottom: 4px;
@@ -2844,7 +2944,7 @@ color: var(--text-1);
   display: inline-block;
 }
 .v5b-day-title-input {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400; font-size: 24px;
   letter-spacing: -0.015em;
   line-height: 1.15;
@@ -2856,7 +2956,7 @@ color: var(--text-1);
 .v5b-day-title-input:hover { border-bottom-color: var(--line); }
 .v5b-day-title-input:focus { outline: none; border-bottom-color: var(--accent); background: transparent; }
 .v5b-day-date-input {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px; letter-spacing: 0.06em;
   color: var(--text-3);
   background: transparent; border: none; padding: 0; width: 110px;
@@ -2864,7 +2964,7 @@ color: var(--text-1);
 .v5b-day-date-input:focus { color: var(--accent); outline: none; }
 .v5b-day-meta {
   display: flex; align-items: center; gap: 14px;
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  font-family: 'Geist Mono', monospace; font-size: 10px;
   color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase;
   white-space: nowrap;
 }
@@ -2951,7 +3051,7 @@ color: var(--text-1);
   background: var(--surface-2);
   border-left: 2px dashed var(--line);
   border-radius: 0 999px 999px 0;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px; letter-spacing: 0.04em;
   color: var(--text-2);
   text-decoration: none;
@@ -2978,7 +3078,7 @@ color: var(--text-1);
 .v5b-travel-chip-missing {
   margin: 0 24px 0 36px;
   padding: 4px 14px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.04em;
   color: var(--text-3); font-style: italic;
   opacity: 0.7;
@@ -2991,7 +3091,7 @@ color: var(--text-1);
 .v5b-slot-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .v5b-slot-badge {
   display: inline-flex; align-items: center; gap: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
   padding: 3px 8px; border-radius: 999px;
   border: 1px solid transparent;
@@ -3000,18 +3100,18 @@ color: var(--text-1);
 .v5b-slot-badge.rushed  { background: var(--tint-warn); color: var(--warn); border-color: color-mix(in oklab, var(--warn) 30%, transparent); }
 .v5b-slot-badge.free    { background: var(--tint-info); color: var(--info); border-color: color-mix(in oklab, var(--info) 30%, transparent); }
 .v5b-day-budget {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-3);
   padding: 0 22px 10px;
   display: flex; gap: 8px; align-items: baseline;
 }
-.v5b-day-budget strong { font-family: 'Fraunces', serif; font-weight: 500; font-size: 13px; color: var(--text-1); letter-spacing: -0.01em; }
+.v5b-day-budget strong { font-family: 'Geist', serif; font-weight: 500; font-size: 13px; color: var(--text-1); letter-spacing: -0.01em; }
 .v5b-slot + .v5b-slot { border-top-color: var(--line); }
 .v5b-slot:hover { background: color-mix(in oklab, var(--surface-2) 60%, transparent); }
 .v5b-slot:hover .v5b-slot-arrow { opacity: 1; transform: translateX(0); }
 .v5b-slot-time {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400; font-size: 18px;
   letter-spacing: -0.01em;
   color: var(--text-2);
@@ -3042,7 +3142,7 @@ color: var(--text-1);
 [data-theme="dark"] .v5b-slot-glyph.activity { color: #a3c97a; }
 .v5b-slot-body { min-width: 0; }
 .v5b-slot-title {
-  font-family: 'Fraunces', serif; font-weight: 400;
+  font-family: 'Geist', serif; font-weight: 400;
   font-size: 16px; line-height: 1.25; letter-spacing: -0.01em;
   color: var(--text-1);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -3055,7 +3155,7 @@ color: var(--text-1);
   overflow: hidden;
 }
 .v5b-slot-verdict {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.08em;
   color: var(--text-3);
   margin-top: 4px;
@@ -3078,7 +3178,7 @@ color: var(--text-1);
 @keyframes v5b-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 
 .v5b-comment-pill {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.06em;
   color: var(--text-3);
   background: var(--surface-2);
@@ -3101,7 +3201,7 @@ color: var(--text-1);
 .v5b-add-slot {
   margin: 6px 22px 4px;
   padding: 10px 14px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-3);
   background: transparent;
@@ -3115,7 +3215,7 @@ color: var(--text-1);
 
 .v5b-day-delete {
   margin: 0 22px 16px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-3);
   background: transparent;
@@ -3132,7 +3232,7 @@ color: var(--text-1);
   margin-bottom: 24px;
 }
 .v5b-prov-statusbar .label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-3); margin-right: 4px;
 }
@@ -3148,7 +3248,7 @@ color: var(--text-1);
   position: relative;
 }
 .v5b-prov-group-head .roman {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-style: italic;
   font-weight: 300;
   font-size: 14px;
@@ -3156,7 +3256,7 @@ color: var(--text-1);
   font-feature-settings: "lnum";
 }
 .v5b-prov-group-head h2 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400;
   font-size: 28px;
   letter-spacing: -0.02em;
@@ -3167,7 +3267,7 @@ color: var(--text-1);
 .v5b-prov-group-head h2 em { font-style: italic; color: var(--accent-deep); }
 [data-theme="dark"] .v5b-prov-group-head h2 em { color: var(--gold-soft-v5); }
 .v5b-prov-group-head .count {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--text-3);
 }
@@ -3204,7 +3304,7 @@ color: var(--text-1);
 
 .v5b-prov-eyebrow {
   display: flex; align-items: center; gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-3);
   margin-bottom: 8px;
@@ -3214,7 +3314,7 @@ color: var(--text-1);
   font-size: 12px;
 }
 .v5b-prov-name {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400;
   font-size: 22px;
   line-height: 1.15;
@@ -3232,7 +3332,7 @@ color: var(--text-1);
 }
 .v5b-prov-meta .row { display: flex; gap: 8px; align-items: baseline; }
 .v5b-prov-meta .row .k {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--text-3);
   min-width: 48px;
@@ -3250,7 +3350,7 @@ color: var(--text-1);
 }
 
 .v5b-stamp {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   font-weight: 700;
   padding: 4px 10px;
@@ -3273,7 +3373,7 @@ color: var(--text-1);
   width: min(520px, 100vw);
 }
 .v5b-detail-eyebrow {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text-3);
   display: flex; align-items: center; gap: 10px;
@@ -3286,7 +3386,7 @@ color: var(--text-1);
   border: 1px solid var(--line);
 }
 .v5b-detail-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400;
   font-size: 32px;
   letter-spacing: -0.02em;
@@ -3307,7 +3407,7 @@ color: var(--text-1);
 }
 .v5b-detail-section:last-child { border-bottom: none; }
 .v5b-detail-section h4 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text-3);
   margin: 0 0 14px;
@@ -3334,7 +3434,7 @@ color: var(--text-1);
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-2);
@@ -3348,7 +3448,7 @@ color: var(--text-1);
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 .v5b-layer-tab-hint {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--text-3);
   font-weight: 400;
@@ -3373,12 +3473,12 @@ color: var(--text-1);
 .v5b-client-visible strong { font-size: 13.5px; color: var(--text-1); font-weight: 600; }
 .v5b-client-visible em {
   font-style: normal;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.06em;
   color: var(--text-3);
 }
 .v5b-client-hint {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; color: var(--text-3);
   margin-top: 4px;
   font-style: italic;
@@ -3417,14 +3517,14 @@ color: var(--text-1);
 .v5b-detail-grid.cols-1 { grid-template-columns: 1fr; }
 .v5b-field { display: flex; flex-direction: column; gap: 4px; }
 .v5b-field .lbl {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-3);
 }
 .v5b-field input,
 .v5b-field textarea,
 .v5b-field select {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   color: var(--text-1);
   background: var(--surface-2);
@@ -3444,7 +3544,7 @@ color: var(--text-1);
 
 .v5b-status-chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .v5b-status-chip {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
   padding: 8px 14px;
   border: 1px solid var(--line);
@@ -3480,7 +3580,7 @@ color: var(--text-1);
   background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px; font-weight: 500;
   color: var(--text-1);
   cursor: pointer;
@@ -3496,14 +3596,14 @@ color: var(--text-1);
 .v5b-detail-michelin {
   display: flex; gap: 4px; align-items: center;
   font-size: 16px; color: var(--gold-v5);
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
 }
 
 .v5b-detail-confirm-cta {
   width: 100%;
   padding: 14px 20px;
   margin-top: 8px;
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-style: italic;
   font-size: 16px;
   letter-spacing: 0.01em;
@@ -3526,7 +3626,7 @@ color: var(--text-1);
   animation: v5b-fade-bg 1.4s ease forwards;
 }
 .v5b-celebrate-stamp .sello {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-style: italic;
   font-weight: 600;
   font-size: clamp(80px, 18vw, 200px);
@@ -3647,12 +3747,12 @@ textarea:focus-visible {
 .v5c-bhero.margin .v5c-bhero-label { color: var(--surface-2); }
 .v5c-bhero.margin .v5c-bhero-statement { color: var(--surface-3); }
 .v5c-bhero-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text-3);
 }
 .v5c-bhero-value {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 300;
   font-size: clamp(36px, 4.4vw, 56px);
   line-height: 1; letter-spacing: -0.025em;
@@ -3661,7 +3761,7 @@ textarea:focus-visible {
   display: flex; align-items: baseline; gap: 6px;
 }
 .v5c-bhero-value .cur {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 0.55em;
   font-style: italic;
   font-weight: 300;
@@ -3669,7 +3769,7 @@ textarea:focus-visible {
 }
 .v5c-bhero.margin .v5c-bhero-value .cur { color: var(--gold-soft-v5); }
 .v5c-bhero-value small {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px; font-weight: 400; letter-spacing: 0.04em;
   color: var(--text-3);
   margin-left: 6px;
@@ -3694,7 +3794,7 @@ textarea:focus-visible {
   padding: 22px;
 }
 .v5c-budget-card h3 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text-3);
   margin: 0 0 18px;
@@ -3702,7 +3802,7 @@ textarea:focus-visible {
   display: flex; align-items: center; justify-content: space-between;
 }
 .v5c-budget-card h3 .add {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 11px; letter-spacing: 0;
   text-transform: none;
   color: var(--accent);
@@ -3725,13 +3825,13 @@ textarea:focus-visible {
 }
 .v5c-btable-row:last-child { border-bottom: none; }
 .v5c-btable-row .idx {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px;
   color: var(--text-3);
   letter-spacing: 0.08em;
 }
 .v5c-btable-row .cat input {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   background: transparent;
   border: none;
@@ -3743,7 +3843,7 @@ textarea:focus-visible {
 .v5c-btable-row .cat input:hover { border-bottom-color: var(--line); }
 .v5c-btable-row .cat input:focus { border-bottom-color: var(--accent); outline: none; background: transparent; }
 .v5c-btable-row .cat .notes {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   color: var(--text-3);
   background: transparent; border: none;
@@ -3751,7 +3851,7 @@ textarea:focus-visible {
 }
 .v5c-btable-row .cat .notes:focus { color: var(--text-1); outline: none; }
 .v5c-btable-row .amt {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 18px;
   color: var(--text-1);
   text-align: right;
@@ -3765,7 +3865,7 @@ textarea:focus-visible {
 .v5c-btable-row .amt:hover { border-bottom-color: var(--line); }
 .v5c-btable-row .amt:focus { border-bottom-color: var(--accent); outline: none; }
 .v5c-btable-row .status {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -3795,12 +3895,12 @@ textarea:focus-visible {
   border-top: 2px solid var(--text-1);
 }
 .v5c-btable-foot .label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-2);
 }
 .v5c-btable-foot .total {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 32px; font-weight: 400; letter-spacing: -0.02em;
   color: var(--text-1);
   font-feature-settings: "tnum","lnum";
@@ -3817,14 +3917,14 @@ textarea:focus-visible {
 }
 .v5c-bar-label {
   font-size: 13px; color: var(--text-1);
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400;
   grid-column: 1 / -1;
   display: flex; align-items: baseline; justify-content: space-between;
   gap: 12px;
 }
 .v5c-bar-label .pct {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   color: var(--text-3);
   letter-spacing: 0.08em;
@@ -3872,18 +3972,18 @@ textarea:focus-visible {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   color: var(--text-2);
   min-width: 64px;
 }
 .v5c-mdt:hover { background: var(--surface-2); color: var(--text-1); }
 .v5c-mdt .rom {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
   color: inherit;
 }
 .v5c-mdt .wd {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase;
   color: var(--text-3);
   display: flex; gap: 5px; align-items: baseline;
@@ -3930,7 +4030,7 @@ textarea:focus-visible {
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   padding: 4px 10px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -3978,7 +4078,7 @@ textarea:focus-visible {
 .v5c-bsh-eyebrow {
   display: flex; align-items: center; gap: 12px;
   margin-bottom: 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px; letter-spacing: 0.08em;
   color: var(--text-3); text-transform: uppercase;
 }
@@ -3992,14 +4092,14 @@ textarea:focus-visible {
 .v5c-bsh-eyebrow .time { color: var(--text-1); font-weight: 600; }
 .v5c-bsh-eyebrow .day { font-style: normal; }
 .v5c-bsh-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 20px; font-weight: 400;
   letter-spacing: -0.015em;
   color: var(--text-1);
   margin-bottom: 6px; padding-right: 30px;
 }
 .v5c-bsh-desc {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px; line-height: 1.45;
   color: var(--text-2);
@@ -4014,12 +4114,12 @@ textarea:focus-visible {
   border-radius: 6px;
 }
 .v5c-bsh-prov .lbl {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-3);
   display: block; margin-bottom: 2px;
 }
-.v5c-bsh-prov strong { font-family: 'Fraunces', serif; font-weight: 500; color: var(--text-1); }
+.v5c-bsh-prov strong { font-family: 'Geist', serif; font-weight: 500; color: var(--text-1); }
 .v5c-bsh-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* Day timeline in the side panel */
@@ -4063,7 +4163,7 @@ textarea:focus-visible {
   width: 28px; height: 28px;
   border-radius: 50%;
   color: white;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px; font-weight: 700;
   z-index: 1;
 }
@@ -4073,17 +4173,17 @@ textarea:focus-visible {
   margin-bottom: 2px;
 }
 .v5c-mpt-row .head .time {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px; color: var(--text-3);
   letter-spacing: 0.04em;
 }
 .v5c-mpt-row .head .warn {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase;
   color: var(--bad);
 }
 .v5c-mpt-row .title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 13px;
   color: var(--text-1);
   line-height: 1.3;
@@ -4100,7 +4200,7 @@ textarea:focus-visible {
   background: var(--accent);
   color: white;
   border-radius: var(--radius);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px; font-weight: 500;
   text-decoration: none;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
@@ -4115,7 +4215,7 @@ textarea:focus-visible {
   border-radius: 50%;
   width: 38px; height: 38px;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-weight: 700;
   font-size: 13px;
   border: 2px solid white;
@@ -4135,7 +4235,7 @@ textarea:focus-visible {
   border-bottom: 1px solid var(--line);
 }
 .v5c-mp-head h3 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400; font-size: 20px;
   letter-spacing: -0.015em; color: var(--text-1);
   margin: 0;
@@ -4143,7 +4243,7 @@ textarea:focus-visible {
 .v5c-mp-head h3 em { font-style: italic; color: var(--accent-deep); }
 [data-theme="dark"] .v5c-mp-head h3 em { color: var(--gold-soft-v5); }
 .v5c-mp-head .sub {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-3); margin-top: 6px;
 }
@@ -4151,14 +4251,14 @@ textarea:focus-visible {
 .v5c-mp-section { padding: 14px 20px; border-bottom: 1px solid var(--line); }
 .v5c-mp-section:last-child { border-bottom: none; }
 .v5c-mp-section h4 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text-3); font-weight: 500;
   margin: 0 0 10px;
   display: flex; align-items: center; justify-content: space-between;
 }
 .v5c-mp-section h4 .all {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 10px;
   text-transform: none;
   letter-spacing: 0;
@@ -4188,7 +4288,7 @@ textarea:focus-visible {
   flex: 1;
 }
 .v5c-mp-layer .cnt {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   color: var(--text-3);
   letter-spacing: 0.06em;
@@ -4210,7 +4310,7 @@ textarea:focus-visible {
   flex-shrink: 0;
 }
 .v5c-mp-day .num {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-style: italic;
   font-size: 12px;
   color: var(--text-3);
@@ -4221,7 +4321,7 @@ textarea:focus-visible {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .v5c-mp-day .cnt {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; color: var(--text-3);
   letter-spacing: 0.06em;
 }
@@ -4245,7 +4345,7 @@ textarea:focus-visible {
   flex-shrink: 0;
 }
 .v5c-mp-pin .name {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 14px;
   color: var(--text-1);
   flex: 1;
@@ -4254,7 +4354,7 @@ textarea:focus-visible {
 }
 .v5c-mp-pin .ml { font-size: 11px; color: var(--gold-v5); }
 .v5c-mp-pin .loc {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; color: var(--text-3);
   letter-spacing: 0.06em;
 }
@@ -4281,7 +4381,7 @@ textarea:focus-visible {
 }
 @media (max-width: 720px) { .v5c-res-hero { grid-template-columns: 1fr; padding: 20px; } }
 .v5c-res-hero-num {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 300;
   font-size: clamp(48px, 8vw, 80px);
   line-height: 0.9;
@@ -4303,12 +4403,12 @@ textarea:focus-visible {
   display: flex; flex-direction: column; gap: 4px;
 }
 .v5c-res-hero-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text-3);
 }
 .v5c-res-hero-statement {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400;
   font-size: 18px;
   line-height: 1.3;
@@ -4341,12 +4441,12 @@ textarea:focus-visible {
   border-top: 1px solid var(--line);
 }
 .v5c-res-progress-labels .lab .k {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text-3);
 }
 .v5c-res-progress-labels .lab .v {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 22px; font-weight: 400; letter-spacing: -0.015em;
   color: var(--text-1);
 }
@@ -4362,7 +4462,7 @@ textarea:focus-visible {
   border-bottom: 1px solid var(--text-1);
 }
 .v5c-res-group-head .roman {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 300;
   font-style: italic;
   font-size: 32px;
@@ -4370,7 +4470,7 @@ textarea:focus-visible {
   letter-spacing: -0.02em;
 }
 .v5c-res-group-head h2 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400;
   font-size: 26px;
   letter-spacing: -0.02em;
@@ -4381,7 +4481,7 @@ textarea:focus-visible {
 .v5c-res-group-head h2 em { font-style: italic; color: var(--accent-deep); }
 [data-theme="dark"] .v5c-res-group-head h2 em { color: var(--gold-soft-v5); }
 .v5c-res-group-head .meta {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-3);
 }
@@ -4445,7 +4545,7 @@ textarea:focus-visible {
 
 .v5c-res-body { min-width: 0; }
 .v5c-res-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400;
   font-size: 16px;
   line-height: 1.25;
@@ -4461,7 +4561,7 @@ textarea:focus-visible {
   overflow: hidden;
 }
 .v5c-res-contact {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.06em;
   color: var(--text-3);
   margin-top: 4px;
@@ -4473,7 +4573,7 @@ textarea:focus-visible {
 }
 .v5c-meta-chip {
   display: inline-flex; align-items: center; gap: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
   padding: 3px 8px; border-radius: 999px;
   background: var(--surface-2);
@@ -4499,7 +4599,7 @@ textarea:focus-visible {
 }
 .v5-completeness-dot.filled { background: var(--accent); }
 .v5-completeness-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase;
   color: var(--text-3); margin-left: 6px;
 }
@@ -4518,7 +4618,7 @@ textarea:focus-visible {
   margin-bottom: 20px;
 }
 .v5c-currency-bar > .lbl {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-3);
 }
@@ -4531,7 +4631,7 @@ textarea:focus-visible {
 .v5c-currency-segmented button {
   padding: 6px 14px;
   border: none; background: transparent;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px; font-weight: 600;
   letter-spacing: 0.06em;
   color: var(--text-3);
@@ -4547,13 +4647,13 @@ textarea:focus-visible {
 .v5c-fx-rates {
   display: flex; align-items: center; gap: 12px;
   margin-left: auto;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.06em;
   color: var(--text-3);
 }
 .v5c-fx-rates input {
   width: 70px; padding: 4px 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -4582,7 +4682,7 @@ textarea:focus-visible {
 .v5b-bita-body { min-width: 0; }
 .v5b-bita-meta {
   display: flex; gap: 10px; align-items: baseline;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase;
   color: var(--text-3);
   margin-bottom: 4px;
@@ -4599,7 +4699,7 @@ textarea:focus-visible {
 }
 .v5b-bita-form select, .v5b-bita-form input[type="text"] {
   padding: 8px 10px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -4625,7 +4725,7 @@ textarea:focus-visible {
   margin-bottom: 6px;
 }
 .v5b-places-hint {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px;
   line-height: 1.5;
@@ -4643,13 +4743,13 @@ textarea:focus-visible {
   --gmpx-color-surface: var(--surface-1);
   --gmpx-color-on-surface: var(--text-1);
   --gmpx-color-primary: var(--accent);
-  --gmpx-font-family-base: 'Inter', system-ui, sans-serif;
+  --gmpx-font-family-base: 'Geist', system-ui, sans-serif;
   --gmpx-font-size-base: 14px;
 }
 .v5b-places-coords {
   margin-top: 10px;
   display: flex; align-items: center; gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   color: var(--olive-deep);
 }
@@ -4665,7 +4765,7 @@ textarea:focus-visible {
   flex-wrap: wrap;
 }
 .v5b-places-manual .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 12px;
   color: var(--text-3);
@@ -4697,12 +4797,12 @@ textarea:focus-visible {
   display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
 }
 .v5-mp-head h2 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 22px; font-weight: 400; letter-spacing: -0.015em;
   margin-bottom: 4px;
 }
 .v5-mp-head h2 em { font-style: italic; color: var(--accent); }
-.v5-mp-sub { font-family: 'Lora', serif; font-style: italic; font-size: 13px; color: var(--text-2); }
+.v5-mp-sub { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 13px; color: var(--text-2); }
 .v5-mp-mapwrap { flex: 1; min-height: 0; background: #efe9dd; }
 #manual-pin-map { width: 100%; height: 100%; }
 .v5-mp-foot {
@@ -4713,7 +4813,7 @@ textarea:focus-visible {
   flex-wrap: wrap;
 }
 .v5-mp-coords {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 12px;
   color: var(--text-1);
   display: flex; align-items: center; gap: 6px;
@@ -4727,7 +4827,7 @@ textarea:focus-visible {
   font-weight: 600;
 }
 .v5-mp-coords-empty em {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-size: 13px;
   color: var(--text-3);
 }
@@ -4736,7 +4836,7 @@ textarea:focus-visible {
 /* Attachments (files + links) on slots and providers */
 .v5b-attachments { }
 .v5b-att-empty {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-3);
@@ -4788,7 +4888,7 @@ textarea:focus-visible {
   text-align: center;
 }
 .v5b-att-name {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   color: var(--text-1);
   text-decoration: none;
@@ -4798,7 +4898,7 @@ textarea:focus-visible {
 }
 .v5b-att-name:hover { color: var(--accent); text-decoration: underline; }
 .v5b-att-meta {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   color: var(--text-3);
   letter-spacing: 0.04em;
@@ -4829,7 +4929,7 @@ textarea:focus-visible {
 }
 .v5b-att-link-form input {
   padding: 8px 10px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -4855,9 +4955,9 @@ textarea:focus-visible {
   border-radius: var(--radius-lg);
 }
 .v5c-psb-icon { font-size: 26px; line-height: 1; }
-.v5c-psb-title { font-family: 'Fraunces', serif; font-size: 19px; line-height: 1.3; color: var(--text-1); margin-bottom: 4px; }
+.v5c-psb-title { font-family: 'Geist', serif; font-size: 19px; line-height: 1.3; color: var(--text-1); margin-bottom: 4px; }
 .v5c-psb-title strong { color: var(--accent-deep); font-weight: 500; }
-.v5c-psb-meta { font-family: 'Lora', serif; font-style: italic; font-size: 13px; color: var(--text-2); line-height: 1.45; }
+.v5c-psb-meta { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 13px; color: var(--text-2); line-height: 1.45; }
 
 /* Places scan modal */
 .v5-places-scan-overlay {
@@ -4885,12 +4985,12 @@ textarea:focus-visible {
   display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
 }
 .v5-ps-head h2 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 24px; font-weight: 400; letter-spacing: -0.015em;
   margin-bottom: 4px;
 }
 .v5-ps-head h2 em { font-style: italic; color: var(--accent); }
-.v5-ps-sub { font-family: 'Lora', serif; font-style: italic; font-size: 14px; color: var(--text-2); }
+.v5-ps-sub { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 14px; color: var(--text-2); }
 
 .v5-ps-progress { padding: 32px 26px; }
 .v5-ps-pbar { height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
@@ -4901,7 +5001,7 @@ textarea:focus-visible {
 }
 .v5-ps-pmeta {
   margin-top: 10px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px; letter-spacing: 0.06em;
   color: var(--text-3);
   text-align: right;
@@ -4916,7 +5016,7 @@ textarea:focus-visible {
 }
 .v5-ps-count {
   margin-left: auto;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px; letter-spacing: 0.06em;
   color: var(--text-3);
 }
@@ -4949,9 +5049,9 @@ textarea:focus-visible {
   margin-bottom: 8px;
   flex-wrap: wrap;
 }
-.v5-ps-row-head strong { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 400; }
+.v5-ps-row-head strong { font-family: 'Geist', serif; font-size: 16px; font-weight: 400; }
 .v5-ps-row-status {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.10em; text-transform: uppercase;
   color: var(--accent-deep);
 }
@@ -4969,7 +5069,7 @@ textarea:focus-visible {
 .v5-ps-col.current { background: var(--surface-1); border: 1px solid var(--line); }
 .v5-ps-col.found { background: color-mix(in oklab, var(--accent) 5%, var(--surface-1)); border: 1px solid color-mix(in oklab, var(--accent) 20%, var(--line)); }
 .v5-ps-col-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-3);
   margin-bottom: 6px;
@@ -4977,14 +5077,14 @@ textarea:focus-visible {
 .v5-ps-col .muted { color: var(--text-3); font-size: 12px; margin-top: 2px; }
 .v5-ps-coords {
   display: block; margin-top: 6px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   color: var(--accent);
   text-decoration: none;
 }
 .v5-ps-coords:hover { text-decoration: underline; }
 .v5-ps-row-query {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; color: var(--text-3);
   margin-top: 8px;
 }
@@ -4999,7 +5099,7 @@ textarea:focus-visible {
   color: var(--olive-deep);
   margin-bottom: 16px;
 }
-.v5-ps-done p { font-family: 'Lora', serif; font-size: 16px; color: var(--text-1); margin-bottom: 8px; }
+.v5-ps-done p { font-family: 'Instrument Serif', serif; font-size: 16px; color: var(--text-1); margin-bottom: 8px; }
 .v5-ps-done p strong { color: var(--accent-deep); }
 .v5-ps-done .muted { font-style: italic; color: var(--text-2); font-size: 14px; }
 
@@ -5036,7 +5136,7 @@ textarea:focus-visible {
   padding: 6px;
 }
 .v5b-ac-section-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-3);
   padding: 8px 10px 6px;
@@ -5056,13 +5156,13 @@ textarea:focus-visible {
 .v5b-ac-item:hover { background: var(--surface-2); }
 .v5b-ac-item.google-result:hover { background: color-mix(in oklab, var(--accent) 8%, var(--surface-2)); }
 .v5b-ac-name {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 14px;
   color: var(--text-1);
   margin-bottom: 2px;
 }
 .v5b-ac-meta {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.04em;
   color: var(--text-3);
   text-transform: lowercase;
@@ -5070,7 +5170,7 @@ textarea:focus-visible {
 .v5b-ac-coords {
   position: absolute;
   top: 10px; right: 12px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   color: var(--olive-deep);
   font-weight: 600;
@@ -5083,7 +5183,7 @@ textarea:focus-visible {
   padding: 10px 12px;
   border-radius: 6px;
   cursor: pointer;
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-size: 13px;
   color: var(--accent-deep);
   margin-top: 6px;
@@ -5092,7 +5192,7 @@ textarea:focus-visible {
 .v5b-ac-google-trigger em { font-style: italic; color: var(--text-1); }
 .v5b-ac-loading {
   padding: 16px 12px;
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-2);
@@ -5105,7 +5205,7 @@ textarea:focus-visible {
   border: none;
   padding: 8px;
   margin-top: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.06em;
   color: var(--text-3);
   cursor: pointer;
@@ -5149,7 +5249,7 @@ textarea:focus-visible {
 [data-theme="dark"] .v5c-set-card .ic { color: var(--gold-soft-v5); }
 .v5c-set-card .ic svg { width: 18px; height: 18px; }
 .v5c-set-card h3 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400; font-size: 20px;
   letter-spacing: -0.015em;
   color: var(--text-1);
@@ -5184,7 +5284,7 @@ textarea:focus-visible {
   border-bottom: 1px solid var(--line);
 }
 .v5c-snap-head h2 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400; font-size: 28px;
   letter-spacing: -0.02em;
   color: var(--text-1);
@@ -5207,7 +5307,7 @@ textarea:focus-visible {
   background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  font-family: 'Inter', sans-serif; font-size: 13px;
+  font-family: 'Geist', sans-serif; font-size: 13px;
   color: var(--text-1);
 }
 .v5c-snap-form input:focus { outline: none; border-color: var(--accent); background: var(--surface-1); }
@@ -5244,20 +5344,20 @@ textarea:focus-visible {
 .v5c-snap-row.brian::before { border-color: #b8512e; }
 .v5c-snap-row.federico::before { border-color: #3a5a8b; }
 .v5c-snap-name {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400; font-size: 17px;
   letter-spacing: -0.012em;
   color: var(--text-1);
 }
 .v5c-snap-meta {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.08em;
   color: var(--text-3);
   margin-top: 3px;
 }
 .v5c-snap-meta .author { color: var(--text-2); }
 .v5c-snap-empty {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-style: italic;
   font-size: 14px;
   color: var(--text-3);
@@ -5272,7 +5372,7 @@ textarea:focus-visible {
   margin-top: 28px;
 }
 .v5c-deploy-note h3 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-weight: 400; font-size: 18px;
   margin: 0 0 10px;
   color: var(--text-1);
@@ -5282,7 +5382,7 @@ textarea:focus-visible {
   margin: 6px 0;
 }
 .v5c-deploy-note code {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   background: var(--text-1); color: var(--surface-1);
   padding: 2px 7px; border-radius: 3px;
@@ -5304,7 +5404,7 @@ textarea:focus-visible {
 .v5-home-inner { max-width: 1280px; margin: 0 auto; }
 .v5-home-head { margin-bottom: 48px; padding: 16px 0 32px; }
 .v5-home-eyebrow {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px;
   letter-spacing: 0.08em;
@@ -5313,7 +5413,7 @@ textarea:focus-visible {
   margin-bottom: 8px;
 }
 .v5-home-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 56px;
   font-weight: 400;
   letter-spacing: -0.025em;
@@ -5326,7 +5426,7 @@ textarea:focus-visible {
   font-weight: 400;
 }
 .v5-home-sub {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 17px;
   color: var(--text-2);
@@ -5334,7 +5434,7 @@ textarea:focus-visible {
 }
 .v5-home-group { margin-bottom: 40px; }
 .v5-home-group-title {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -5403,7 +5503,7 @@ textarea:focus-visible {
   margin-bottom: auto;
 }
 .v5-trip-card-status {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -5414,13 +5514,13 @@ textarea:focus-visible {
   border: 1px solid rgba(255,255,255,0.25);
 }
 .v5-trip-card-pax {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.08em;
   color: rgba(255,255,255,0.85);
 }
 .v5-trip-card-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 24px;
   font-weight: 500;
   line-height: 1.15;
@@ -5428,7 +5528,7 @@ textarea:focus-visible {
   margin-bottom: 4px;
 }
 .v5-trip-card-region {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 14px;
   color: rgba(255,255,255,0.85);
@@ -5438,7 +5538,7 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.03em;
   color: rgba(255,255,255,0.92);
@@ -5481,14 +5581,14 @@ textarea:focus-visible {
 }
 .v5-home-new-btn:hover { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 4%, transparent); }
 .v5-home-new-btn span {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 20px;
   font-weight: 500;
   color: var(--text-1);
   letter-spacing: -0.01em;
 }
 .v5-home-new-btn em {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 14px;
   color: var(--text-3);
@@ -5500,7 +5600,7 @@ textarea:focus-visible {
   padding: 28px 28px 24px;
 }
 .v5-home-newform h3 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 22px; font-weight: 400;
   letter-spacing: -0.015em;
   color: var(--text-1);
@@ -5508,7 +5608,7 @@ textarea:focus-visible {
 }
 .v5-home-newform h3 em { font-style: italic; color: var(--accent); }
 .v5-home-newform .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-3);
@@ -5527,7 +5627,7 @@ textarea:focus-visible {
   gap: 4px;
 }
 .v5-newform-field > span {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -5535,7 +5635,7 @@ textarea:focus-visible {
 }
 .v5-newform-field input {
   padding: 10px 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -5569,7 +5669,7 @@ textarea:focus-visible {
 }
 .v5-wizard-head { margin-bottom: 24px; }
 .v5-wizard-head h3 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 28px; font-weight: 400;
   letter-spacing: -0.02em;
   color: var(--text-1);
@@ -5577,7 +5677,7 @@ textarea:focus-visible {
 }
 .v5-wizard-head h3 em { font-style: italic; color: var(--accent); }
 .v5-wizard-head .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 14px;
   color: var(--text-3);
@@ -5589,7 +5689,7 @@ textarea:focus-visible {
 }
 .v5-wizard-section:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
 .v5-wizard-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -5627,17 +5727,17 @@ textarea:focus-visible {
   display: flex; align-items: center; justify-content: center;
   font-size: 18px;
   color: white;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-weight: 500;
 }
 .v5-wiz-cat-label {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 14px;
   color: var(--text-1);
   letter-spacing: -0.005em;
 }
 .v5-wiz-cat-desc {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-3);
@@ -5647,7 +5747,7 @@ textarea:focus-visible {
 /* Select for currency */
 .v5-newform-field select {
   padding: 10px 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -5680,7 +5780,7 @@ textarea:focus-visible {
 }
 .v5-wiz-preview-row:first-of-type { border-top: none; }
 .v5-wiz-preview-key {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -5702,7 +5802,7 @@ textarea:focus-visible {
   background: color-mix(in oklab, var(--c) 8%, transparent);
   font-size: 12px;
   color: var(--text-1);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
 }
 .v5-wiz-pill-glyph {
   color: var(--c);
@@ -5716,12 +5816,12 @@ textarea:focus-visible {
   border: 1px solid color-mix(in oklab, var(--line) 60%, transparent);
 }
 .v5-wiz-preview-text {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 14px;
   color: var(--text-1);
 }
 .v5-wiz-preview-aux {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   color: var(--text-3);
 }
@@ -5769,7 +5869,7 @@ textarea:focus-visible {
   border: none;
   text-align: left;
   padding: 9px 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   color: var(--text-1);
   cursor: pointer;
@@ -5801,7 +5901,7 @@ textarea:focus-visible {
   border-bottom: 1px solid var(--line);
 }
 .v5-modal-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 22px;
   font-weight: 400;
   color: var(--text-1);
@@ -5814,7 +5914,7 @@ textarea:focus-visible {
   flex: 1;
 }
 .v5-modal-body .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-3);
@@ -5855,13 +5955,13 @@ textarea:focus-visible {
 }
 .v5-clone-option div { display: flex; flex-direction: column; gap: 2px; }
 .v5-clone-option strong {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-1);
 }
 .v5-clone-option span {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 12.5px;
   color: var(--text-3);
@@ -5889,7 +5989,7 @@ textarea:focus-visible {
   padding-right: 44px;
 }
 .v5-template-card-body h3 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 16px;
   font-weight: 500;
   color: var(--text-1);
@@ -5897,7 +5997,7 @@ textarea:focus-visible {
   margin-bottom: 3px;
 }
 .v5-template-card-body p {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-2);
@@ -5905,7 +6005,7 @@ textarea:focus-visible {
   line-height: 1.45;
 }
 .v5-template-meta {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10.5px;
   letter-spacing: 0.05em;
   color: var(--text-3);
@@ -5942,7 +6042,7 @@ textarea:focus-visible {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   background: transparent;
   border: 1px solid var(--line);
@@ -5973,7 +6073,7 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--text-2);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
@@ -5999,14 +6099,14 @@ textarea:focus-visible {
 }
 .v5-lib-card:hover { border-color: var(--accent); transform: translateY(-1px); }
 .v5-lib-card-type {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-3);
 }
 .v5-lib-card-name {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 18px;
   font-weight: 500;
   color: var(--text-1);
@@ -6014,14 +6114,14 @@ textarea:focus-visible {
   line-height: 1.2;
 }
 .v5-lib-card-meta {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-2);
   margin-top: 4px;
 }
 .v5-lib-card-contact {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   color: var(--text-3);
   margin-top: 4px;
@@ -6034,7 +6134,7 @@ textarea:focus-visible {
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px dashed var(--line);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.04em;
   color: var(--text-3);
@@ -6051,7 +6151,7 @@ textarea:focus-visible {
   padding: 2px 7px;
   border-radius: 3px;
   font-size: 9px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   letter-spacing: 0.03em;
 }
 .v5-lib-usage-tag.used {
@@ -6100,28 +6200,28 @@ textarea:focus-visible {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 15px;
   color: var(--text-1);
   font-weight: 500;
   letter-spacing: -0.005em;
 }
 .v5-lib-import-type {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9.5px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-3);
 }
 .v5-lib-import-meta {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 12.5px;
   color: var(--text-3);
   margin-top: 2px;
 }
 .v5-lib-import-count {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   color: var(--text-3);
 }
@@ -6162,13 +6262,13 @@ textarea:focus-visible {
   min-width: 0;
 }
 .v5b-lib-body strong {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-1);
 }
 .v5b-lib-body span {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 12px;
   color: var(--text-3);
@@ -6186,7 +6286,7 @@ textarea:focus-visible {
   width: 100%;
 }
 .v5-meta-field > span {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -6195,7 +6295,7 @@ textarea:focus-visible {
 .v5-meta-field input,
 .v5-meta-field select {
   padding: 9px 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -6246,7 +6346,7 @@ textarea:focus-visible {
   flex-wrap: wrap;
 }
 .v5-meta-fx-head > span {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--text-3);
@@ -6264,7 +6364,7 @@ textarea:focus-visible {
   align-items: center;
 }
 .v5-meta-fx-ccy {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-2);
@@ -6272,7 +6372,7 @@ textarea:focus-visible {
 }
 .v5-meta-fx-row input {
   padding: 5px 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 12px;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -6290,7 +6390,7 @@ textarea:focus-visible {
   background: color-mix(in oklab, var(--ok, #3c6b3c) 8%, var(--surface-0));
   border: 1px solid color-mix(in oklab, var(--ok, #3c6b3c) 25%, var(--line));
   border-radius: var(--radius-md);
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 12.5px;
   color: var(--text-2);
@@ -6321,7 +6421,7 @@ textarea:focus-visible {
   margin-bottom: 32px;
 }
 .v5-login-mark {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 22px;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -6332,7 +6432,7 @@ textarea:focus-visible {
   color: var(--accent);
 }
 .v5-login-tag {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -6350,7 +6450,7 @@ textarea:focus-visible {
 .v5-login-tabs button {
   flex: 1;
   padding: 8px 14px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 500;
   background: transparent;
@@ -6371,7 +6471,7 @@ textarea:focus-visible {
   gap: 14px;
 }
 .v5-login-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 26px;
   font-weight: 400;
   color: var(--text-1);
@@ -6383,7 +6483,7 @@ textarea:focus-visible {
   color: var(--accent);
 }
 .v5-login-sub {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13.5px;
   color: var(--text-3);
@@ -6396,7 +6496,7 @@ textarea:focus-visible {
   gap: 5px;
 }
 .v5-login-field > span {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -6404,7 +6504,7 @@ textarea:focus-visible {
 }
 .v5-login-field input {
   padding: 11px 14px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -6426,7 +6526,7 @@ textarea:focus-visible {
   margin-top: 16px;
   padding: 10px 14px;
   border-radius: 6px;
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 13px;
   line-height: 1.4;
@@ -6466,7 +6566,7 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 600;
   flex-shrink: 0;
@@ -6479,7 +6579,7 @@ textarea:focus-visible {
   min-width: 0;
 }
 .v5-member-name {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13.5px;
   font-weight: 500;
   color: var(--text-1);
@@ -6489,7 +6589,7 @@ textarea:focus-visible {
   flex-wrap: wrap;
 }
 .v5-member-self-tag {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -6499,7 +6599,7 @@ textarea:focus-visible {
   border-radius: 3px;
 }
 .v5-member-pending-tag {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -6510,7 +6610,7 @@ textarea:focus-visible {
   border-radius: 3px;
 }
 .v5-member-meta {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.04em;
   color: var(--text-3);
@@ -6538,14 +6638,14 @@ textarea:focus-visible {
 /* Identity menu: add email + logout styling */
 .v5-identity-menu-header {
   padding: 10px 14px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13px;
   color: var(--text-1);
   border-bottom: 1px solid var(--line);
   line-height: 1.3;
 }
 .v5-identity-email {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   color: var(--text-3);
   margin-top: 2px;
@@ -6575,7 +6675,7 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--text-2);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   cursor: pointer;
   transition: all 0.12s ease;
   min-width: 90px;
@@ -6590,7 +6690,7 @@ textarea:focus-visible {
   border-color: var(--text-1);
 }
 .v5c-ruta-chip .num {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 14px;
   font-weight: 500;
 }
@@ -6598,7 +6698,7 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.04em;
   opacity: 0.7;
@@ -6639,7 +6739,7 @@ textarea:focus-visible {
   gap: 10px;
 }
 .v5c-ruta-head .head-l h3 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 18px;
   font-weight: 500;
   color: var(--text-1);
@@ -6647,7 +6747,7 @@ textarea:focus-visible {
   margin: 0;
 }
 .v5c-ruta-head .sub {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 12.5px;
   color: var(--text-3);
@@ -6661,7 +6761,7 @@ textarea:focus-visible {
   background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.04em;
   color: var(--text-2);
@@ -6710,7 +6810,7 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 700;
   flex-shrink: 0;
@@ -6728,7 +6828,7 @@ textarea:focus-visible {
   display: flex;
   gap: 8px;
   align-items: center;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -6740,14 +6840,14 @@ textarea:focus-visible {
   font-style: italic;
 }
 .v5c-ruta-slot .title {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13.5px;
   font-weight: 500;
   color: var(--text-1);
   line-height: 1.3;
 }
 .v5c-ruta-slot .prov {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 12px;
   color: var(--text-3);
@@ -6758,7 +6858,7 @@ textarea:focus-visible {
 .v5c-ruta-travel {
   display: flex;
   padding: 4px 14px 4px 22px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 11px;
   color: var(--text-3);
 }
@@ -6793,14 +6893,14 @@ textarea:focus-visible {
   align-items: baseline;
 }
 .v5c-ruta-total .lbl {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-3);
 }
 .v5c-ruta-total .val {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 16px;
   font-weight: 500;
   color: var(--text-1);
@@ -6810,7 +6910,7 @@ textarea:focus-visible {
   opacity: 0.4;
 }
 .v5c-ruta-total .val .dist {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 13px;
   color: var(--text-2);
   font-weight: 400;
@@ -6838,7 +6938,7 @@ textarea:focus-visible {
 .v5c-p2p-field { position: relative; }
 .v5c-p2p-field label {
   display: block;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -6851,7 +6951,7 @@ textarea:focus-visible {
 .v5c-p2p-input {
   width: 100%;
   padding: 9px 32px 9px 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 14px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -6917,19 +7017,19 @@ textarea:focus-visible {
 .v5c-p2p-option .body { flex: 1; min-width: 0; }
 .v5c-p2p-option .name {
   display: block;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 13.5px;
   color: var(--text-1);
 }
 .v5c-p2p-option .sub {
   display: block;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   color: var(--text-3);
   margin-top: 1px;
 }
 .v5c-p2p-option .tag {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -6940,7 +7040,7 @@ textarea:focus-visible {
 }
 .v5c-p2p-empty {
   padding: 12px;
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 12.5px;
   color: var(--text-3);
@@ -6978,7 +7078,7 @@ textarea:focus-visible {
   margin-top: 16px;
 }
 .v5c-p2p-frequent .lbl {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -6999,7 +7099,7 @@ textarea:focus-visible {
   border: 1px dashed var(--line);
   border-radius: 999px;
   color: var(--text-2);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -7029,7 +7129,7 @@ textarea:focus-visible {
   flex-wrap: wrap;
 }
 .v5c-p2p-summary .duration {
-  font-family: 'Fraunces', serif;
+  font-family: 'Geist', serif;
   font-size: 22px;
   font-weight: 500;
   color: var(--text-1);
@@ -7039,12 +7139,12 @@ textarea:focus-visible {
   font-size: 16px;
 }
 .v5c-p2p-summary .distance {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 14px;
   color: var(--text-2);
 }
 .v5c-p2p-summary .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 12px;
   color: var(--text-3);
@@ -7069,7 +7169,7 @@ textarea:focus-visible {
   pointer-events: none;
 }
 .v5c-p2p-empty-state .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 14px;
   color: var(--text-2);
@@ -7092,7 +7192,7 @@ textarea:focus-visible {
   background: transparent;
   border: none;
   border-radius: 999px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Geist', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--text-3);
@@ -7144,12 +7244,12 @@ textarea:focus-visible {
 .v5d-stat.confirmed::before { background: var(--ok); }
 .v5d-stat.cancelled::before { background: var(--bad); }
 .v5d-stat .num {
-  font-family: 'Fraunces', serif; font-weight: 300;
+  font-family: 'Geist', serif; font-weight: 300;
   font-size: 32px; line-height: 1; letter-spacing: -0.02em;
   color: var(--text-1); font-feature-settings: "tnum","lnum";
 }
 .v5d-stat .lb {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; color: var(--text-3);
   letter-spacing: 0.14em; text-transform: uppercase;
   margin-top: 6px;
@@ -7167,7 +7267,7 @@ textarea:focus-visible {
 }
 .v5d-tb-view button {
   padding: 6px 10px; background: transparent; border: none;
-  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 500;
   color: var(--text-3); cursor: pointer; border-radius: 4px;
   display: inline-flex; align-items: center; gap: 5px;
   transition: all 0.15s ease; min-height: 28px;
@@ -7192,7 +7292,7 @@ textarea:focus-visible {
   position: sticky; top: 0; z-index: 2;
 }
 .v5d-table th {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; font-weight: 500; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--text-3);
   text-align: left; padding: 11px 12px; white-space: nowrap;
@@ -7261,14 +7361,14 @@ textarea:focus-visible {
 [data-theme="dark"] .v5d-name-ic.t-activity { color: #a3c97a; }
 .v5d-name-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .v5d-name-title {
-  font-family: 'Fraunces', serif; font-weight: 400; font-size: 15px;
+  font-family: 'Geist', serif; font-weight: 400; font-size: 15px;
   color: var(--text-1); letter-spacing: -0.01em; line-height: 1.2;
   display: flex; align-items: baseline; gap: 6px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .v5d-name-title .ml { color: var(--gold-v5); font-size: 11px; flex-shrink: 0; }
 .v5d-name-sub {
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  font-family: 'Geist Mono', monospace; font-size: 10px;
   color: var(--text-3); letter-spacing: 0.04em;
   display: flex; gap: 8px; align-items: center;
 }
@@ -7283,7 +7383,7 @@ textarea:focus-visible {
 .v5d-status-pill {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 4px 10px; border-radius: var(--radius-pill);
-  font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500;
+  font-family: 'Geist', sans-serif; font-size: 11px; font-weight: 500;
   background: var(--surface-2); border: 1px solid var(--line);
   color: var(--text-2); cursor: pointer;
   transition: all 0.15s ease; white-space: nowrap; user-select: none;
@@ -7311,15 +7411,15 @@ textarea:focus-visible {
 .v5d-qa a.disabled { opacity: 0.25; pointer-events: none; }
 .v5d-qa svg { width: 13px; height: 13px; }
 
-.v5d-cell-mute { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-3); letter-spacing: 0.02em; }
+.v5d-cell-mute { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text-3); letter-spacing: 0.02em; }
 .v5d-cell-loc { color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
 .v5d-cell-close { color: var(--bad); font-size: 11px; }
-.v5d-cell-comm { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); display: inline-flex; align-items: center; gap: 4px; }
+.v5d-cell-comm { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-3); display: inline-flex; align-items: center; gap: 4px; }
 .v5d-cell-comm svg { width: 12px; height: 12px; }
 .v5d-cell-comm.has { color: var(--accent); }
 
 .v5d-table-empty { padding: 60px 20px; text-align: center; }
-.v5d-table-empty h3 { font-family: 'Fraunces', serif; font-weight: 400; font-size: 20px; color: var(--text-1); margin: 0 0 6px; }
+.v5d-table-empty h3 { font-family: 'Geist', serif; font-weight: 400; font-size: 20px; color: var(--text-1); margin: 0 0 6px; }
 .v5d-table-empty p { color: var(--text-3); font-size: 13px; margin: 0 0 16px; }
 
 /* Bulk action bar (floating, only shown when items selected) */
@@ -7330,16 +7430,16 @@ textarea:focus-visible {
   padding: 8px 8px 8px 18px; border-radius: var(--radius-pill);
   display: flex; align-items: center; gap: 12px;
   box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-  font-family: 'Inter', sans-serif; font-size: 13px;
+  font-family: 'Geist', sans-serif; font-size: 13px;
   animation: v5d-bulk-in 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   max-width: calc(100vw - 24px); flex-wrap: nowrap;
 }
 @keyframes v5d-bulk-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
-.v5d-bulk .count { font-family: 'Fraunces', serif; font-size: 16px; font-style: italic; color: var(--gold-soft-v5); }
+.v5d-bulk .count { font-family: 'Geist', serif; font-size: 16px; font-style: italic; color: var(--gold-soft-v5); }
 .v5d-bulk .divider { width: 1px; height: 24px; background: var(--text-3); opacity: 0.4; }
 .v5d-bulk button {
   background: transparent; border: none; color: var(--surface-1);
-  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 500;
   padding: 8px 12px; border-radius: var(--radius-pill); cursor: pointer;
   display: inline-flex; align-items: center; gap: 6px;
   transition: background 0.15s ease; white-space: nowrap;
@@ -7390,11 +7490,11 @@ textarea:focus-visible {
   width: 24px; background: var(--col-c); border-radius: 0 0 3px 3px;
 }
 .v5d-pp-head .title {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--text-2); font-weight: 600; flex: 1;
 }
-.v5d-pp-head .count { font-family: 'Fraunces', serif; font-size: 14px; font-style: italic; color: var(--col-c); }
+.v5d-pp-head .count { font-family: 'Geist', serif; font-size: 14px; font-style: italic; color: var(--col-c); }
 .v5d-pp-list {
   padding: 10px; display: flex; flex-direction: column;
   gap: 8px; flex: 1; overflow-y: auto; max-height: 70vh;
@@ -7410,13 +7510,13 @@ textarea:focus-visible {
 .v5d-pp-card.dragging { opacity: 0.4; }
 .v5d-pp-card .top {
   display: flex; align-items: center; gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Geist Mono', monospace;
   font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--text-3);
 }
 .v5d-pp-card .top .ml { color: var(--gold-v5); letter-spacing: 0; }
 .v5d-pp-card .ttl {
-  font-family: 'Fraunces', serif; font-weight: 400; font-size: 15px;
+  font-family: 'Geist', serif; font-weight: 400; font-size: 15px;
   color: var(--text-1); letter-spacing: -0.01em; line-height: 1.2;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
@@ -7426,14 +7526,14 @@ textarea:focus-visible {
 }
 .v5d-pp-card .foot {
   display: flex; align-items: center; justify-content: space-between;
-  margin-top: 4px; font-family: 'JetBrains Mono', monospace;
+  margin-top: 4px; font-family: 'Geist Mono', monospace;
   font-size: 9px; color: var(--text-3); letter-spacing: 0.06em;
 }
 .v5d-pp-card .foot .closing { color: var(--bad); }
 .v5d-pp-card .foot .cm svg { width: 11px; height: 11px; vertical-align: -1px; margin-right: 2px; }
 .v5d-pp-card .foot .cm.has { color: var(--accent); }
 .v5d-pp-empty {
-  font-family: 'Fraunces', serif; font-style: italic; font-size: 13px;
+  font-family: 'Geist', serif; font-style: italic; font-size: 13px;
   color: var(--text-3); text-align: center;
   padding: 24px 12px;
   border: 1px dashed var(--line); border-radius: var(--radius);
@@ -7446,7 +7546,7 @@ textarea:focus-visible {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 12px; background: var(--surface-1);
   border: 1px solid var(--line); border-radius: var(--radius);
-  font-family: 'Inter', sans-serif; font-size: 12px; color: var(--text-2);
+  font-family: 'Geist', sans-serif; font-size: 12px; color: var(--text-2);
   cursor: pointer; min-height: 36px;
 }
 .v5d-tb-sort:hover { border-color: var(--line-strong); color: var(--text-1); }
@@ -7460,7 +7560,7 @@ textarea:focus-visible {
 }
 .v5d-sort-menu .item {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 12px; font-family: 'Inter', sans-serif;
+  padding: 8px 12px; font-family: 'Geist', sans-serif;
   font-size: 13px; color: var(--text-1); cursor: pointer;
   border-radius: var(--radius); border: none; background: transparent;
   width: 100%; text-align: left;
@@ -7470,11 +7570,11 @@ textarea:focus-visible {
 .v5d-sort-menu .item .check { width: 14px; color: var(--accent); }
 .v5d-sort-menu .item:not(.active) .check { visibility: hidden; }
 .v5d-sort-menu .divider { height: 1px; background: var(--line); margin: 4px 0; }
-.v5d-sort-menu .h4 { padding: 8px 12px 4px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); }
+.v5d-sort-menu .h4 { padding: 8px 12px 4px; font-family: 'Geist Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); }
 
 /* Michelin filter chip */
 .v5d-michelin-chip {
-  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 500;
   padding: 5px 12px; background: var(--surface-1); border: 1px solid var(--line);
   border-radius: var(--radius-pill); color: var(--text-2); cursor: pointer;
   display: inline-flex; align-items: center; gap: 6px;
@@ -7482,13 +7582,574 @@ textarea:focus-visible {
 }
 .v5d-michelin-chip:hover { border-color: var(--line-strong); color: var(--text-1); }
 .v5d-michelin-chip.active { background: var(--text-1); color: var(--surface-1); border-color: var(--text-1); }
-.v5d-michelin-chip .num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); letter-spacing: 0.04em; }
+.v5d-michelin-chip .num { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-3); letter-spacing: 0.04em; }
 .v5d-michelin-chip.active .num { color: var(--surface-2); }
 
 @media print {
   .v5d-tb-view, .v5d-bulk, .v5d-tb-sort { display: none !important; }
   .v5d-table { min-width: 0; font-size: 11px; }
   .v5d-pp-col { break-inside: avoid; }
+}
+
+/* =============================================================================
+   REDISEÑO · Operativa Moderna · component library
+   Componentes nuevos del handoff Modernnizar B&A App.
+   Conviven con los v5-* viejos — los nuevos toman prioridad por specificity.
+   ============================================================================= */
+
+/* === Base reset overrides para nuevo sistema === */
+body {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-feature-settings: "ss01", "ss03", "cv11";
+}
+
+/* === Topbar rebuild (sobre el .v5-topbar existente) === */
+.v5-topbar {
+  background: var(--white);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 12px 32px;
+  height: auto;
+  min-height: 56px;
+  border-bottom: 1px solid var(--line);
+}
+.v5-topbar-brand { gap: 14px; }
+.v5-topbar-brand-mark {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.v5-topbar-brand-mark::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  background: var(--laurel);
+  display: inline-block;
+  transform: rotate(45deg);
+  border-radius: 2px;
+  margin-right: 0;
+  vertical-align: 0;
+  font-size: 0;
+}
+.v5-topbar-brand-mark em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--laurel);
+  font-weight: 400;
+  letter-spacing: -0.005em;
+}
+[data-theme="dark"] .v5-topbar-brand-mark::before { background: var(--brass); }
+[data-theme="dark"] .v5-topbar-brand-mark em { color: var(--brass-soft); }
+.v5-topbar-sub {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  color: var(--stone);
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
+}
+.v5-sync-pill {
+  border: none;
+  padding: 4px 8px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--laurel);
+}
+[data-theme="dark"] .v5-sync-pill { color: var(--accent); }
+.v5-sync-pill .v5-sync-dot { box-shadow: none !important; width: 6px; height: 6px; }
+.v5-sync-dot.online  { background: var(--laurel); }
+.v5-sync-dot.syncing { background: var(--brass); animation: pulse 1.2s infinite; }
+.v5-sync-dot.offline { background: var(--stone); }
+[data-theme="dark"] .v5-sync-dot.online { background: var(--accent); }
+
+.v5-icon-btn { border-radius: var(--radius); width: 36px; height: 36px; }
+.v5-icon-btn .v5-badge {
+  background: var(--bad);
+  color: #FFFFFF;
+  border: 2px solid var(--white);
+}
+
+.v5-avatar-btn {
+  background: transparent;
+  border: none;
+  padding: 4px 10px 4px 4px;
+  border-radius: var(--radius-pill);
+}
+.v5-avatar-btn:hover { background: var(--bone); border: none; }
+.v5-avatar-circle {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-weight: 600;
+  background: var(--user-luca);
+  color: var(--bone);
+  width: 30px; height: 30px;
+  font-size: 12px;
+}
+.v5-avatar-circle.luca,
+.v5-avatar-circle.brian    { background: var(--user-luca); color: var(--bone); }
+.v5-avatar-circle.esteban,
+.v5-avatar-circle.federico { background: var(--user-esteban); color: var(--bone); }
+.v5-avatar-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+
+/* === Login restyle === */
+.v5-login {
+  background: var(--bone-2);
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+.v5-login-inner {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 48px 56px;
+  max-width: 480px;
+  width: calc(100% - 48px);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-2);
+}
+.v5-login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+.v5-login-mark {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.v5-login-mark::before {
+  content: '';
+  width: 12px; height: 12px;
+  background: var(--laurel);
+  transform: rotate(45deg);
+  border-radius: 2px;
+  display: inline-block;
+}
+.v5-login-mark em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--laurel);
+  font-weight: 400;
+}
+.v5-login-tag {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--stone);
+}
+.v5-login-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bone-2);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 24px;
+}
+.v5-login-tabs button {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--stone);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.v5-login-tabs button.active {
+  background: var(--white);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: var(--shadow-1);
+}
+.v5-login-title {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--ink);
+}
+.v5-login-title em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--laurel);
+  font-weight: 400;
+}
+.v5-login-sub {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 8px 0 28px;
+}
+.v5-login-field { display: block; margin-bottom: 14px; }
+.v5-login-field span {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  margin-bottom: 6px;
+}
+.v5-login-field input {
+  width: 100%;
+  padding: 13px 14px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.v5-login-field input:focus { border-color: var(--laurel); }
+.v5-login-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px 24px;
+  background: var(--laurel-deep);
+  color: var(--bone);
+  border: none;
+  border-radius: 12px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.v5-login-btn:hover { background: var(--laurel); }
+.v5-login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* === Home restyle === */
+.v5-home { background: var(--bone-2); min-height: 100vh; }
+.v5-home-inner { padding: 32px 40px 80px; max-width: 1280px; }
+.v5-home-head { margin-bottom: 24px; }
+.v5-home-eyebrow {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--stone);
+  margin-bottom: 6px;
+}
+.v5-home-title {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  color: var(--ink);
+  margin: 0;
+}
+.v5-home-title em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--laurel);
+  font-weight: 400;
+}
+.v5-home-sub {
+  font-size: 14px;
+  color: var(--stone);
+  margin-top: 6px;
+}
+.v5-home-group-title {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 32px 0 12px;
+}
+.v5-home-group-count {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--stone);
+  margin-left: 6px;
+}
+
+/* Trip cards en home */
+.v5-trip-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+.v5-trip-card:hover { box-shadow: var(--shadow-2); border-color: var(--line-strong); }
+.v5-trip-card.status-active {
+  background: var(--laurel-deep);
+  color: var(--bone);
+  border-color: var(--laurel-deep);
+}
+.v5-trip-card.status-active .v5-trip-card-title { color: var(--bone); }
+.v5-trip-card.status-active .v5-trip-card-region,
+.v5-trip-card.status-active .v5-trip-card-dates,
+.v5-trip-card.status-active .v5-trip-card-countdown { color: rgba(245,241,232,0.75); }
+.v5-trip-card.status-active .v5-trip-card-status { background: rgba(184,148,90,0.20); color: var(--brass-soft); }
+.v5-trip-card-bg {
+  display: none; /* en el nuevo design no usamos cover image */
+}
+.v5-trip-card-overlay { display: none; }
+.v5-trip-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.v5-trip-card-status {
+  padding: 3px 8px;
+  background: var(--bone);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 6px;
+  text-transform: lowercase;
+  font-family: 'Geist', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+.v5-trip-card-status::before { content: '● '; margin-right: 2px; }
+.v5-trip-card-status.active   { background: var(--laurel-tint); color: var(--laurel); }
+.v5-trip-card-status.confirmed { background: var(--laurel-tint); color: var(--laurel); }
+.v5-trip-card-status.planning { background: var(--warn-bg);   color: var(--brass-deep); }
+.v5-trip-card-status.draft    { background: var(--bone);      color: var(--stone); }
+.v5-trip-card-status.past     { background: var(--bone-2);    color: var(--stone); }
+.v5-trip-card-status.archived { background: var(--bone-2);    color: var(--stone); }
+.v5-trip-card-pax {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--stone);
+}
+.v5-trip-card-title {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--ink);
+  margin: 0;
+}
+.v5-trip-card-region {
+  font-size: 12px;
+  color: var(--stone);
+  margin-top: 2px;
+}
+.v5-trip-card-foot {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 11px;
+  color: var(--stone);
+  font-family: 'Geist Mono', monospace;
+}
+.v5-trip-card.status-active .v5-trip-card-foot {
+  border-color: rgba(245,241,232,0.18);
+}
+.v5-trip-card-arrow {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  color: var(--stone);
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 16px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.v5-trip-card:hover .v5-trip-card-arrow { opacity: 1; color: var(--laurel); }
+.v5-trip-card.status-active:hover .v5-trip-card-arrow { color: var(--brass-soft); }
+
+.v5-home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+/* New trip wizard restyle (mantiene markup) */
+.v5-home-new { margin-top: 36px; }
+.v5-home-new-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 24px;
+  background: var(--laurel-deep);
+  color: var(--bone);
+  border: none;
+  border-radius: 14px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.v5-home-new-btn em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--brass-soft);
+  opacity: 0.85;
+}
+.v5-home-new-btn:hover { background: var(--laurel); }
+
+/* === Status pills (uso global) === */
+.status-pill, .res-status, .priority-tag, .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.status-pill.ok,   .pill-ok   { background: var(--ok-bg);   color: var(--ok); }
+.status-pill.warn, .pill-warn { background: var(--warn-bg); color: var(--warn); }
+.status-pill.bad,  .pill-bad  { background: var(--bad-bg);  color: var(--bad); }
+.status-pill.info, .pill-info { background: var(--info-bg); color: var(--info); }
+
+/* === Buttons base — sobreescribe el .btn legacy === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: var(--laurel-deep);
+  color: var(--bone);
+  border: none;
+  border-radius: 10px;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn:hover { background: var(--laurel); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-ghost {
+  background: var(--white);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.btn-ghost:hover { background: var(--bone); border-color: var(--line-strong); }
+.btn-danger {
+  background: var(--bad);
+}
+.btn-danger:hover { background: #8a3327; }
+
+/* === Cards genéricas (.card) — sobreescribe legacy === */
+.card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1);
+}
+
+/* === Identity menu pop (restyle suave) === */
+.v5-identity-menu {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-3);
+}
+.v5-identity-menu-header strong { font-weight: 600; color: var(--ink); }
+.v5-identity-email { color: var(--stone); font-family: 'Geist Mono', monospace; font-size: 11px; }
+
+/* === Section header tighter (más cerca de la jerarquía nueva) === */
+.section-header h1 {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+.section-header h1 em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--laurel);
+  font-weight: 400;
+}
+.section-header .lead {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--stone);
+}
+
+/* === Toolbar segmented (Editorial/Compacta, Tarjetas/Tabla/Pipeline) === */
+.v5b-segmented, .v5-segmented {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--bone-2);
+  padding: 3px;
+  border-radius: 8px;
+}
+.v5b-segmented button, .v5-segmented button {
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--stone);
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+.v5b-segmented button.active, .v5-segmented button.active {
+  background: var(--white);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: var(--shadow-1);
+}
+
+/* === Bottom nav (móvil) === */
+.v5-bottomnav {
+  background: var(--white);
+  border-top: 1px solid var(--line);
+  height: 64px;
+}
+
+/* === Drawers === */
+.v5-drawer {
+  background: var(--white);
+  border-left: 1px solid var(--line);
+}
+
+/* === Body background patterns muted (el grain decorativo viejo era muy fuerte) === */
+body::before {
+  opacity: 0.04;
+}
+body {
+  background-image:
+    radial-gradient(circle at 80% 10%, rgba(184,148,90,0.04) 0%, transparent 40%),
+    radial-gradient(circle at 5% 90%, rgba(61,90,62,0.04) 0%, transparent 45%);
 }
 
 </style>
@@ -8083,7 +8744,7 @@ textarea:focus-visible {
   <!-- Row 1: Próxima acción + KPIs -->
   <div class="v5-hoy-row-1">
     <!-- Next action card -->
-    <button class="v5-next-action" @click="tab = 'actions'" x-show="nextAction" style="text-align: left; cursor: pointer; border: 1px solid var(--line); font-family: 'Inter', sans-serif;">
+    <button class="v5-next-action" @click="tab = 'actions'" x-show="nextAction" style="text-align: left; cursor: pointer; border: 1px solid var(--line); font-family: 'Geist', sans-serif;">
       <div class="v5-next-action-meta">
         <span class="v5-prio" x-text="(nextAction && nextAction.priority) || 'P?'"></span>
         <span>Lo que sigue</span>
@@ -8213,8 +8874,8 @@ textarea:focus-visible {
         <h3 x-text="data.meta.basecamp?.label || 'Basecamp'"></h3>
         <div class="v5-progress-ratio" x-text="formatMoney(data.meta.basecamp?.cost || 0, data.meta.viewCurrency)"></div>
       </div>
-      <div style="font-family: 'Lora', serif; font-style: italic; font-size: 16px; color: var(--text-2); line-height: 1.45;">
-        <strong style="font-family: 'Fraunces', serif; font-style: normal; font-weight: 500; color: var(--text-1); display: block; margin-bottom: 4px;" x-text="data.meta.basecamp?.name"></strong>
+      <div style="font-family: 'Instrument Serif', serif; font-style: italic; font-size: 16px; color: var(--text-2); line-height: 1.45;">
+        <strong style="font-family: 'Geist', serif; font-style: normal; font-weight: 500; color: var(--text-1); display: block; margin-bottom: 4px;" x-text="data.meta.basecamp?.name"></strong>
         <span x-text="data.meta.basecamp?.address"></span>
       </div>
       <div class="v5-progress-foot">
@@ -8284,7 +8945,7 @@ textarea:focus-visible {
     </div>
     <div class="v5b-spacer"></div>
     <button class="v5b-segmented" style="padding: 3px;" @click="toggleAllDays()" :title="allDaysCollapsed ? 'Expandir todos' : 'Colapsar todos'">
-      <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2); padding: 7px 14px;">
+      <span style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2); padding: 7px 14px;">
         <span x-show="!allDaysCollapsed">Colapsar todo</span>
         <span x-show="allDaysCollapsed">Expandir todo</span>
       </span>
@@ -8475,13 +9136,13 @@ textarea:focus-visible {
             <input type="text" x-model="item.category" @blur="save()" placeholder="Categoría">
             <input type="text" class="notes" x-model="item.notes" @blur="save()" placeholder="Notas…">
             <div style="display: flex; gap: 4px; margin-top: 4px;">
-              <select x-model="item.dayRef" @change="save()" style="flex: 1; font-size: 11px; padding: 4px 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: var(--text-2); background: var(--surface-1); border: 1px solid var(--line); border-radius: 4px;">
+              <select x-model="item.dayRef" @change="save()" style="flex: 1; font-size: 11px; padding: 4px 6px; font-family: 'Geist Mono', monospace; letter-spacing: 0.06em; color: var(--text-2); background: var(--surface-1); border: 1px solid var(--line); border-radius: 4px;">
                 <option value="">Día · general</option>
                 <template x-for="(d, di) in data.itinerary" :key="d.id">
                   <option :value="d.id" x-text="'Día ' + (di+1) + ' · ' + (d.weekday || '').slice(0,3) + ' ' + (d.date||'').slice(8)"></option>
                 </template>
               </select>
-              <select x-model="item.currency" @change="save()" style="width: 70px; font-size: 11px; padding: 4px 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: var(--text-2); background: var(--surface-1); border: 1px solid var(--line); border-radius: 4px;">
+              <select x-model="item.currency" @change="save()" style="width: 70px; font-size: 11px; padding: 4px 6px; font-family: 'Geist Mono', monospace; letter-spacing: 0.06em; color: var(--text-2); background: var(--surface-1); border: 1px solid var(--line); border-radius: 4px;">
                 <option value="EUR">EUR</option>
                 <option value="USD">USD</option>
                 <option value="ARS">ARS</option>
@@ -8716,7 +9377,7 @@ textarea:focus-visible {
                     <span class="v5-completeness-dot" :class="{filled: providerCompleteness(provider) >= i * 20 - 10}"></span>
                   </template>
                 </span>
-                <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-left: auto;">Abrir →</span>
+                <span style="font-family: 'Geist Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-left: auto;">Abrir →</span>
               </div>
             </article>
           </template>
@@ -9107,7 +9768,7 @@ textarea:focus-visible {
 
             <!-- Quick stage change buttons -->
             <div style="margin-bottom: 24px;">
-              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">Cambiar estado</div>
+              <div style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">Cambiar estado</div>
               <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                 <template x-for="stage in leadStages" :key="stage.key">
                   <button class="btn btn-sm" :disabled="leadDrawerLead.stage === stage.key" @click="changeLeadStage(leadDrawerLead.id, stage.key, null)" :style="leadDrawerLead.stage === stage.key ? 'opacity: 0.4' : ''" x-text="stage.label"></button>
@@ -9117,14 +9778,14 @@ textarea:focus-visible {
 
             <!-- Add note -->
             <div style="margin-bottom: 24px;">
-              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">Agregar nota</div>
+              <div style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">Agregar nota</div>
               <textarea x-model="leadDrawerLead._newNote" placeholder="Escribí una nota…" rows="2" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>
               <button class="btn btn-sm" style="margin-top: 6px;" @click="addLeadNote(leadDrawerLead.id, leadDrawerLead._newNote); leadDrawerLead._newNote = ''">Agregar</button>
             </div>
 
             <!-- Events timeline -->
             <div>
-              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;" x-text="'Historial (' + leadDrawerEvents.length + ')'"></div>
+              <div style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;" x-text="'Historial (' + leadDrawerEvents.length + ')'"></div>
               <template x-if="leadDrawerEvents.length === 0">
                 <div style="color: var(--text-3); font-size: 13px; font-style: italic;">Sin eventos todavía.</div>
               </template>
@@ -9132,7 +9793,7 @@ textarea:focus-visible {
                 <template x-for="ev in leadDrawerEvents" :key="ev.id">
                   <li style="padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius);">
                     <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-                      <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3);" x-text="ev.kind"></span>
+                      <span style="font-family: 'Geist Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3);" x-text="ev.kind"></span>
                       <span style="font-size: 11px; color: var(--text-3);" x-text="ev.occurred_at ? new Date(ev.occurred_at).toLocaleString('es-AR') : ''"></span>
                     </div>
                     <div style="font-size: 13px; color: var(--text-1);" x-text="ev.summary || ev.body || ''"></div>
@@ -9509,7 +10170,7 @@ textarea:focus-visible {
       <button :class="{active: actionFilter === 'pending'}" @click="actionFilter = 'pending'">Pendientes · <span x-text="data.actions.filter(a => !a.done).length"></span></button>
       <button :class="{active: actionFilter === 'done'}" @click="actionFilter = 'done'">Hechas · <span x-text="data.actions.filter(a => a.done).length"></span></button>
     </div>
-    <select x-model="actionTypeFilter" style="margin-left: auto; padding: 8px 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text-2);">
+    <select x-model="actionTypeFilter" style="margin-left: auto; padding: 8px 12px; font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text-2);">
       <option value="">Todos los tipos</option>
       <option value="reservation">Reservas</option>
       <option value="purchase">Compras</option>
@@ -10567,7 +11228,7 @@ textarea:focus-visible {
         </p>
         <div x-show="clientInviteResult.emailSent" style="background: #ECFDF5; padding: 10px 12px; border-radius: 6px; font-size: 12.5px; color: #047857; margin-bottom: 14px; border-left: 3px solid #10B981; display: flex; align-items: center; gap: 6px;">
           <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"/></svg>
-          Email enviado a <span x-text="clientInviteResult.email" style="font-family:'JetBrains Mono',monospace;"></span>
+          Email enviado a <span x-text="clientInviteResult.email" style="font-family:'Geist Mono',monospace;"></span>
         </div>
         <div x-show="!clientInviteResult.emailSent && clientInviteResult.emailError" style="background: #FEF3C7; padding: 10px 12px; border-radius: 6px; font-size: 12.5px; color: #92400E; margin-bottom: 14px; border-left: 3px solid #F59E0B;">
           El email automático falló — usá el botón "Copiar mensaje completo" abajo y mandáselo por WhatsApp.
@@ -10576,21 +11237,21 @@ textarea:focus-visible {
           <div>
             <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px;">Email</div>
             <div style="display: flex; gap: 6px; align-items: stretch;">
-              <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px;" x-text="clientInviteResult.email"></code>
+              <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'Geist Mono', monospace; font-size: 13px;" x-text="clientInviteResult.email"></code>
               <button class="btn btn-sm btn-ghost" @click="navigator.clipboard.writeText(clientInviteResult.email).then(() => toast('Email copiado', 'success'))">Copiar</button>
             </div>
           </div>
           <div x-show="!clientInviteResult.isRecurring">
             <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px;">Contraseña temporal</div>
             <div style="display: flex; gap: 6px; align-items: stretch;">
-              <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px;" x-text="clientInviteResult.password"></code>
+              <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'Geist Mono', monospace; font-size: 13px;" x-text="clientInviteResult.password"></code>
               <button class="btn btn-sm btn-ghost" @click="navigator.clipboard.writeText(clientInviteResult.password).then(() => toast('Contraseña copiada', 'success'))">Copiar</button>
             </div>
           </div>
           <div>
             <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px;">URL para el huésped</div>
             <div style="display: flex; gap: 6px; align-items: stretch;">
-              <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px;">https://expedicionmundial.netlify.app</code>
+              <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'Geist Mono', monospace; font-size: 12.5px;">https://expedicionmundial.netlify.app</code>
               <button class="btn btn-sm btn-ghost" @click="navigator.clipboard.writeText('https://expedicionmundial.netlify.app').then(() => toast('URL copiada', 'success'))">Copiar</button>
             </div>
           </div>
@@ -10877,7 +11538,7 @@ textarea:focus-visible {
         <header class="v5-drawer-header">
           <div style="flex: 1;">
             <div class="v5b-detail-eyebrow"><span class="pill">META</span></div>
-            <h2 style="font-family: 'Fraunces', serif; font-size: 22px; font-weight: 400; letter-spacing: -0.015em;">Configuración <em style="color: var(--accent); font-style: italic;">del viaje</em></h2>
+            <h2 style="font-family: 'Geist', serif; font-size: 22px; font-weight: 400; letter-spacing: -0.015em;">Configuración <em style="color: var(--accent); font-style: italic;">del viaje</em></h2>
           </div>
           <button class="v5-drawer-close" @click="closeMetaEditor()" aria-label="Cerrar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -11114,7 +11775,7 @@ textarea:focus-visible {
                         <span class="v5-member-pending-tag" x-show="!m.user_id">invitado pendiente</span>
                       </div>
                       <div class="v5-member-meta" style="display: flex; flex-direction: column; gap: 2px;">
-                        <span x-show="m.user_id !== authUser?.id && m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email" style="font-family: 'JetBrains Mono', monospace; font-size: 11px;"></span>
+                        <span x-show="m.user_id !== authUser?.id && m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email" style="font-family: 'Geist Mono', monospace; font-size: 11px;"></span>
                         <span>
                           <span x-show="m.last_sign_in_at && m.user_id !== authUser?.id">Última entrada </span>
                           <span x-show="m.user_id === authUser?.id">agregado </span>
@@ -11131,7 +11792,7 @@ textarea:focus-visible {
               </div>
               <div style="margin-top: 10px;">
                 <div style="display: flex; gap: 8px; align-items: stretch;">
-                  <input type="email" x-model="addMemberForm.email" placeholder="email@ejemplo.com" @keydown.enter.prevent="addMemberByEmail()" style="flex: 1; padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
+                  <input type="email" x-model="addMemberForm.email" placeholder="email@ejemplo.com" @keydown.enter.prevent="addMemberByEmail()" style="flex: 1; padding: 9px 12px; font-family: 'Geist', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
                   <button class="btn btn-sm" @click="addMemberByEmail()" :disabled="addMemberForm.submitting || !addMemberForm.email">
                     <span x-show="!addMemberForm.submitting">+ Operador</span>
                     <span x-show="addMemberForm.submitting">…</span>
@@ -11160,7 +11821,7 @@ textarea:focus-visible {
                           <span class="v5-member-pending-tag" x-show="m.profile" style="background: #ECFDF5; color: #047857; border-style: solid; border-color: #10B981;">perfil ✓</span>
                         </div>
                         <div class="v5-member-meta" style="display: flex; flex-direction: column; gap: 2px;">
-                          <span x-show="m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email" style="font-family: 'JetBrains Mono', monospace; font-size: 11px;"></span>
+                          <span x-show="m.user_full_name && (m.user_email || m.invited_email)" x-text="m.user_email || m.invited_email" style="font-family: 'Geist Mono', monospace; font-size: 11px;"></span>
                           <span>
                             <span x-show="m.last_sign_in_at">Última entrada </span>
                             <span x-show="!m.last_sign_in_at">Invitado </span>
@@ -11206,7 +11867,7 @@ textarea:focus-visible {
                           <template x-if="m.profile.preferred_phone">
                             <div>
                               <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px;">Teléfono</div>
-                              <div style="font-family: 'JetBrains Mono', monospace;">
+                              <div style="font-family: 'Geist Mono', monospace;">
                                 <a :href="`https://wa.me/${m.profile.preferred_phone.replace(/[^0-9]/g, '')}`" target="_blank" rel="noopener noreferrer" x-text="m.profile.preferred_phone" style="color: var(--accent); text-decoration: none;"></a>
                               </div>
                             </div>
@@ -11220,7 +11881,7 @@ textarea:focus-visible {
                                   · <span x-text="m.profile.emergency_contact_relationship"></span>
                                 </span>
                               </div>
-                              <div x-show="m.profile.emergency_contact_phone" style="font-family: 'JetBrains Mono', monospace; color: var(--text-2); font-size: 12px;" x-text="m.profile.emergency_contact_phone"></div>
+                              <div x-show="m.profile.emergency_contact_phone" style="font-family: 'Geist Mono', monospace; color: var(--text-2); font-size: 12px;" x-text="m.profile.emergency_contact_phone"></div>
                             </div>
                           </template>
                           <template x-if="m.profile.notes">
@@ -11240,10 +11901,10 @@ textarea:focus-visible {
               </div>
               <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
                 <div style="display: flex; gap: 8px;">
-                  <input type="text" x-model="inviteClientForm.fullName" placeholder="Nombre del huésped" style="flex: 1; padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
+                  <input type="text" x-model="inviteClientForm.fullName" placeholder="Nombre del huésped" style="flex: 1; padding: 9px 12px; font-family: 'Geist', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
                 </div>
                 <div style="display: flex; gap: 8px; align-items: stretch;">
-                  <input type="email" x-model="inviteClientForm.email" placeholder="email@huesped.com" @keydown.enter.prevent="inviteClient()" style="flex: 1; padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
+                  <input type="email" x-model="inviteClientForm.email" placeholder="email@huesped.com" @keydown.enter.prevent="inviteClient()" style="flex: 1; padding: 9px 12px; font-family: 'Geist', sans-serif; font-size: 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--text-1);">
                   <button class="btn btn-sm" @click="inviteClient()" :disabled="inviteClientForm.submitting || !inviteClientForm.email || !inviteClientForm.fullName">
                     <span x-show="!inviteClientForm.submitting">+ Huésped</span>
                     <span x-show="inviteClientForm.submitting">…</span>
@@ -17591,7 +18252,7 @@ function app() {
         // Numbered start marker per day
         const startIcon = L.divIcon({
           className: '',
-          html: `<div style="background:${color}; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.3);">${dayIdx + 1}</div>`,
+          html: `<div style="background:${color}; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Geist Mono',monospace; font-size:11px; font-weight:700; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.3);">${dayIdx + 1}</div>`,
           iconSize: [24, 24],
           iconAnchor: [12, 12]
         });
