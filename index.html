@@ -10402,6 +10402,362 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
 [data-theme="dark"] .v5c-btable-foot { background: var(--accent-deep) !important; color: var(--ink) !important; }
 
 /* =============================================================================
+   REDISEÑO · Phase 11 · To-Do (Acciones)
+   ============================================================================= */
+
+/* Progress hero: 3 columnas con num grande + info + progress bar+labels */
+.v5c-res-hero {
+  display: grid !important;
+  grid-template-columns: auto 1fr 1.2fr !important;
+  align-items: center;
+  gap: 32px !important;
+  padding: 24px 28px !important;
+  background: var(--laurel-deep) !important;
+  color: var(--bone) !important;
+  border-radius: 16px !important;
+  margin-bottom: 14px !important;
+  position: relative;
+  overflow: hidden;
+}
+.v5c-res-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 50%; height: 100%;
+  background:
+    radial-gradient(ellipse at 100% 100%, rgba(184,148,90,0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+.v5c-res-hero > * { position: relative; z-index: 1; }
+@media (max-width: 880px) {
+  .v5c-res-hero { grid-template-columns: 1fr !important; padding: 20px !important; gap: 18px !important; }
+}
+
+.v5c-res-hero-num {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: clamp(56px, 7vw, 88px) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.05em !important;
+  line-height: 0.9 !important;
+  color: var(--bone) !important;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+.v5c-res-hero-num .of {
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--brass-soft) !important;
+  font-size: 0.6em !important;
+  margin: 0 4px;
+  letter-spacing: 0;
+}
+.v5c-res-hero-num .total {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-weight: 600;
+  font-size: 0.6em !important;
+  color: rgba(245,241,232,0.6) !important;
+  letter-spacing: -0.04em;
+}
+
+.v5c-res-hero-info {
+  min-width: 0;
+}
+.v5c-res-hero-label {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 11px !important;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--brass) !important;
+  margin-bottom: 8px;
+}
+.v5c-res-hero-statement {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+  color: rgba(245,241,232,0.9) !important;
+}
+.v5c-res-hero-statement em {
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
+  color: var(--brass-soft) !important;
+  font-weight: 400;
+}
+.v5c-res-hero-statement strong {
+  font-weight: 600;
+  color: var(--bone);
+}
+
+.v5c-res-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.v5c-res-progress {
+  height: 6px !important;
+  background: rgba(245,241,232,0.15) !important;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.v5c-res-progress-fill {
+  height: 100%;
+  background: var(--brass-soft) !important;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.v5c-res-progress-labels {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.v5c-res-progress-labels .lab {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.v5c-res-progress-labels .lab .k {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(245,241,232,0.65) !important;
+}
+.v5c-res-progress-labels .lab .v {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em;
+  color: var(--bone) !important;
+}
+.v5c-res-progress-labels .lab.done .v { color: var(--brass-soft) !important; }
+
+/* Filter bar */
+.v5c-res-filterbar {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 !important;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.v5c-res-filterbar select {
+  padding: 7px 12px !important;
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500;
+  color: var(--ink-2) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  cursor: pointer;
+}
+[data-theme="dark"] .v5c-res-filterbar select { background: var(--surface-1) !important; }
+
+/* Groups por prioridad */
+.v5c-res-group {
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  padding: 18px 20px !important;
+  margin-bottom: 12px !important;
+  box-shadow: var(--shadow-1);
+}
+[data-theme="dark"] .v5c-res-group { background: var(--surface-1) !important; }
+.v5c-res-group-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 14px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid var(--line-soft) !important;
+}
+.v5c-res-group-head .roman {
+  display: none !important; /* el roman number decorativo no encaja con el sistema nuevo */
+}
+.v5c-res-group-head h2 {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--ink) !important;
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.v5c-res-group-head h2 em {
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
+  color: var(--ink) !important;
+  font-weight: 400 !important;
+}
+.v5c-res-group-head h2 span {
+  padding: 2px 8px !important;
+  border-radius: 5px;
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 0.06em;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+}
+.v5c-res-group.priority-P1 h2 span { background: var(--bad-bg) !important; color: var(--bad) !important; }
+.v5c-res-group.priority-P2 h2 span { background: var(--warn-bg) !important; color: var(--brass-deep) !important; }
+.v5c-res-group.priority-P3 h2 span { background: var(--bone-2) !important; color: var(--stone) !important; }
+[data-theme="dark"] .v5c-res-group.priority-P3 h2 span { background: var(--surface-2) !important; }
+.v5c-res-group-head .meta {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 11px !important;
+  color: var(--stone) !important;
+}
+
+/* List item */
+.v5c-res-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.v5c-res-item {
+  display: grid !important;
+  grid-template-columns: 28px 1fr auto !important;
+  gap: 14px !important;
+  align-items: flex-start;
+  padding: 12px 14px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.v5c-res-item:hover {
+  background: var(--bone) !important;
+  border-color: var(--line) !important;
+}
+[data-theme="dark"] .v5c-res-item:hover { background: var(--surface-2) !important; }
+.v5c-res-item.done { opacity: 0.55; }
+.v5c-res-item.done .v5c-res-title { text-decoration: line-through; color: var(--stone); }
+
+.v5c-checkbox {
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 50% !important;
+  border: 2px solid var(--stone-soft) !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  margin-top: 1px;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+.v5c-checkbox:hover { border-color: var(--laurel) !important; }
+.v5c-checkbox.checked {
+  background: var(--laurel) !important;
+  border-color: var(--laurel) !important;
+}
+[data-theme="dark"] .v5c-checkbox.checked {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+.v5c-checkbox.checked::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bone);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.v5c-res-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.v5c-res-title {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.25 !important;
+  color: var(--ink) !important;
+  margin: 0 !important;
+}
+.v5c-res-desc {
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
+  font-size: 13px !important;
+  color: var(--ink-2) !important;
+  line-height: 1.45;
+}
+.v5c-res-meta-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.v5c-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px !important;
+  background: var(--bone-2) !important;
+  border-radius: 5px !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: var(--ink-2) !important;
+}
+[data-theme="dark"] .v5c-meta-chip { background: var(--surface-2) !important; }
+.v5c-meta-chip.due { background: var(--warn-bg) !important; color: var(--brass-deep) !important; }
+.v5c-meta-chip.link { background: var(--info-bg) !important; color: var(--info) !important; }
+.v5c-meta-chip.type-reservation { background: var(--laurel-tint) !important; color: var(--laurel) !important; }
+[data-theme="dark"] .v5c-meta-chip.type-reservation { color: var(--accent) !important; }
+
+.v5c-res-contact {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 11px !important;
+  color: var(--stone) !important;
+  margin-top: 2px;
+}
+
+.v5c-res-end {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.v5c-res-end .v5b-comment-pill {
+  background: var(--bone-2) !important;
+}
+.v5c-res-end .v5b-slot-arrow {
+  color: var(--stone-soft) !important;
+}
+.v5c-res-item:hover .v5c-res-end .v5b-slot-arrow {
+  color: var(--laurel) !important;
+}
+[data-theme="dark"] .v5c-res-item:hover .v5c-res-end .v5b-slot-arrow {
+  color: var(--accent) !important;
+}
+
+.v5b-empty-tiny {
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
+  font-size: 13px !important;
+  color: var(--stone) !important;
+  text-align: center;
+  padding: 16px 0;
+}
+
+/* =============================================================================
    REDISEÑO · Phase 9 · Pestaña Hoy (Today/Dashboard)
    Reemplaza el gradiente marrón legacy por hero card laurel-deep limpio
    y pulido alineado con el sistema nuevo.
