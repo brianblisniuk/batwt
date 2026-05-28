@@ -9998,6 +9998,125 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
   font-size: 14px;
 }
 
+/* =============================================================================
+   REDISEÑO · FIXES post-smoke-test
+   ============================================================================= */
+
+/* FIX 1 · Padding consistente más generoso · alineá topbar / subheader /
+   tabs / content en el mismo eje izquierdo. */
+.v5-topbar             { padding: 12px 40px; }
+.v5-trip-subheader     { padding: 20px 40px 0; }
+.v5-sidebar            { padding: 0 32px; }   /* tabs row */
+.v5-content            { padding: 28px 40px 80px; max-width: none; margin: 0; }
+.v5-home-inner         { padding: 32px 40px 80px; max-width: none; }
+@media (max-width: 720px) {
+  .v5-topbar         { padding: 12px 16px; }
+  .v5-trip-subheader { padding: 16px 16px 0; }
+  .v5-sidebar        { padding: 0 12px; }
+  .v5-content        { padding: 20px 16px 80px; }
+  .v5-home-inner     { padding: 24px 16px 80px; }
+}
+
+/* FIX 2 · v5b-slot grid: el markup tiene 5 hijos (handle, time, glyph, body,
+   end). El CSS original definía 5 cols, mi Phase 4 redefinió a 4 y el end
+   se cae a fila 2 (slot rota visible). Volvemos a 5 cols con sizing nuevo. */
+.v5b-slot {
+  display: grid !important;
+  grid-template-columns: 24px 60px 36px 1fr auto !important;
+  gap: 12px !important;
+  align-items: center !important;
+  padding: 14px 16px !important;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  position: relative;
+  z-index: 1;
+  box-shadow: var(--shadow-1);
+  border-top: none !important;
+  border-bottom: none !important;
+  min-height: 60px;
+}
+[data-theme="dark"] .v5b-slot { background: var(--surface-2); }
+.v5b-slot:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-2);
+  background: var(--white);
+}
+.v5b-slot.has-conflict {
+  border-color: var(--bad);
+  background: var(--bad-bg) !important;
+}
+.v5b-slot.client-hidden { opacity: 0.6; }
+.v5b-slot-handle {
+  position: static !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 28px;
+  cursor: grab;
+  color: var(--stone-soft);
+  opacity: 0.4;
+  transition: opacity 0.12s ease;
+  padding: 0 !important;
+  left: auto !important;
+}
+.v5b-slot:hover .v5b-slot-handle { opacity: 0.9; color: var(--laurel); }
+[data-theme="dark"] .v5b-slot:hover .v5b-slot-handle { color: var(--accent); }
+.v5b-slot-handle svg { width: 14px; height: 14px; }
+.v5b-slot-time {
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  text-align: right;
+  padding-left: 0 !important;
+}
+.v5b-slot.is-untimed .v5b-slot-time { color: var(--stone-soft); }
+.v5b-slot-body { min-width: 0; overflow: hidden; }
+
+/* FIX 3 · Botón "+ Nuevo viaje" y todos los .btn primarios: enforce color bone
+   sobre laurel-deep. El issue era que cascada de .btn legacy ganaba en algunos
+   contextos y dejaba el texto en negro sobre verde. */
+.btn:not(.btn-ghost):not(.btn-danger),
+.v5-home-new-btn,
+.v5-login-btn {
+  background: var(--laurel-deep);
+  color: var(--bone) !important;
+}
+.btn:not(.btn-ghost):not(.btn-danger):hover,
+.v5-home-new-btn:hover {
+  background: var(--laurel);
+  color: var(--bone) !important;
+}
+[data-theme="dark"] .btn:not(.btn-ghost):not(.btn-danger),
+[data-theme="dark"] .v5-home-new-btn,
+[data-theme="dark"] .v5-login-btn {
+  background: var(--accent);
+  color: var(--surface-0) !important;
+}
+[data-theme="dark"] .btn:not(.btn-ghost):not(.btn-danger):hover,
+[data-theme="dark"] .v5-home-new-btn:hover {
+  background: var(--accent-soft);
+}
+
+/* btn-ghost mantiene su look (white + border + ink) */
+.btn.btn-ghost {
+  background: var(--white) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+}
+.btn.btn-ghost:hover {
+  background: var(--bone) !important;
+  border-color: var(--line-strong) !important;
+}
+[data-theme="dark"] .btn.btn-ghost {
+  background: var(--surface-2) !important;
+  color: var(--ink) !important;
+}
+
 </style>
 
 </head>
@@ -14462,7 +14581,7 @@ function app() {
     providerFilter: 'all',
     providerStatusFilter: 'all',
     // V5D · CRM state (Tabla / Pipeline / Tarjetas + bulk)
-    providerView: 'cards',
+    providerView: 'pipeline',
     providerSort: 'name',
     providerSortDir: 'asc',
     providerSortOpen: false,
