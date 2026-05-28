@@ -8024,7 +8024,7 @@ textarea:focus-visible {
 </div>
 
 <!-- ====== HOY (ex-Dashboard) ====== -->
-<section x-show="tab === 'today'">
+<template x-if="tab === 'today'"><section>
 
   <!-- Hero editorial -->
   <div class="v5-hoy-hero">
@@ -8226,10 +8226,10 @@ textarea:focus-visible {
     </div>
   </div>
 
-</section>
+</section></template>
 
 <!-- ====== ITINERARIO ====== -->
-<section x-show="tab === 'itinerary'">
+<template x-if="tab === 'itinerary'"><section>
   <div class="section-header">
     <div>
       <h1>Itinerario <em>día por día</em></h1>
@@ -8379,10 +8379,10 @@ textarea:focus-visible {
   <template x-if="data.itinerary.length === 0">
     <div class="empty-state">No hay días en el itinerario. <button class="btn" @click="addDay()" style="margin-left: 12px;">+ Agregar primer día</button></div>
   </template>
-</section>
+</section></template>
 
 <!-- ====== PRESUPUESTO ====== -->
-<section x-show="tab === 'budget'">
+<template x-if="tab === 'budget'"><section>
   <div class="section-header">
     <div>
       <h1>Presupuesto <em>operativo</em></h1>
@@ -8508,10 +8508,10 @@ textarea:focus-visible {
       </div>
     </div>
   </div>
-</section>
+</section></template>
 
 <!-- ====== PROVEEDORES ====== -->
-<section x-show="tab === 'providers'">
+<template x-if="tab === 'providers'"><section>
   <div class="section-header">
     <div>
       <h1>Directorio de <em>proveedores</em></h1>
@@ -8860,10 +8860,10 @@ textarea:focus-visible {
       </button>
     </div>
   </template>
-</section>
+</section></template>
 
 <!-- ====== CLIENTES (LEADS) ====== -->
-<section x-show="tab === 'leads'">
+<template x-if="tab === 'leads'"><section x-init="loadLeads()">
   <div class="section-header">
     <div>
       <h1>Clientes <em>funnel</em></h1>
@@ -9117,7 +9117,7 @@ textarea:focus-visible {
       </div>
     </div>
   </template>
-</section>
+</section></template>
 
 <!-- ====== MAPA ====== -->
 <section x-show="tab === 'map'">
@@ -9425,7 +9425,7 @@ textarea:focus-visible {
 </section>
 
 <!-- ====== RESERVAS / ACTIONS ====== -->
-<section x-show="tab === 'actions'">
+<template x-if="tab === 'actions'"><section>
   <div class="section-header">
     <div>
       <h1>To-Do <em>list</em></h1>
@@ -9527,10 +9527,10 @@ textarea:focus-visible {
       </div>
     </div>
   </template>
-</section>
+</section></template>
 
 <!-- ====== BACKUP / AJUSTES ====== -->
-<section x-show="tab === 'backup'">
+<template x-if="tab === 'backup'"><section>
   <div class="section-header">
     <div>
       <h1>Ajustes y <em>versiones</em></h1>
@@ -9642,7 +9642,7 @@ textarea:focus-visible {
     <p><strong>Con git auto-deploy:</strong> <code>git push</code> al repo conectado a Netlify y deploya solo.</p>
     <p><strong>Datos:</strong> viven en Supabase (sync real-time entre Brian y Federico). <code>localStorage</code> es solo fallback offline.</p>
   </div>
-</section>
+</section></template>
 
     </main><!-- /.v5-content -->
   </div><!-- /.v5-shell -->
