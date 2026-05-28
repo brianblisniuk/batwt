@@ -10117,6 +10117,321 @@ section[x-init="loadLeads()"] [x-show="leadsError"] {
   color: var(--ink) !important;
 }
 
+/* =============================================================================
+   REDISEÑO · Phase 9 · Pestaña Hoy (Today/Dashboard)
+   Reemplaza el gradiente marrón legacy por hero card laurel-deep limpio
+   y pulido alineado con el sistema nuevo.
+   ============================================================================= */
+
+/* Hero principal: laurel-deep como las hero cards del home/leads */
+.v5-hoy-hero {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: var(--laurel-deep) !important;
+  color: var(--bone);
+  min-height: auto;
+  isolation: isolate;
+}
+.v5-hoy-hero-img-wrap { display: none; } /* sacamos la imagen de fondo legacy */
+.v5-hoy-hero-img { display: none; }
+.v5-hoy-hero-content {
+  position: relative;
+  z-index: 1;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-content: stretch;
+}
+.v5-hoy-hero-content::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 80px;
+  background:
+    radial-gradient(ellipse at 30% 100%, rgba(61,90,62,0.45) 0%, transparent 60%),
+    radial-gradient(ellipse at 75% 100%, rgba(184,148,90,0.18) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: -1;
+}
+@media (max-width: 720px) {
+  .v5-hoy-hero-content { padding: 22px 18px; }
+}
+
+.v5-hoy-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--brass);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.v5-hoy-label .v5-hoy-dot {
+  width: 8px; height: 8px;
+  background: var(--brass);
+  border-radius: 1px;
+  transform: rotate(45deg);
+  display: inline-block;
+}
+
+/* Greeting "Buen día, Brian" — Geist 600 grande, em Instrument Serif brass */
+.v5-hoy-greeting {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: clamp(28px, 3.6vw, 44px) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.035em !important;
+  line-height: 1.05 !important;
+  color: var(--bone) !important;
+  margin: 4px 0 8px !important;
+  max-width: none !important;
+}
+.v5-hoy-greeting em {
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
+  color: var(--brass-soft) !important;
+  font-weight: 400 !important;
+}
+
+/* Countdown grande: número en Geist 600, sin pasar de razonable */
+.v5-hoy-countdown {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.v5-hoy-count-num {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: clamp(56px, 9vw, 88px) !important;
+  font-weight: 600 !important;
+  line-height: 0.9 !important;
+  letter-spacing: -0.045em !important;
+  color: var(--bone) !important;
+}
+.v5-hoy-count-unit {
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
+  font-size: clamp(18px, 2.2vw, 22px) !important;
+  color: rgba(245,241,232,0.7) !important;
+}
+.v5-hoy-detail {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-style: normal !important;
+  font-size: 13px !important;
+  color: rgba(245,241,232,0.7) !important;
+  line-height: 1.5 !important;
+  max-width: none !important;
+  margin-top: 12px !important;
+  letter-spacing: -0.005em;
+}
+
+/* Row 1 · Next action + KPIs */
+.v5-hoy-row-1 {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 880px) { .v5-hoy-row-1 { grid-template-columns: 1fr; } }
+
+/* Next action card: white card limpio */
+.v5-next-action {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px 24px !important;
+  box-shadow: var(--shadow-1);
+  transition: all 0.12s ease;
+  position: relative;
+}
+.v5-next-action:hover { box-shadow: var(--shadow-2); border-color: var(--line-strong); transform: translateY(-1px); }
+[data-theme="dark"] .v5-next-action { background: var(--surface-1); }
+.v5-next-action::before { display: none; } /* eliminar barra lateral si la había */
+.v5-next-action-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--stone);
+  margin-bottom: 8px;
+}
+.v5-next-action-meta .v5-prio {
+  background: var(--bad);
+  color: var(--white);
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.v5-next-action h3 {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.2 !important;
+  color: var(--ink) !important;
+  margin: 0 0 8px !important;
+}
+.v5-next-action-desc {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.v5-next-action-foot {
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+.v5-next-action-contact {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--stone);
+}
+
+/* KPI stack: 4 cards en grid 2×2 dentro del row-1 */
+.v5-kpi-stack {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.v5-kpi {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-1);
+}
+[data-theme="dark"] .v5-kpi { background: var(--surface-1); }
+.v5-kpi-label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--stone);
+  margin-bottom: 4px;
+}
+.v5-kpi-value {
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 26px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1.1 !important;
+  color: var(--ink);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 !important;
+}
+.v5-kpi-value small {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--stone);
+  letter-spacing: -0.01em;
+}
+.v5-kpi-statement {
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 11px;
+  color: var(--ink-2);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.v5-kpi-trend {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  margin-right: 4px;
+}
+.v5-kpi-trend.up   { color: var(--ok); }
+.v5-kpi-trend.down { color: var(--bad); }
+
+/* Alertas críticas */
+.v5-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px !important;
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-left: 3px solid var(--bad) !important;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.v5-alert-row:hover { transform: translateX(2px); box-shadow: var(--shadow-2); }
+.v5-alert-row::before { display: none; } /* la barra ahora es el border-left */
+.v5-alert-row.warn { border-left-color: var(--brass); }
+.v5-alert-row.info { border-left-color: var(--info); }
+.v5-alert-row.ok   { border-left-color: var(--ok); }
+[data-theme="dark"] .v5-alert-row { background: var(--surface-1) !important; }
+.v5-alert-tag {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bad);
+  font-weight: 600;
+}
+.v5-alert-row.warn .v5-alert-tag { color: var(--brass-deep); }
+.v5-alert-row.info .v5-alert-tag { color: var(--info); }
+.v5-alert-row.ok   .v5-alert-tag { color: var(--ok); }
+
+/* Day strip · 7 días */
+.v5-day-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 14px 0;
+}
+@media (max-width: 880px) { .v5-day-strip { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 540px) { .v5-day-strip { grid-template-columns: repeat(3, 1fr); } }
+.v5-day-pill {
+  padding: 10px 8px !important;
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px !important;
+  color: var(--ink) !important;
+  font-family: 'Geist', system-ui, sans-serif !important;
+  font-size: 11px !important;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.v5-day-pill:hover { background: var(--bone) !important; transform: translateY(-1px); }
+.v5-day-pill.today {
+  background: var(--laurel-deep) !important;
+  color: var(--bone) !important;
+  border-color: var(--laurel-deep) !important;
+}
+[data-theme="dark"] .v5-day-pill { background: var(--surface-1) !important; }
+[data-theme="dark"] .v5-day-pill.today { background: var(--accent) !important; color: var(--surface-0) !important; }
+
+/* Progress card / Villa */
+.v5-progress-card {
+  background: var(--white) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  padding: 18px 20px !important;
+  box-shadow: var(--shadow-1);
+}
+[data-theme="dark"] .v5-progress-card { background: var(--surface-1) !important; }
+
 </style>
 
 </head>
