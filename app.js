@@ -273,6 +273,32 @@
       return c !== 0 ? c : a.i - b.i;
     }).map(function (x) { return x.s; });
   }
+  // Día inicial del itinerario = hoy si cae dentro del viaje; si es antes → primer día; si es después → último.
+  function pickInitialDay() {
+    var days = (state.trip && state.trip.itinerary) || [];
+    if (!days.length) return 0;
+    var today = new Date(); today.setHours(0, 0, 0, 0); var ts = today.getTime();
+    for (var i = 0; i < days.length; i++) { var d = pdate(days[i].date); if (d && d.getTime() === ts) return i; }
+    var first = pdate(days[0].date), last = pdate(days[days.length - 1].date);
+    if (first && ts < first.getTime()) return 0;
+    if (last && ts > last.getTime()) return days.length - 1;
+    var best = 0, bestDiff = Infinity;
+    for (var j = 0; j < days.length; j++) { var dd = pdate(days[j].date); if (!dd) continue; var diff = Math.abs(dd.getTime() - ts); if (diff < bestDiff) { bestDiff = diff; best = j; } }
+    return best;
+  }
+  // Primera imagen adjunta de un slot (mimeType image/*), o null.
+  function slotImage(slot) {
+    var a = (slot.attachments || []).filter(function (x) { return x && x.url && /^image\//.test(x.mimeType || ""); });
+    return a.length ? a[0].url : null;
+  }
+  // Imagen de portada de un día: day.coverImage explícito, o la primera imagen de sus slots, o null.
+  function dayCover(day) {
+    if (day.coverImage) return day.coverImage;
+    var slots = day.slots || [];
+    for (var i = 0; i < slots.length; i++) { var im = slotImage(slots[i]); if (im) return im; }
+    return null;
+  }
+  function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
     $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate);
@@ -298,10 +324,14 @@
     var slots = sortedSlots(day);
     var km = dayKm(day);
     var dMin = day.driveMinutes != null ? Number(day.driveMinutes) : null;
+    var cover = dayCover(day);
 
     var html = "";
-    html += '<div class="day-hero" style="background:linear-gradient(155deg,' + color + ' 0%,' + color + 'cc 100%)">' +
-      '<div class="pat"></div><div class="big-ic"><svg width="200" height="200" viewBox="0 0 24 24">' + (I[heroIcon] || "") + "</svg></div>" +
+    var heroStyle = cover
+      ? "background-image:linear-gradient(160deg," + color + "55 0%," + color + "dd 100%)," + cssUrl(cover) + ";background-size:cover;background-position:center;"
+      : "background:linear-gradient(155deg," + color + " 0%," + color + "cc 100%)";
+    html += '<div class="day-hero' + (cover ? " has-img" : "") + '" style="' + heroStyle + '">' +
+      '<div class="pat"></div>' + (cover ? "" : '<div class="big-ic"><svg width="200" height="200" viewBox="0 0 24 24">' + (I[heroIcon] || "") + "</svg></div>") +
       '<div class="date-chip"><span class="m">' + (dd ? dd.toLocaleDateString("es-AR", { month: "short" }).toUpperCase().replace(".", "") : "") + '</span><span class="d">' + (dd ? dd.getDate() : "") + "</span></div>" +
       '<div class="ov"></div><div class="ttl"><div class="sub">' + (dd ? dd.toLocaleDateString("es-AR", { weekday: "long" }) : "") + (day.dayNumber != null ? " · Día " + day.dayNumber : "") + "</div>" +
       '<div class="main">' + esc(day.title || "") + "</div></div></div>";
@@ -363,16 +393,20 @@
     var icon = pickIcon((slot.title || "") + " " + (p ? p.name + " " + (p.type || "") : "") + " " + (slot.description || ""));
     var cat = p ? (p.type || "Lugar") : "Actividad";
     var dir = p ? dirProvider(p) : null;
+    var img = slotImage(slot);
     var when = (dd ? dd.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }) : "") +
       (ftime(slot.timeStart) || ftime(slot.time) ? " · " + (ftime(slot.timeStart) || ftime(slot.time)) : "") +
       (slot.timeEnd ? "–" + ftime(slot.timeEnd) : "");
 
     var html = "";
-    html += '<div class="detail-hero" style="background:linear-gradient(160deg,' + color + ' 0%,' + color + 'dd 100%)">' +
+    var dHeroStyle = img
+      ? "background-image:linear-gradient(160deg," + color + "44 0%," + color + "dd 100%)," + cssUrl(img) + ";background-size:cover;background-position:center;"
+      : "background:linear-gradient(160deg," + color + " 0%," + color + "dd 100%)";
+    html += '<div class="detail-hero' + (img ? " has-img" : "") + '" style="' + dHeroStyle + '">' +
       '<div class="detail-hero-top">' +
         '<button class="circle-btn" id="detailBack" aria-label="Volver">' + svgInline2("back", 18) + "</button>" +
       "</div>" +
-      '<div class="detail-hero-art"><svg width="180" height="180" viewBox="0 0 24 24" style="color:rgba(255,255,255,.18)">' + (I[icon] || I.pin) + "</svg></div>" +
+      '<div class="detail-hero-art"' + (img ? ' style="display:none"' : "") + '><svg width="180" height="180" viewBox="0 0 24 24" style="color:rgba(255,255,255,.18)">' + (I[icon] || I.pin) + "</svg></div>" +
       '<div class="detail-cat-badge">' + svgInline2(icon, 12) + " " + esc(cat) + "</div>" +
       "</div>";
 
@@ -468,6 +502,48 @@
     $("#matchList").innerHTML = html;
   }
 
+  // ── render: accesos directos (apps del viaje) ──
+  var SHORTCUTS = [
+    { group: "Mundial", items: [
+      { name: "FIFA Oficial", sub: "Fixture, resultados y noticias", url: "https://www.fifa.com/fifaplus/es", icon: "stadium", color: "#1A1A2E" },
+      { name: "FIFA Tickets", sub: "Entradas y acceso móvil al estadio", url: "https://www.fifa.com/tickets", icon: "stadium", color: "#0E9F6E" }
+    ]},
+    { group: "Ruta y nafta", items: [
+      { name: "Google Maps", sub: "Navegación y tiempos", url: "https://www.google.com/maps", icon: "map", color: "#2C6BED" },
+      { name: "Waze", sub: "Tráfico y radares en vivo", url: "https://www.waze.com/es/live-map", icon: "nav", color: "#16B6E8" },
+      { name: "GasBuddy", sub: "Estaciones con nafta más barata", url: "https://www.gasbuddy.com", icon: "fuel", color: "#E4002B" }
+    ]},
+    { group: "Transporte", items: [
+      { name: "Uber", sub: "Viajes y Uber XL para el grupo", url: "https://m.uber.com", icon: "car", color: "#111111" },
+      { name: "Lyft", sub: "Alternativa de viajes", url: "https://www.lyft.com", icon: "car", color: "#EA0B8C" }
+    ]},
+    { group: "Motorhome y compras", items: [
+      { name: "Cruise America", sub: "Tu motorhome · asistencia en ruta", url: "https://www.cruiseamerica.com", icon: "rv", color: "#F08A24" },
+      { name: "H-E-B", sub: "Súper de Texas · aprovisionamiento", url: "https://www.heb.com", icon: "cart", color: "#E4002B" },
+      { name: "Buc-ee's", sub: "Parada de ruta icónica · nafta y baños", url: "https://buc-ees.com", icon: "fuel", color: "#A8431E" },
+      { name: "Walmart", sub: "Compras grandes y farmacia", url: "https://www.walmart.com", icon: "cart", color: "#0071CE" }
+    ]},
+    { group: "Útiles", items: [
+      { name: "AccuWeather", sub: "Clima y alertas de tormenta", url: "https://www.accuweather.com", icon: "star", color: "#F08000" },
+      { name: "Google Translate", sub: "Traductor con cámara", url: "https://translate.google.com", icon: "web", color: "#2C6BED" },
+      { name: "WhatsApp", sub: "Grupo del viaje", url: "https://web.whatsapp.com", icon: "phone", color: "#1FA855" }
+    ]}
+  ];
+  function renderAccesos() {
+    var html = '<p class="accesos-intro">Tocá una app para abrirla. Si la tenés instalada se abre directo; si no, te lleva a descargarla.</p>';
+    SHORTCUTS.forEach(function (g) {
+      html += '<div class="section-header">' + esc(g.group) + "</div><div class=\"shortcut-grid\">";
+      g.items.forEach(function (s) {
+        html += '<a class="shortcut" target="_blank" rel="noopener" href="' + esc(s.url) + '">' +
+          '<span class="sc-ic" style="background:' + s.color + '">' + svgInline2(s.icon, 19) + "</span>" +
+          '<span class="sc-tx"><span class="sc-name">' + esc(s.name) + '</span><span class="sc-sub">' + esc(s.sub) + "</span></span>" +
+          '<span class="sc-go">' + svgInline2("chev", 16) + "</span></a>";
+      });
+      html += "</div>";
+    });
+    $("#accesosBody").innerHTML = html;
+  }
+
   // ── render: map ──
   function initMap() {
     if (state.mapDone || !window.google || !google.maps) return;
@@ -488,7 +564,7 @@
     });
   }
 
-  function renderAll() { renderOverview(); renderItinerary(); renderMundial(); if ($("#mapa").classList.contains("active")) { state.mapDone = false; initMap(); } }
+  function renderAll() { if (!state._dayPicked) { state.dayIdx = pickInitialDay(); state._dayPicked = true; } renderOverview(); renderItinerary(); renderMundial(); if ($("#mapa").classList.contains("active")) { state.mapDone = false; initMap(); } }
 
   // ── nav ──
   function setTab(tab) {
@@ -536,6 +612,7 @@
   // ── boot ──
   function boot() {
     wire();
+    renderAccesos();
     var code = readInitialCode();
     fetchMatches();
     if (code && code.length === 8) {

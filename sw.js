@@ -1,5 +1,5 @@
 /* Expedición Mundial PWA · service worker (v3) */
-const CACHE = "em-v3-1-fix1";
+const CACHE = "em-v3-2";
 const SHELL = ["./","./index.html","./styles.css","./app.js","./manifest.webmanifest",
   "./icons/icon-192.png","./icons/icon-512.png","./icons/icon-512-maskable.png"];
 self.addEventListener("install", (e) => { self.skipWaiting(); e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => {})); });

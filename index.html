@@ -48,6 +48,7 @@
         <button data-tab="itinerary">Itinerario</button>
         <button data-tab="mundial">Mundial</button>
         <button data-tab="mapa">Mapa</button>
+        <button data-tab="accesos">Accesos</button>
       </nav>
       <div class="cd" id="topCountdown"></div>
     </header>
@@ -88,6 +89,12 @@
       <div id="map"></div>
     </section>
 
+    <!-- ACCESOS DIRECTOS -->
+    <section class="screen" id="accesos">
+      <div class="bar"><h2>Accesos Directos</h2><div class="sub">Apps del viaje</div></div>
+      <div class="screen-body" id="accesosBody"></div>
+    </section>
+
     <!-- DETALLE DE SLOT -->
     <section class="screen" id="detail">
       <div id="detailContent"></div>
@@ -110,6 +117,10 @@
       <button data-tab="mapa">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3L3 5v16l6-2 6 2 6-2V3l-6 2-6-2z"/><path d="M9 3v16M15 5v16"/></svg>
         <span>Mapa</span>
+      </button>
+      <button data-tab="accesos">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span>Accesos</span>
       </button>
     </nav>
   </div>
