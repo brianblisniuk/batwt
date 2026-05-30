@@ -329,3 +329,24 @@ a.matchday-card:hover{transform:translateY(-1px);transition:transform .15s ease;
 .info-value{font:500 14px var(--font-body);color:var(--text);margin-top:2px;word-break:break-word;}
 .info-value a{color:var(--primary);text-decoration:none;}
 .info-value a:hover{text-decoration:underline;}
+
+/* ─────────────────────────────────────────────
+   V3.1 fixes — banderas, slots ocultos, matchday informativo
+   ───────────────────────────────────────────── */
+
+/* (3) Fallback emoji para banderas en match-vs / matchday-card .vs / nextmatch .vs */
+.match-vs, .matchday-card .vs, .nextmatch .vs {
+  font-family: 'Inter', 'Inter Tight', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'EmojiOne Color', 'Twemoji Mozilla', sans-serif;
+}
+
+/* (2) Padding-bottom de .activities para que el bottom-nav fixed (64px) no tape los últimos slots */
+.activities { padding-bottom: calc(var(--nav-h) + 28px); }
+
+/* (4) matchday-card: ahora es informativo (div, no link). Anular cualquier hover/cursor heredado */
+.matchday-card { cursor: default; }
+a.matchday-card { /* defensa por si quedara un cache viejo */ pointer-events: auto; }
+
+/* En desktop, .activities heredaba max-width pero no el padding-bottom; reforzamos */
+@media (min-width: 920px) {
+  .activities { padding-bottom: 48px; }
+}

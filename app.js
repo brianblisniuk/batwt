@@ -316,12 +316,11 @@
     if (dayMatches.length) {
       html += '<div class="block-title">Partidos de hoy</div><div class="matchday">';
       dayMatches.forEach(function (m) {
-        var dc = dirCoords(m.lat, m.lng, (m.stadium || "") + " " + (m.city || ""));
-        html += '<a class="matchday-card"' + (dc ? ' target="_blank" rel="noopener" href="' + esc(dc) + '"' : "") + ">" +
+        html += '<div class="matchday-card">' +
           (isArg(m) ? '<div class="badge">Argentina</div>' : "") +
           '<div class="t">' + ftime(m.match_time) + " · " + esc(stageLabel(m)) + "</div>" +
           '<div class="vs">' + matchup(m) + "</div>" +
-          '<div class="mt">' + svgInline2("nav", 12) + " " + esc(m.stadium) + " · " + esc(m.city) + "</div></a>";
+          '<div class="mt">' + esc(m.stadium) + " · " + esc(m.city) + "</div></div>";
       });
       html += "</div>";
     }
@@ -329,14 +328,14 @@
     if (slots.length) {
       var provs = providersMap();
       html += '<div class="block-title">Plan del día</div><div class="activities">';
-      slots.forEach(function (s) {
+      slots.forEach(function (s, idx) {
         var p = provs[s.providerId];
         var icon = pickIcon((s.title || "") + " " + (p ? p.name + " " + (p.type || "") : "") + " " + (s.description || ""));
         var sub = p ? p.name : (s.description ? (s.description.length > 80 ? s.description.slice(0, 80) + "…" : s.description) : "");
         var nAtt = (s.attachments || []).filter(function (a) { return a && a.url; }).length;
         html += '<div class="activity-row"><div class="activity-time">' + esc(ftime(s.timeStart) || ftime(s.time) || "") +
           (s.timeEnd ? '<span class="end">' + esc(ftime(s.timeEnd)) + "</span>" : "") + "</div>" +
-          '<div class="activity-card" data-day="' + state.dayIdx + '" data-slot="' + esc(s.id) + '">' +
+          '<div class="activity-card" data-day="' + state.dayIdx + '" data-slot-idx="' + idx + '">' +
           '<div class="head"><div class="activity-icon">' + svgInline2(icon, 16) + "</div>" +
           '<div class="activity-body"><div class="activity-title-text">' + esc(s.title || "") + "</div>" +
           (sub ? '<div class="activity-sub">' + esc(sub) + "</div>" : "") + "</div>" +
@@ -350,10 +349,10 @@
   }
 
   // ── render: detail (slot) ──
-  function openSlotDetail(dayIdx, slotId) {
+  function openSlotDetail(dayIdx, slotIdx) {
     var t = state.trip, days = t.itinerary || [], day = days[dayIdx]; if (!day) return;
     var slots = sortedSlots(day);
-    var slot = slots.filter(function (s) { return String(s.id) === String(slotId); })[0]; if (!slot) return;
+    var slot = slots[slotIdx]; if (!slot) return;
     var meta = t.meta || {};
     var palette = (meta.dayColorPalette && meta.dayColorPalette.length) ? meta.dayColorPalette : DEFAULT_PALETTE;
     var color = palette[dayIdx % palette.length];
@@ -483,10 +482,6 @@
       }
       (t.providers || []).forEach(function (p) { if (p.latitude != null && p.longitude != null) mark({ lat: +p.latitude, lng: +p.longitude }, p.name, "#1E3FB8"); });
       var bc = meta.basecamp && meta.basecamp.coords; if (bc && bc.lat != null) mark({ lat: +bc.lat, lng: +bc.lon }, (meta.basecamp.shortName || "Base"), "#0A1F70");
-      var a = (meta.startDate || "").slice(0, 10), b = (meta.endDate || "").slice(0, 10);
-      state.matches.filter(function (m) { return m.match_date >= a && m.match_date <= b && m.lat != null; }).forEach(function (m) {
-        mark({ lat: +m.lat, lng: +m.lng }, "⚽ " + (m.stadium || "") + " · " + (m.city || ""), "#75AADB");
-      });
       if (n > 1) map.fitBounds(bounds, 56); else if (n === 1) { map.setCenter(bounds.getCenter()); map.setZoom(11); }
     });
   }
@@ -512,8 +507,8 @@
       var di = e.target.closest(".date-item"); if (di) { state.dayIdx = parseInt(di.dataset.idx, 10); renderItinerary(); requestAnimationFrame(function () { var a = $(".date-item.active"); if (a) a.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }); return; }
       var fc = e.target.closest(".filter-chip"); if (fc) { state.filter = fc.dataset.filter; $$(".filter-chip").forEach(function (c) { c.classList.toggle("active", c === fc); }); renderMundial(); return; }
       var ac = e.target.closest(".activity-card");
-      if (ac && ac.dataset.slot && !e.target.closest("a")) {
-        openSlotDetail(parseInt(ac.dataset.day, 10), ac.dataset.slot);
+      if (ac && ac.dataset.slotIdx != null && !e.target.closest("a")) {
+        openSlotDetail(parseInt(ac.dataset.day, 10), parseInt(ac.dataset.slotIdx, 10));
         return;
       }
     });
