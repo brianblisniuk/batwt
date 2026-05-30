@@ -172,12 +172,6 @@ img{max-width:100%;display:block;}
 .activity-body{flex:1;min-width:0;}
 .activity-title-text{font:700 14px var(--font-body);letter-spacing:-.2px;line-height:1.25;}
 .activity-sub{font:400 12.5px/1.45 var(--font-body);color:var(--text-muted);margin-top:3px;white-space:pre-wrap;}
-.activity-prov{margin-top:9px;background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:8px 10px;}
-.activity-prov .pn{font:700 12px var(--font-body);display:flex;align-items:center;gap:6px;}
-.activity-prov .pa{font:500 11.5px var(--font-body);color:var(--text-muted);margin-top:2px;}
-.activity-prov .pl{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
-.att{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
-.att a{display:inline-flex;align-items:center;gap:6px;font:600 11.5px var(--font-body);color:var(--primary-dark);background:rgba(30,63,184,.07);border:1px solid rgba(30,63,184,.16);border-radius:9px;padding:6px 10px;}
 
 /* ─── Mundial ───────────────────────────────────── */
 .mundial-filters{display:flex;gap:8px;padding:12px 16px 4px;position:sticky;top:0;background:var(--bg);z-index:5;}
@@ -268,16 +262,12 @@ img{max-width:100%;display:block;}
   border-radius:99px;padding:6px 11px;font:600 12px var(--font-body);letter-spacing:-0.1px;}
 .day-stats .stat svg{color:var(--primary);}
 
-/* (a) matchday-card como link clickeable */
-a.matchday-card{text-decoration:none;color:inherit;cursor:pointer;display:block;}
-a.matchday-card:hover{transform:translateY(-1px);transition:transform .15s ease;}
-.matchday-card .mt{display:flex;align-items:center;gap:4px;}
-.matchday-card .mt svg{flex-shrink:0;opacity:.7;}
+/* (4) matchday-card: informativo (div, no link) */
+.matchday-card{cursor:default;}
 
-/* (b) Activity card — chevron y att-hint */
-.activity-card{cursor:pointer;}
-.activity-card .head{display:flex;align-items:flex-start;gap:10px;}
-.activity-card .activity-body{flex:1;min-width:0;}
+/* (b) Activity card — chevron, att-hint y feedback de tap */
+.activity-card{cursor:pointer;transition:transform .1s ease, background .1s ease;}
+.activity-card:active{transform:scale(.99);background:var(--surface-alt);}
 .activity-card .go{flex-shrink:0;color:var(--text-dim);margin-top:2px;display:inline-flex;}
 .activity-card:hover .go{color:var(--primary);}
 .activity-card .att-hint{display:inline-flex;align-items:center;gap:5px;margin-top:8px;
@@ -289,7 +279,7 @@ a.matchday-card:hover{transform:translateY(-1px);transition:transform .15s ease;
 #detail.active{display:block;}
 
 .detail-hero{height:260px;position:relative;overflow:hidden;}
-.detail-hero-top{position:absolute;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;z-index:10;}
+.detail-hero-top{position:absolute;top:max(14px,env(safe-area-inset-top));left:16px;right:16px;display:flex;justify-content:space-between;z-index:10;}
 .detail-hero-art{position:absolute;right:-30px;bottom:-30px;opacity:.9;pointer-events:none;}
 .detail-cat-badge{position:absolute;bottom:16px;left:16px;background:rgba(255,255,255,0.95);border-radius:99px;
   padding:6px 12px;display:inline-flex;align-items:center;gap:6px;
@@ -301,7 +291,7 @@ a.matchday-card:hover{transform:translateY(-1px);transition:transform .15s ease;
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 2px 8px rgba(0,0,0,.08);}
 .circle-btn:active{transform:scale(.96);}
 
-.detail-body{padding:22px 18px 120px;max-width:780px;margin:0 auto;}
+.detail-body{padding:22px 18px calc(var(--nav-h) + 28px);max-width:780px;margin:0 auto;}
 .detail-title{font:800 26px var(--font-display);margin:0;color:var(--text);letter-spacing:-0.5px;line-height:1.15;}
 .detail-subtitle{display:flex;gap:12px;margin-top:8px;font:500 13px var(--font-body);color:var(--text-muted);flex-wrap:wrap;}
 .detail-subtitle span{display:inline-flex;align-items:center;gap:6px;}
@@ -341,10 +331,6 @@ a.matchday-card:hover{transform:translateY(-1px);transition:transform .15s ease;
 
 /* (2) Padding-bottom de .activities para que el bottom-nav fixed (64px) no tape los últimos slots */
 .activities { padding-bottom: calc(var(--nav-h) + 28px); }
-
-/* (4) matchday-card: ahora es informativo (div, no link). Anular cualquier hover/cursor heredado */
-.matchday-card { cursor: default; }
-a.matchday-card { /* defensa por si quedara un cache viejo */ pointer-events: auto; }
 
 /* En desktop, .activities heredaba max-width pero no el padding-bottom; reforzamos */
 @media (min-width: 920px) {

@@ -143,7 +143,7 @@
     return sb.from("wc26_matches").select("*").order("match_date", { ascending: true }).order("match_time", { ascending: true }).then(function (r) {
       if (r.error) throw r.error;
       state.matches = r.data || []; cacheSet(LS_MATCHES, state.matches);
-    }).catch(function () { var c = cacheGet(LS_MATCHES); if (c) state.matches = c; });
+    }).catch(function (e) { console.error("[EM] fetchMatches:", e); var c = cacheGet(LS_MATCHES); if (c) state.matches = c; });
   }
 
   function fetchTrip(code, silent) {
@@ -161,7 +161,8 @@
       $("#staleBanner").hidden = true;
       renderAll();
       showApp();
-    }).catch(function () {
+    }).catch(function (e) {
+      console.error("[EM] fetchTrip:", e);
       var c = cacheGet(LS_TRIP);
       if (c) { state.trip = c; state.stale = true; $("#staleBanner").hidden = false; renderAll(); showApp(); }
       else if (!silent) showEntry("Sin conexión y sin datos guardados.");
@@ -266,10 +267,11 @@
     return state.matches.filter(function (m) { return m.match_date === d; });
   }
   function sortedSlots(day) {
-    return (day.slots || []).slice().sort(function (a, b) {
-      var ta = (a.timeStart || a.time || "99:99"), tb = (b.timeStart || b.time || "99:99");
-      return String(ta).localeCompare(String(tb));
-    });
+    return (day.slots || []).map(function (s, i) { return { s: s, i: i }; }).sort(function (a, b) {
+      var ta = (a.s.timeStart || a.s.time || "99:99"), tb = (b.s.timeStart || b.s.time || "99:99");
+      var c = String(ta).localeCompare(String(tb));
+      return c !== 0 ? c : a.i - b.i;
+    }).map(function (x) { return x.s; });
   }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
@@ -455,10 +457,10 @@
       list.forEach(function (m) {
         var played = m.home_score != null && m.away_score != null;
         html += '<div class="match-row' + (isArg(m) ? " arg" : "") + '">' +
-          '<div class="match-time"><div class="h">' + ftime(m.match_time) + '</div><div class="stage">' + esc(stageLabel(m)) + "</div></div>" +
+          '<div class="match-time"><div class="h">' + ftime(m.match_time) + "</div></div>" +
           '<div class="match-main"><div class="match-vs">' + matchup(m) + "</div>" +
           '<div class="match-venue">' + esc(m.stadium || "") + " · " + esc(m.city || "") + ", " + esc(m.country || "") + "</div></div>" +
-          (played ? '<div class="match-score">' + m.home_score + "–" + m.away_score + "</div>" : "") +
+          (played ? '<div class="match-score">' + m.home_score + "–" + m.away_score + "</div>" : '<div class="match-grp">' + esc(stageLabel(m)) + "</div>") +
           "</div>";
       });
       html += "</div></div>";
