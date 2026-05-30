@@ -13391,6 +13391,11 @@ function app() {
       // Tick relative time every 30s
       setInterval(() => { this._now = Date.now(); }, 30000);
 
+      // Prefetch real driving times when entering the tabs that show travel chips
+      // ('today' and 'itinerary'). Cached segments resolve instantly, so this is
+      // cheap on repeat navigation. The map tab has its own per-day prefetch.
+      this.$watch('tab', (v) => { if (v === 'today' || v === 'itinerary') this._refreshAllDirections(); });
+
       // Global Escape key closes any open drawer/modal (V5c)
       this._initEscHandler();
 
@@ -13949,6 +13954,9 @@ function app() {
           // Cloud has data — apply it
           this.applyingRemote = true;
           this.data = this.migrateData(row.data);
+          // Kick off real-directions prefetch so travel chips are accurate from
+          // the first render (covers the default landing tab without a tab change).
+          this.$nextTick(() => this._refreshAllDirections());
           this.lastUpdatedBy = row.updated_by;
           this.lastUpdatedAt = row.updated_at;
           // Optimistic-locking baseline. Any later save attempt will check
@@ -15804,6 +15812,30 @@ function app() {
         const a = positioned[i].c, b = positioned[i + 1].c;
         // Fire-and-await sequentially to be gentle on API
         await this._fetchDirections(a, b);
+      }
+    },
+    // Prefetch real Google Directions for EVERY consecutive positioned-slot pair
+    // across all days. This is what makes the itinerary/today chips show real
+    // driving time + distance instead of the Haversine estimate (50 km/h, which
+    // was only calibrated for Langhe rural roads and is ~2x too slow on highways).
+    // Cached segments resolve instantly; only uncached ones hit the API. Waits for
+    // the Maps SDK to be ready (it loads async via the extended-component-library).
+    async _refreshAllDirections() {
+      if (this._refreshingAllDirections) return;
+      this._refreshingAllDirections = true;
+      try {
+        let waited = 0;
+        while (!window.google?.maps?.importLibrary && waited < 8000) {
+          await new Promise(r => setTimeout(r, 200));
+          waited += 200;
+        }
+        if (!window.google?.maps?.importLibrary) return;
+        const days = (this.data && this.data.itinerary) || [];
+        for (let d = 0; d < days.length; d++) {
+          await this._refreshDayDirections(d);
+        }
+      } finally {
+        this._refreshingAllDirections = false;
       }
     },
     // Sum the day's segment durations (uses real directions if cached, else estimate).
