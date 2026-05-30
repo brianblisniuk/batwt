@@ -8143,6 +8143,22 @@ textarea:focus-visible {
     </div>
   </div>
 
+  <!-- Acceso del cliente -->
+  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 20px;">
+    <button class="btn btn-sm" @click="openClientView()" style="display: inline-flex; align-items: center; gap: 7px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      Ver como cliente
+    </button>
+    <template x-if="tripRow && tripRow.access_code">
+      <button class="btn btn-sm btn-ghost" @click="copyClientLink()" style="display: inline-flex; align-items: center; gap: 6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copiar link
+      </button>
+    </template>
+    <span x-show="tripRow && tripRow.access_code" style="font-size: 12px; color: var(--text-3);">Código <code x-text="formatAccessCode(tripRow && tripRow.access_code)" style="font-family: 'JetBrains Mono', monospace; font-size: 12px;"></code></span>
+    <span x-show="!tripRow || !tripRow.access_code" style="font-size: 12px; color: var(--text-3); font-style: italic;">El cliente entra sin cuenta — el código se genera al abrir.</span>
+  </div>
+
   <!-- Row 1: Próxima acción + KPIs -->
   <div class="v5-hoy-row-1">
     <!-- Next action card -->
@@ -10983,6 +10999,49 @@ textarea:focus-visible {
           </button>
         </header>
         <div class="v5-drawer-body">
+          <!-- Section: Acceso del cliente -->
+          <div class="v5b-detail-section">
+            <h4>Acceso del cliente</h4>
+            <p style="font-style: italic; color: var(--text-3); font-size: 12.5px; margin-bottom: 12px;">El cliente entra a su viaje con un link, sin cuenta ni contraseña. Cada viaje tiene su propio código y ve solo este viaje.</p>
+
+            <template x-if="tripRow && tripRow.access_code">
+              <div>
+                <label class="v5-meta-field">
+                  <span>Código de acceso</span>
+                  <div style="display: flex; gap: 6px; align-items: stretch;">
+                    <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 15px; letter-spacing: 0.12em; text-align: center;" x-text="formatAccessCode(tripRow.access_code)"></code>
+                    <button class="btn btn-sm btn-ghost" @click="copyAccessCode()">Copiar</button>
+                  </div>
+                </label>
+                <label class="v5-meta-field">
+                  <span>Link para el cliente</span>
+                  <div style="display: flex; gap: 6px; align-items: stretch;">
+                    <code style="flex: 1; padding: 9px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; overflow-x: auto; white-space: nowrap;" x-text="clientLink()"></code>
+                    <button class="btn btn-sm btn-ghost" @click="copyClientLink()">Copiar</button>
+                  </div>
+                </label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+                  <button class="btn btn-sm" @click="openClientView()" style="display: inline-flex; align-items: center; gap: 7px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Ver como cliente
+                  </button>
+                  <button class="btn btn-sm btn-ghost" @click="copyClientMessage()">Copiar mensaje</button>
+                  <button class="btn btn-sm btn-ghost" @click="genAccessCode(true)" style="color: #c0392b;">Regenerar código</button>
+                </div>
+                <p x-show="tripRow.access_code_generated_at" style="font-size: 11.5px; color: var(--text-3); margin-top: 8px;">Generado <span x-text="formatDate((tripRow.access_code_generated_at || '').slice(0,10))"></span> · regenerar invalida el link anterior.</p>
+              </div>
+            </template>
+
+            <template x-if="!tripRow || !tripRow.access_code">
+              <div>
+                <button class="btn" @click="genAccessCode(false)" style="display: inline-flex; align-items: center; gap: 7px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                  Generar código de acceso
+                </button>
+              </div>
+            </template>
+          </div>
+
           <!-- Section: Identidad -->
           <div class="v5b-detail-section">
             <h4>Identidad</h4>
@@ -13511,6 +13570,60 @@ function app() {
     // in the meta editor. We use get_trip_members_with_user_info() RPC so we
     // can show full_name + last_sign_in_at (data that lives in auth.users
     // and is not reachable from the client via direct table queries).
+    // ===== Acceso del cliente (PWA Expedición Mundial, por código) =====
+    formatAccessCode(c) {
+      c = (c || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      return c.length > 4 ? c.slice(0, 4) + '-' + c.slice(4) : c;
+    },
+    clientLink() {
+      const code = this.tripRow && this.tripRow.access_code;
+      if (!code) return null;
+      return 'https://expedicionmundial.netlify.app/?code=' + this.formatAccessCode(code);
+    },
+    async genAccessCode(regenerate = false) {
+      if (!this.TRIP_ID || !this._client) return null;
+      if (regenerate && !confirm('¿Regenerar el código de acceso? El link anterior va a dejar de funcionar.')) return null;
+      try {
+        const { data, error } = await this._client.rpc('set_trip_access_code', { p_trip_id: this.TRIP_ID });
+        if (error) throw error;
+        if (!this.tripRow) this.tripRow = {};
+        this.tripRow.access_code = data;
+        this.tripRow.access_code_generated_at = new Date().toISOString();
+        this.toast(regenerate ? '✓ Código regenerado' : '✓ Código de acceso generado', 'success');
+        this.logEvent && this.logEvent('client.access_code', regenerate ? 'regeneró el código de acceso del cliente' : 'generó el código de acceso del cliente');
+        return data;
+      } catch (e) {
+        console.error('genAccessCode failed:', e);
+        this.toast('Error generando el código: ' + (e.message || ''), 'error');
+        return null;
+      }
+    },
+    async openClientView() {
+      let link = this.clientLink();
+      if (!link) {
+        const code = await this.genAccessCode(false);
+        if (!code) return;
+        link = this.clientLink();
+      }
+      window.open(link, '_blank', 'noopener');
+    },
+    copyClientLink() {
+      const link = this.clientLink();
+      if (!link) { this.toast('Generá el código primero', 'info'); return; }
+      navigator.clipboard.writeText(link).then(() => this.toast('Link copiado', 'success'));
+    },
+    copyAccessCode() {
+      const code = this.tripRow && this.tripRow.access_code;
+      if (!code) { this.toast('Generá el código primero', 'info'); return; }
+      navigator.clipboard.writeText(this.formatAccessCode(code)).then(() => this.toast('Código copiado', 'success'));
+    },
+    copyClientMessage() {
+      const link = this.clientLink();
+      if (!link) { this.toast('Generá el código primero', 'info'); return; }
+      const name = (this.data && this.data.meta && this.data.meta.tripName) || 'tu viaje';
+      const msg = 'Hola! Te comparto el acceso a ' + name + '.\n\nEntrá desde este link (no necesitás cuenta ni contraseña):\n' + link + '\n\nDesde el celular podés usar "Agregar a pantalla de inicio" y te queda como una app.';
+      navigator.clipboard.writeText(msg).then(() => this.toast('Mensaje copiado', 'success'));
+    },
     async loadTripMembers() {
       if (!this.TRIP_ID || !this._client) return;
       this.tripMembersLoading = true;
