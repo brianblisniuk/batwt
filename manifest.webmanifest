@@ -1,20 +1,16 @@
 {
-  "name": "Expedición Mundial · USA 2026",
-  "short_name": "Mundial 26",
-  "description": "Tu mapa del Mundial, en ruta. Estadios, fan zones, comer, dormir y nafta.",
+  "name": "Expedición Mundial",
+  "short_name": "Expedición",
+  "description": "Tu viaje al Mundial 2026, planeado al detalle.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0A1F70",
-  "theme_color": "#1E3FB8",
-  "lang": "es",
-  "dir": "ltr",
-  "categories": ["travel", "navigation", "sports"],
+  "background_color": "#0A1430",
+  "theme_color": "#0A1430",
   "icons": [
-    { "src": "icons/icon-192.png",          "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png",          "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
