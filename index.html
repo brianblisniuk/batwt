@@ -10080,6 +10080,21 @@ textarea:focus-visible {
                   Vacío · se usa la descripción interna como fallback (sin filtrar)
                 </span>
               </div>
+              <div class="v5b-field">
+                <span class="lbl">Código de reserva</span>
+                <input type="text" x-model="drawerSlot.reservationCode" @blur="save()" placeholder="ej: R49129, BC51N8…">
+                <span class="v5b-client-hint">El cliente lo ve destacado, con botón para copiar</span>
+              </div>
+              <div class="v5b-detail-grid" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="v5b-field">
+                  <span class="lbl">Check-in</span>
+                  <input type="time" x-model="drawerSlot.checkIn" @blur="save()" placeholder="hh:mm">
+                </div>
+                <div class="v5b-field">
+                  <span class="lbl">Check-out</span>
+                  <input type="time" x-model="drawerSlot.checkOut" @blur="save()" placeholder="hh:mm">
+                </div>
+              </div>
               <div class="v5b-field" x-show="TRIP_ID === 'mundial-arg-2026'">
                 <a class="v5b-client-preview-btn" :href="'https://expedicionmundial.netlify.app/?preview=' + TRIP_ID + '&day=' + (data.itinerary.findIndex(d => d.id === drawerSlotDay?.id) + 1)" target="_blank" rel="noopener">
                   Previsualizar como cliente →
