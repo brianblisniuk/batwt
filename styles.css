@@ -377,3 +377,25 @@ img{max-width:100%;display:block;}
 @media (min-width: 920px) {
   .shortcut-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 }
+
+/* ── reserva: código + check-in/out (detalle) ── */
+.resv-card{margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.resv-row{display:flex;align-items:center;gap:12px;padding:13px 14px;}
+.resv-row.times{border-top:1px solid var(--border);}
+.resv-ic{flex:none;width:34px;height:34px;border-radius:9px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;color:var(--primary);}
+.resv-main{flex:1;min-width:0;}
+.resv-k{font:600 11px/1 var(--font-body);letter-spacing:.04em;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px;}
+.resv-v{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.resv-v code{font:700 17px/1 'SFMono-Regular',ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--text);}
+.resv-copy{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text-muted);padding:5px 9px;border-radius:8px;font:600 12px/1 var(--font-body);cursor:pointer;transition:.15s;}
+.resv-copy:active{transform:scale(.96);}
+.resv-copy.ok{background:var(--success);border-color:var(--success);color:#fff;}
+.resv-times{flex:1;display:flex;gap:26px;flex-wrap:wrap;}
+.resv-time{display:flex;flex-direction:column;gap:3px;}
+.resv-time span{font:600 11px/1 var(--font-body);letter-spacing:.04em;text-transform:uppercase;color:var(--text-dim);}
+.resv-time b{font:600 16px/1 var(--font-display);color:var(--text);}
+/* chips compactos en la card del itinerario */
+.activity-resv{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.resv-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface-alt);border:1px solid var(--border);color:var(--text-muted);padding:3px 8px;border-radius:7px;font:600 11px/1.2 var(--font-body);}
+.resv-chip.code{color:var(--primary);background:rgba(30,63,184,.07);border-color:rgba(30,63,184,.16);letter-spacing:.04em;}
+.resv-chip svg{opacity:.9;}

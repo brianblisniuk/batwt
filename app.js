@@ -89,6 +89,9 @@
 
   // ── icons ──
   var I = {
+    key: '<circle cx="7.5" cy="15.5" r="4.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M10.7 12.3L20 3M16 7l3 3M13.5 9.5l2.5 2.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+    copy: '<rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+    clock: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
     plane: '<path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0011.5 2 1.5 1.5 0 0010 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" fill="currentColor"/>',
     fork: '<path d="M7 2v8a3 3 0 003 3v9M3 2v6a3 3 0 003 3M17 2v20M17 14h4l-1-12h-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
     rv: '<rect x="2" y="7" width="16" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M18 10h2l2 3v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="18" r="1.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="17" cy="18" r="1.5" fill="none" stroke="currentColor" stroke-width="2.2"/>',
@@ -365,6 +368,14 @@
         var icon = pickIcon((s.title || "") + " " + (p ? p.name + " " + (p.type || "") : "") + " " + (s.description || ""));
         var sub = p ? p.name : (s.description ? (s.description.length > 80 ? s.description.slice(0, 80) + "…" : s.description) : "");
         var nAtt = (s.attachments || []).filter(function (a) { return a && a.url; }).length;
+        var resvChips = "";
+        if (s.reservationCode || s.checkIn || s.checkOut) {
+          var ch = [];
+          if (s.reservationCode) ch.push('<span class="resv-chip code">' + svgInline2("key", 11) + " " + esc(s.reservationCode) + "</span>");
+          if (s.checkIn) ch.push('<span class="resv-chip">Check-in ' + esc(s.checkIn) + "</span>");
+          if (s.checkOut) ch.push('<span class="resv-chip">Check-out ' + esc(s.checkOut) + "</span>");
+          resvChips = '<div class="activity-resv">' + ch.join("") + "</div>";
+        }
         html += '<div class="activity-row"><div class="activity-time">' + esc(ftime(s.timeStart) || ftime(s.time) || "") +
           (s.timeEnd ? '<span class="end">' + esc(ftime(s.timeEnd)) + "</span>" : "") + "</div>" +
           '<div class="activity-card" data-day="' + state.dayIdx + '" data-slot-idx="' + idx + '">' +
@@ -373,11 +384,30 @@
           (sub ? '<div class="activity-sub">' + esc(sub) + "</div>" : "") + "</div>" +
           '<span class="go">' + svgInline2("chev", 16) + "</span></div>" +
           (nAtt ? '<div class="att-hint">' + svgInline2("doc", 12) + " " + nAtt + (nAtt === 1 ? " adjunto" : " adjuntos") + "</div>" : "") +
+          resvChips +
           "</div></div>";
       });
       html += "</div>";
     }
     $("#dayContent").innerHTML = html;
+  }
+
+  // bloque estructurado de reserva (código + check-in/out)
+  function resvBlock(slot) {
+    var rows = [];
+    if (slot.reservationCode) {
+      rows.push('<div class="resv-row"><div class="resv-ic">' + svgInline2("key", 15) + "</div>" +
+        '<div class="resv-main"><div class="resv-k">Código de reserva</div>' +
+        '<div class="resv-v"><code>' + esc(slot.reservationCode) + "</code>" +
+        '<button class="resv-copy" type="button" data-copy="' + esc(slot.reservationCode) + '">' + svgInline2("copy", 14) + "<span>Copiar</span></button></div></div></div>");
+    }
+    if (slot.checkIn || slot.checkOut) {
+      var parts = [];
+      if (slot.checkIn) parts.push('<div class="resv-time"><span>Check-in</span><b>' + esc(slot.checkIn) + "</b></div>");
+      if (slot.checkOut) parts.push('<div class="resv-time"><span>Check-out</span><b>' + esc(slot.checkOut) + "</b></div>");
+      rows.push('<div class="resv-row times"><div class="resv-ic">' + svgInline2("clock", 15) + '</div><div class="resv-times">' + parts.join("") + "</div></div>");
+    }
+    return rows.length ? '<div class="resv-card">' + rows.join("") + "</div>" : "";
   }
 
   // ── render: detail (slot) ──
@@ -420,6 +450,8 @@
     if (p && p.phone) actions.push('<a class="btn secondary" href="' + esc(telUrl(p.phone)) + '">' + svgInline2("phone", 15) + ' Llamar</a>');
     if (p && p.web) actions.push('<a class="btn secondary" target="_blank" rel="noopener" href="' + esc(webUrl(p.web)) + '">' + svgInline2("web", 15) + ' Web</a>');
     if (actions.length) html += '<div class="action-row">' + actions.join("") + "</div>";
+
+    html += resvBlock(slot);
 
     if (slot.description) html += '<p class="detail-desc">' + esc(slot.description) + "</p>";
 
@@ -624,6 +656,17 @@
   // ── events ──
   function wire() {
     document.addEventListener("click", function (e) {
+      var cp = e.target.closest("[data-copy]");
+      if (cp) {
+        e.preventDefault(); e.stopPropagation();
+        var cval = cp.getAttribute("data-copy");
+        try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(cval); } catch (_) {}
+        cp.classList.add("ok");
+        var csp = cp.querySelector("span"); var cold = csp ? csp.textContent : null;
+        if (csp) csp.textContent = "Copiado";
+        setTimeout(function () { cp.classList.remove("ok"); if (csp && cold != null) csp.textContent = cold; }, 1400);
+        return;
+      }
       var nav = e.target.closest("[data-tab]"); if (nav) { setTab(nav.dataset.tab); return; }
       var di = e.target.closest(".date-item"); if (di) { state.dayIdx = parseInt(di.dataset.idx, 10); renderItinerary(); requestAnimationFrame(function () { var a = $(".date-item.active"); if (a) a.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }); return; }
       var fc = e.target.closest(".filter-chip"); if (fc) { state.filter = fc.dataset.filter; $$(".filter-chip").forEach(function (c) { c.classList.toggle("active", c === fc); }); renderMundial(); return; }
