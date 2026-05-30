@@ -357,15 +357,21 @@ img{max-width:100%;display:block;}
 }
 .shortcut:active { transform: scale(.99); background: var(--surface-alt); }
 .shortcut .sc-ic {
-  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
-  display: inline-flex; align-items: center; justify-content: center; color: #fff;
+  width: 46px; height: 46px; border-radius: 11px; flex-shrink: 0; overflow: hidden;
+  background: var(--surface-alt); display: inline-flex; align-items: center; justify-content: center;
 }
-.shortcut .sc-ic svg { stroke: #fff; }
+.shortcut .sc-ic-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .shortcut .sc-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .shortcut .sc-name { font: 700 15px var(--font-body); color: var(--text); letter-spacing: -0.2px; }
 .shortcut .sc-sub { font: 500 12px var(--font-body); color: var(--text-muted); margin-top: 1px; }
 .shortcut .sc-go { flex-shrink: 0; color: var(--text-dim); display: inline-flex; }
 .shortcut:hover .sc-go { color: var(--primary); }
+.shortcut .sc-stores { display: flex; gap: 6px; flex-shrink: 0; }
+.shortcut .sc-store {
+  font: 700 12px var(--font-body); color: var(--primary); text-decoration: none;
+  background: var(--surface-alt); border: 1px solid var(--border); border-radius: 8px; padding: 6px 11px;
+}
+.shortcut .sc-store:active { transform: scale(.97); }
 
 /* En desktop, las grids de accesos en 2 columnas para aprovechar el ancho */
 @media (min-width: 920px) {

@@ -503,46 +503,89 @@
   }
 
   // ── render: accesos directos (apps del viaje) ──
+  // icon = ícono oficial (App Store CDN). ios/android = links a la store (abren la ficha → la app).
+  var ICON = "https://is1-ssl.mzstatic.com/image/thumb/";
   var SHORTCUTS = [
     { group: "Mundial", items: [
-      { name: "FIFA Oficial", sub: "Fixture, resultados y noticias", url: "https://www.fifa.com/fifaplus/es", icon: "stadium", color: "#1A1A2E" },
-      { name: "FIFA Tickets", sub: "Entradas y acceso móvil al estadio", url: "https://www.fifa.com/tickets", icon: "stadium", color: "#0E9F6E" }
+      { name: "FIFA Oficial", sub: "Fixture, resultados y noticias",
+        icon: ICON + "Purple221/v4/50/c6/a1/50c6a16c-3155-8503-b154-bdc28ac6c9e3/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/160x160bb.jpg",
+        ios: "https://apps.apple.com/app/id756904853",
+        android: "https://play.google.com/store/apps/details?id=com.fifa.fifaapp.android" },
+      { name: "FIFA Tickets", sub: "Entradas y acceso móvil al estadio",
+        icon: ICON + "Purple211/v4/b7/f9/8f/b7f98f34-318d-ca76-9943-4c7e838adb1e/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/160x160bb.jpg",
+        ios: "https://apps.apple.com/app/id6532603739",
+        android: "https://play.google.com/store/apps/details?id=io.tixngo.app.fifatickets" }
     ]},
     { group: "Ruta y nafta", items: [
-      { name: "Google Maps", sub: "Navegación y tiempos", url: "https://www.google.com/maps", icon: "map", color: "#2C6BED" },
-      { name: "Waze", sub: "Tráfico y radares en vivo", url: "https://www.waze.com/es/live-map", icon: "nav", color: "#16B6E8" },
-      { name: "GasBuddy", sub: "Estaciones con nafta más barata", url: "https://www.gasbuddy.com", icon: "fuel", color: "#E4002B" }
+      { name: "Google Maps", sub: "Navegación y tiempos",
+        icon: ICON + "Purple221/v4/70/35/bc/7035bcda-2a58-977e-fc83-1fc9766c804b/maps_2025-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-0-85-220.png/160x160bb.jpg",
+        ios: "https://apps.apple.com/app/id585027354",
+        android: "https://play.google.com/store/apps/details?id=com.google.android.apps.maps" },
+      { name: "Waze", sub: "Tráfico y radares en vivo",
+        icon: ICON + "Purple211/v4/ff/26/c6/ff26c6fe-3775-f512-4ee8-5fb91905b3a1/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/160x160bb.jpg",
+        ios: "https://apps.apple.com/app/id323229106",
+        android: "https://play.google.com/store/apps/details?id=com.waze" },
+      { name: "GasBuddy", sub: "Estaciones con nafta más barata",
+        icon: ICON + "Purple211/v4/44/57/cf/4457cf74-cf2b-8b26-046f-5c091ee607f5/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/160x160bb.jpg",
+        ios: "https://apps.apple.com/app/id406719683",
+        android: "https://play.google.com/store/apps/details?id=gbis.gbandroid" }
     ]},
-    { group: "Transporte", items: [
-      { name: "Uber", sub: "Viajes y Uber XL para el grupo", url: "https://m.uber.com", icon: "car", color: "#111111" },
-      { name: "Lyft", sub: "Alternativa de viajes", url: "https://www.lyft.com", icon: "car", color: "#EA0B8C" }
-    ]},
-    { group: "Motorhome y compras", items: [
-      { name: "Cruise America", sub: "Tu motorhome · asistencia en ruta", url: "https://www.cruiseamerica.com", icon: "rv", color: "#F08A24" },
-      { name: "H-E-B", sub: "Súper de Texas · aprovisionamiento", url: "https://www.heb.com", icon: "cart", color: "#E4002B" },
-      { name: "Buc-ee's", sub: "Parada de ruta icónica · nafta y baños", url: "https://buc-ees.com", icon: "fuel", color: "#A8431E" },
-      { name: "Walmart", sub: "Compras grandes y farmacia", url: "https://www.walmart.com", icon: "cart", color: "#0071CE" }
+    { group: "Motorhome", items: [
+      { name: "Cruise America", sub: "Tu motorhome · asistencia en ruta",
+        icon: ICON + "Purple221/v4/42/62/70/42627093-2d05-793a-a09a-02ded18725d1/AppIcon-1x_U007emarketing-0-7-0-85-220-0.png/160x160bb.jpg",
+        ios: "https://apps.apple.com/app/id1078524816",
+        android: "https://play.google.com/store/apps/details?id=com.androidapi.cruiseamerica" }
     ]},
     { group: "Útiles", items: [
-      { name: "AccuWeather", sub: "Clima y alertas de tormenta", url: "https://www.accuweather.com", icon: "star", color: "#F08000" },
-      { name: "Google Translate", sub: "Traductor con cámara", url: "https://translate.google.com", icon: "web", color: "#2C6BED" },
-      { name: "WhatsApp", sub: "Grupo del viaje", url: "https://web.whatsapp.com", icon: "phone", color: "#1FA855" }
+      { name: "AccuWeather", sub: "Clima y alertas de tormenta",
+        icon: ICON + "Purple211/v4/a8/4d/e6/a84de69e-39a4-a0da-a839-4ddbe7364351/AppIcon-0-0-1x_U007epad-0-1-0-0-sRGB-85-220.png/160x160bb.jpg",
+        ios: "https://apps.apple.com/app/id300048137",
+        android: "https://play.google.com/store/apps/details?id=com.accuweather.android" },
+      { name: "Google Translate", sub: "Traductor con cámara",
+        icon: ICON + "Purple221/v4/5d/94/4c/5d944c80-2037-75f5-6b1b-59791170ac62/TranslateApp-0-0-1x_U007epad-0-0-0-1-0-0-0-85-220.png/160x160bb.jpg",
+        ios: "https://apps.apple.com/app/id414706506",
+        android: "https://play.google.com/store/apps/details?id=com.google.android.apps.translate" }
     ]}
   ];
+  function detectOS() {
+    var ua = navigator.userAgent || "";
+    if (/android/i.test(ua)) return "android";
+    if (/iphone|ipad|ipod/i.test(ua)) return "ios";
+    if ((navigator.platform === "MacIntel" || /Mac/.test(ua)) && navigator.maxTouchPoints > 1) return "ios"; // iPad iOS13+
+    return "other";
+  }
+  function scIcon(s) {
+    return '<span class="sc-ic"><img class="sc-ic-img" src="' + esc(s.icon) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></span>';
+  }
+  function scBody(s) {
+    return '<span class="sc-tx"><span class="sc-name">' + esc(s.name) + '</span><span class="sc-sub">' + esc(s.sub) + "</span></span>";
+  }
   function renderAccesos() {
-    var html = '<p class="accesos-intro">Tocá una app para abrirla. Si la tenés instalada se abre directo; si no, te lleva a descargarla.</p>';
+    var os = detectOS();
+    var intro = os === "other"
+      ? "Tocá la store de tu celular para descargar cada app."
+      : "Tocá una app para abrirla en " + (os === "ios" ? "el App Store" : "Google Play") + ".";
+    var html = '<p class="accesos-intro">' + intro + "</p>";
     SHORTCUTS.forEach(function (g) {
       html += '<div class="section-header">' + esc(g.group) + "</div><div class=\"shortcut-grid\">";
       g.items.forEach(function (s) {
-        html += '<a class="shortcut" target="_blank" rel="noopener" href="' + esc(s.url) + '">' +
-          '<span class="sc-ic" style="background:' + s.color + '">' + svgInline2(s.icon, 19) + "</span>" +
-          '<span class="sc-tx"><span class="sc-name">' + esc(s.name) + '</span><span class="sc-sub">' + esc(s.sub) + "</span></span>" +
-          '<span class="sc-go">' + svgInline2("chev", 16) + "</span></a>";
+        if (os === "ios" || os === "android") {
+          var url = os === "ios" ? s.ios : s.android;
+          html += '<a class="shortcut" target="_blank" rel="noopener" href="' + esc(url) + '">' +
+            scIcon(s) + scBody(s) + '<span class="sc-go">' + svgInline2("chev", 16) + "</span></a>";
+        } else {
+          html += '<div class="shortcut">' + scIcon(s) + scBody(s) +
+            '<span class="sc-stores">' +
+            '<a class="sc-store" target="_blank" rel="noopener" href="' + esc(s.ios) + '">iPhone</a>' +
+            '<a class="sc-store" target="_blank" rel="noopener" href="' + esc(s.android) + '">Android</a>' +
+            "</span></div>";
+        }
       });
       html += "</div>";
     });
     $("#accesosBody").innerHTML = html;
   }
+
 
   // ── render: map ──
   function initMap() {
