@@ -8393,6 +8393,16 @@ textarea:focus-visible {
           </button>
         </header>
         <div class="v5b-day-body">
+          <div class="v5b-day-cover" @click.stop style="display:flex;flex-direction:column;gap:5px;padding:10px 2px 12px;">
+            <div style="display:flex;gap:8px;align-items:center;">
+              <template x-if="day.coverImage">
+                <img :src="day.coverImage" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'" style="width:42px;height:42px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid var(--line);">
+              </template>
+              <input type="url" x-model="day.coverImage" @blur="save()" placeholder="URL de la foto de portada del día (https://…)" style="flex:1;min-width:0;padding:8px 11px;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;font-size:12.5px;font-family:'Inter',sans-serif;color:var(--text);">
+              <button x-show="day.coverImage" @click="day.coverImage=''; save()" title="Quitar portada" style="flex-shrink:0;background:none;border:1px solid var(--line);border-radius:7px;padding:7px 11px;cursor:pointer;color:var(--text-3);font-size:13px;">✕</button>
+            </div>
+            <span style="font-size:11px;color:var(--text-3);font-style:italic;">Portada del día en la app del cliente. Vacío → usa la primera foto de los slots.</span>
+          </div>
           <div class="v5b-day-slots" x-init="initSortable($el, day.id)" :data-day-id="day.id">
             <template x-for="(slot, sIdx) in day.slots" :key="slot.id">
               <div class="v5b-slot-group">
