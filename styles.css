@@ -257,3 +257,75 @@ img{max-width:100%;display:block;}
   /* la barra superior dark vive arriba del contenido en overview/itinerario también */
   .screen .bar{display:none;}
 }
+
+/* ─────────────────────────────────────────────
+   V3.1 — Stats del día + detalle de slot
+   ───────────────────────────────────────────── */
+
+/* (c) Stats del día (km, drive min, partidos) */
+.day-stats{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px 4px;}
+.day-stats .stat{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);
+  border-radius:99px;padding:6px 11px;font:600 12px var(--font-body);letter-spacing:-0.1px;}
+.day-stats .stat svg{color:var(--primary);}
+
+/* (a) matchday-card como link clickeable */
+a.matchday-card{text-decoration:none;color:inherit;cursor:pointer;display:block;}
+a.matchday-card:hover{transform:translateY(-1px);transition:transform .15s ease;}
+.matchday-card .mt{display:flex;align-items:center;gap:4px;}
+.matchday-card .mt svg{flex-shrink:0;opacity:.7;}
+
+/* (b) Activity card — chevron y att-hint */
+.activity-card{cursor:pointer;}
+.activity-card .head{display:flex;align-items:flex-start;gap:10px;}
+.activity-card .activity-body{flex:1;min-width:0;}
+.activity-card .go{flex-shrink:0;color:var(--text-dim);margin-top:2px;display:inline-flex;}
+.activity-card:hover .go{color:var(--primary);}
+.activity-card .att-hint{display:inline-flex;align-items:center;gap:5px;margin-top:8px;
+  font:500 11.5px var(--font-body);color:var(--text-muted);}
+.activity-card .att-hint svg{opacity:.7;}
+
+/* (b) Pantalla #detail */
+#detail{background:var(--bg);}
+#detail.active{display:block;}
+
+.detail-hero{height:260px;position:relative;overflow:hidden;}
+.detail-hero-top{position:absolute;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;z-index:10;}
+.detail-hero-art{position:absolute;right:-30px;bottom:-30px;opacity:.9;pointer-events:none;}
+.detail-cat-badge{position:absolute;bottom:16px;left:16px;background:rgba(255,255,255,0.95);border-radius:99px;
+  padding:6px 12px;display:inline-flex;align-items:center;gap:6px;
+  font:700 11.5px var(--font-body);color:var(--text);letter-spacing:0.5px;text-transform:uppercase;z-index:10;}
+.detail-cat-badge svg{color:var(--primary);}
+
+.circle-btn{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.95);border:none;
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.circle-btn:active{transform:scale(.96);}
+
+.detail-body{padding:22px 18px 120px;max-width:780px;margin:0 auto;}
+.detail-title{font:800 26px var(--font-display);margin:0;color:var(--text);letter-spacing:-0.5px;line-height:1.15;}
+.detail-subtitle{display:flex;gap:12px;margin-top:8px;font:500 13px var(--font-body);color:var(--text-muted);flex-wrap:wrap;}
+.detail-subtitle span{display:inline-flex;align-items:center;gap:6px;}
+.detail-subtitle svg{opacity:.7;}
+
+.action-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.btn{background:var(--surface-alt);color:var(--text);border:1px solid var(--border);padding:11px 16px;
+  border-radius:12px;font:600 14.5px var(--font-body);display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;text-decoration:none;letter-spacing:-0.1px;font-family:inherit;transition:transform .12s ease;}
+.btn:active{transform:scale(.98);}
+.btn.primary{background:var(--primary);color:#fff;border-color:transparent;}
+.btn.secondary{background:var(--surface);}
+.btn.full{flex:1;min-width:160px;}
+
+.detail-desc{font:400 15px/1.55 var(--font-body);color:var(--text);margin-top:18px;text-wrap:pretty;white-space:pre-wrap;}
+
+/* info-card del proveedor */
+.info-card{background:var(--surface);border-radius:14px;margin-top:18px;border:1px solid var(--border);overflow:hidden;}
+.info-row{display:flex;align-items:flex-start;gap:12px;padding:13px 14px;border-bottom:1px solid var(--border);}
+.info-row.last{border-bottom:none;}
+.info-icon{width:32px;height:32px;border-radius:8px;background:var(--surface-alt);
+  display:inline-flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0;}
+.info-body{flex:1;min-width:0;}
+.info-label{font:600 11px var(--font-body);color:var(--text-muted);letter-spacing:0.4px;text-transform:uppercase;}
+.info-value{font:500 14px var(--font-body);color:var(--text);margin-top:2px;word-break:break-word;}
+.info-value a{color:var(--primary);text-decoration:none;}
+.info-value a:hover{text-decoration:underline;}

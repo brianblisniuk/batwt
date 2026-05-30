@@ -1,4 +1,4 @@
-/* Expedición Mundial · PWA cliente (V3). Vanilla JS, sin build. Data real vía get_trip_public + wc26_matches. */
+/* Expedición Mundial · PWA cliente (V3.1). Vanilla JS, sin build. Data real vía get_trip_public + wc26_matches. */
 (function () {
   "use strict";
 
@@ -8,6 +8,24 @@
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   var LS_CODE = "em_code", LS_TRIP = "em_trip", LS_MATCHES = "em_matches";
   var DEFAULT_PALETTE = ["#1E3FB8", "#9A5A3A", "#0E9F6E", "#F59E0B", "#6B6258", "#7C3AED", "#0A1F70"];
+
+  // ── teams (FIFA 3-letter codes → nombre es + bandera) ──
+  var TEAMS = {
+    ALG: ["Argelia", "🇩🇿"], ARG: ["Argentina", "🇦🇷"], AUS: ["Australia", "🇦🇺"], AUT: ["Austria", "🇦🇹"],
+    BEL: ["Bélgica", "🇧🇪"], BIH: ["Bosnia y Herzegovina", "🇧🇦"], BRA: ["Brasil", "🇧🇷"], CAN: ["Canadá", "🇨🇦"],
+    CIV: ["Costa de Marfil", "🇨🇮"], COD: ["RD del Congo", "🇨🇩"], COL: ["Colombia", "🇨🇴"], CPV: ["Cabo Verde", "🇨🇻"],
+    CRO: ["Croacia", "🇭🇷"], CUW: ["Curazao", "🇨🇼"], CZE: ["Chequia", "🇨🇿"], ECU: ["Ecuador", "🇪🇨"],
+    EGY: ["Egipto", "🇪🇬"], ENG: ["Inglaterra", "🏴󠁧󠁢󠁥󠁮󠁧󠁿"], ESP: ["España", "🇪🇸"], FRA: ["Francia", "🇫🇷"],
+    GER: ["Alemania", "🇩🇪"], GHA: ["Ghana", "🇬🇭"], HAI: ["Haití", "🇭🇹"], IRN: ["Irán", "🇮🇷"],
+    IRQ: ["Irak", "🇮🇶"], JOR: ["Jordania", "🇯🇴"], JPN: ["Japón", "🇯🇵"], KOR: ["Corea del Sur", "🇰🇷"],
+    KSA: ["Arabia Saudita", "🇸🇦"], MAR: ["Marruecos", "🇲🇦"], MEX: ["México", "🇲🇽"], NED: ["Países Bajos", "🇳🇱"],
+    NOR: ["Noruega", "🇳🇴"], NZL: ["Nueva Zelanda", "🇳🇿"], PAN: ["Panamá", "🇵🇦"], PAR: ["Paraguay", "🇵🇾"],
+    POR: ["Portugal", "🇵🇹"], QAT: ["Catar", "🇶🇦"], RSA: ["Sudáfrica", "🇿🇦"], SCO: ["Escocia", "🏴󠁧󠁢󠁳󠁣󠁴󠁿"],
+    SEN: ["Senegal", "🇸🇳"], SUI: ["Suiza", "🇨🇭"], SWE: ["Suecia", "🇸🇪"], TUN: ["Túnez", "🇹🇳"],
+    TUR: ["Turquía", "🇹🇷"], URU: ["Uruguay", "🇺🇾"], USA: ["Estados Unidos", "🇺🇸"], UZB: ["Uzbekistán", "🇺🇿"]
+  };
+  function teamName(c) { return (TEAMS[c] && TEAMS[c][0]) || c || "?"; }
+  function teamFlag(c) { return (TEAMS[c] && TEAMS[c][1]) ? TEAMS[c][1] + " " : ""; }
 
   // ── helpers ──
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -20,13 +38,20 @@
   function ftime(t) { return t ? String(t).slice(0, 5) : ""; }
   function telUrl(p) { return "tel:" + String(p || "").replace(/[^0-9+]/g, ""); }
   function webUrl(w) { return /^https?:\/\//.test(w) ? w : "https://" + w; }
-  function isArg(m) { return m.team_home === "Argentina" || m.team_away === "Argentina"; }
-  function gmaps(p) {
+  function isArg(m) { return m.team_home === "ARG" || m.team_away === "ARG"; }
+
+  // direcciones manejando desde ubicación actual (Google decide el origen)
+  function dirTo(dest) { return dest ? "https://www.google.com/maps/dir/?api=1&destination=" + dest + "&travelmode=driving" : null; }
+  function dirProvider(p) {
     if (!p) return null;
-    if (p.mapUrl) return p.mapUrl;
-    if (p.latitude != null && p.longitude != null) return "https://www.google.com/maps/search/?api=1&query=" + p.latitude + "," + p.longitude;
-    var q = p.address || p.location || p.name; return q ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q) : null;
+    if (p.latitude != null && p.longitude != null) return dirTo(p.latitude + "," + p.longitude);
+    var q = p.address || p.location || p.name; return q ? dirTo(encodeURIComponent(q)) : null;
   }
+  function dirCoords(lat, lon, label) {
+    if (lat != null && lon != null) return dirTo(lat + "," + lon);
+    return label ? dirTo(encodeURIComponent(label)) : null;
+  }
+
   function countdown(startS) {
     var t = new Date(); t.setHours(0, 0, 0, 0);
     var s = pdate(startS); if (!s) return null;
@@ -40,10 +65,26 @@
     return map[m.stage] || (m.stage || "").toUpperCase();
   }
   function matchup(m) {
-    if (m.team_home && m.team_home !== "TBD" && m.team_away && m.team_away !== "TBD")
-      return esc(m.team_home) + ' <span class="x">vs</span> ' + esc(m.team_away);
+    var h = m.team_home, a = m.team_away;
+    if (h && h !== "TBD" && a && a !== "TBD")
+      return teamFlag(h) + esc(teamName(h)) + ' <span class="x">vs</span> ' + teamFlag(a) + esc(teamName(a));
     if (m.notes) return '<span style="font-weight:600;color:var(--text-muted)">' + esc(m.notes) + "</span>";
     return '<span style="font-weight:600;color:var(--text-muted)">Por definir</span>';
+  }
+
+  // km del día: prioriza day.km (backend), si no parsea "N km" de title+description de los slots
+  function dayKm(day) {
+    if (day.km != null) return Number(day.km) || 0;
+    var sum = 0, found = false;
+    (day.slots || []).forEach(function (s) {
+      var txt = (s.description || "") + " " + (s.title || "");
+      var re = /(\d{1,3}(?:[.,]\d{3})+|\d+)\s*km\b/gi, mm;
+      while ((mm = re.exec(txt))) {
+        var n = parseInt(mm[1].replace(/[.,]/g, ""), 10);
+        if (!isNaN(n)) { sum += n; found = true; }
+      }
+    });
+    return found ? sum : null;
   }
 
   // ── icons ──
@@ -67,7 +108,11 @@
     map: '<path d="M9 3L3 5v16l6-2 6 2 6-2V3l-6 2-6-2z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
     cal: '<rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M3 10h18M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
     plus: '<path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
-    down: '<path d="M12 3v14m0 0l-5-5m5 5l5-5M5 21h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+    down: '<path d="M12 3v14m0 0l-5-5m5 5l5-5M5 21h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+    chev: '<path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    back: '<path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    nav: '<path d="M3 11l19-8-8 19-2-9-9-2z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+    web: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M3 12h18M12 3a15 15 0 010 18 15 15 0 010-18z" fill="none" stroke="currentColor" stroke-width="2.2"/>'
   };
   function svg(name, sz) { return '<svg width="' + (sz || 18) + '" height="' + (sz || 18) + '" viewBox="0 0 24 24">' + (I[name] || I.pin) + "</svg>"; }
   function pickIcon(text) {
@@ -84,7 +129,7 @@
   }
 
   // ── state ──
-  var state = { code: null, trip: null, matches: [], dayIdx: 0, filter: "all", stale: false, mapDone: false, deferredInstall: null };
+  var state = { code: null, trip: null, matches: [], dayIdx: 0, filter: "all", stale: false, mapDone: false, deferredInstall: null, prevTab: "itinerary" };
 
   // ── data ──
   function readInitialCode() {
@@ -95,7 +140,7 @@
   function cacheSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 
   function fetchMatches() {
-    return sb.from("wc26_matches").select("*").order("match_number", { ascending: true }).then(function (r) {
+    return sb.from("wc26_matches").select("*").order("match_date", { ascending: true }).order("match_time", { ascending: true }).then(function (r) {
       if (r.error) throw r.error;
       state.matches = r.data || []; cacheSet(LS_MATCHES, state.matches);
     }).catch(function () { var c = cacheGet(LS_MATCHES); if (c) state.matches = c; });
@@ -163,13 +208,14 @@
     // alojamiento (basecamp)
     var bc = meta.basecamp;
     if (bc && (bc.name || bc.shortName)) {
+      var bcDir = basecampDir(bc);
       html += '<div class="section-header">Alojamiento</div>';
       html += '<div class="place-card"><div class="place-hero"><div class="pat"></div>' +
         '<div class="place-cat">' + svgInline2("rv", 12) + esc(bc.type || bc.label || "Base") + "</div></div>" +
         '<div class="place-body"><div class="place-name">' + esc(bc.shortName || bc.name) + "</div>" +
         (bc.address ? '<div class="place-addr">' + esc(bc.address) + "</div>" : "") +
         '<div class="place-links">' +
-        (bcGmaps(bc) ? '<a class="chip solid" target="_blank" rel="noopener" href="' + esc(bcGmaps(bc)) + '">' + svgInline2("pin", 13) + " Cómo llegar</a>" : "") +
+        (bcDir ? '<a class="chip solid" target="_blank" rel="noopener" href="' + esc(bcDir) + '">' + svgInline2("nav", 13) + " Cómo llegar</a>" : "") +
         "</div></div></div>";
     }
 
@@ -197,9 +243,10 @@
   }
   function svgInline(name) { return '<svg width="18" height="18" viewBox="0 0 24 24">' + (I[name] || I.pin) + "</svg>"; }
   function svgInline2(name, sz) { return '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24">' + (I[name] || I.pin) + "</svg>"; }
-  function bcGmaps(bc) {
-    if (bc.coords && bc.coords.lat != null) return "https://www.google.com/maps/search/?api=1&query=" + bc.coords.lat + "," + bc.coords.lon;
-    if (bc.address) return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(bc.address);
+  function basecampDir(bc) {
+    if (bc.coords && bc.coords.lat != null) return dirCoords(bc.coords.lat, bc.coords.lon, bc.address || bc.name);
+    if (bc.address) return dirTo(encodeURIComponent(bc.address));
+    if (bc.name) return dirTo(encodeURIComponent(bc.name));
     return null;
   }
   function collectDocs(t) {
@@ -218,10 +265,15 @@
     var d = (dateS || "").slice(0, 10);
     return state.matches.filter(function (m) { return m.match_date === d; });
   }
+  function sortedSlots(day) {
+    return (day.slots || []).slice().sort(function (a, b) {
+      var ta = (a.timeStart || a.time || "99:99"), tb = (b.timeStart || b.time || "99:99");
+      return String(ta).localeCompare(String(tb));
+    });
+  }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
     $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate);
-    var palette = (meta.dayColorPalette && meta.dayColorPalette.length) ? meta.dayColorPalette : DEFAULT_PALETTE;
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
@@ -238,10 +290,12 @@
     if (!day) { $("#dayContent").innerHTML = ""; return; }
     var palette = (meta.dayColorPalette && meta.dayColorPalette.length) ? meta.dayColorPalette : DEFAULT_PALETTE;
     var color = palette[state.dayIdx % palette.length];
-    var provs = providersMap();
     var dd = pdate(day.date);
     var dayMatches = matchesOnDate(day.date);
     var heroIcon = dayMatches.length ? "stadium" : ["walk", "car", "star", "mountain", "fan", "rv"][state.dayIdx % 6];
+    var slots = sortedSlots(day);
+    var km = dayKm(day);
+    var dMin = day.driveMinutes != null ? Number(day.driveMinutes) : null;
 
     var html = "";
     html += '<div class="day-hero" style="background:linear-gradient(155deg,' + color + ' 0%,' + color + 'cc 100%)">' +
@@ -250,54 +304,133 @@
       '<div class="ov"></div><div class="ttl"><div class="sub">' + (dd ? dd.toLocaleDateString("es-AR", { weekday: "long" }) : "") + (day.dayNumber != null ? " · Día " + day.dayNumber : "") + "</div>" +
       '<div class="main">' + esc(day.title || "") + "</div></div></div>";
 
+    // stats del día (km, minutos, partidos)
+    var stats = [];
+    if (km != null && km > 0) stats.push('<span class="stat">' + svgInline2("car", 13) + " ~" + km + " km</span>");
+    if (dMin != null && dMin > 0) stats.push('<span class="stat">' + svgInline2("nav", 13) + " " + Math.round(dMin) + " min</span>");
+    if (dayMatches.length) stats.push('<span class="stat">' + svgInline2("stadium", 13) + " " + dayMatches.length + (dayMatches.length === 1 ? " partido" : " partidos") + "</span>");
+    if (stats.length) html += '<div class="day-stats">' + stats.join("") + "</div>";
+
     if (day.summary) html += '<p class="day-desc">' + esc(day.summary) + "</p>";
 
     if (dayMatches.length) {
       html += '<div class="block-title">Partidos de hoy</div><div class="matchday">';
       dayMatches.forEach(function (m) {
-        html += '<div class="matchday-card">' + (isArg(m) ? '<div class="badge">Argentina</div>' : "") +
+        var dc = dirCoords(m.lat, m.lng, (m.stadium || "") + " " + (m.city || ""));
+        html += '<a class="matchday-card"' + (dc ? ' target="_blank" rel="noopener" href="' + esc(dc) + '"' : "") + ">" +
+          (isArg(m) ? '<div class="badge">Argentina</div>' : "") +
           '<div class="t">' + ftime(m.match_time) + " · " + esc(stageLabel(m)) + "</div>" +
           '<div class="vs">' + matchup(m) + "</div>" +
-          '<div class="mt">' + esc(m.stadium) + " · " + esc(m.city) + "</div></div>";
+          '<div class="mt">' + svgInline2("nav", 12) + " " + esc(m.stadium) + " · " + esc(m.city) + "</div></a>";
       });
       html += "</div>";
     }
 
-    var slots = day.slots || [];
     if (slots.length) {
+      var provs = providersMap();
       html += '<div class="block-title">Plan del día</div><div class="activities">';
       slots.forEach(function (s) {
         var p = provs[s.providerId];
-        var icon = pickIcon((s.title || "") + " " + (p ? p.name + " " + (p.type || "") : ""));
+        var icon = pickIcon((s.title || "") + " " + (p ? p.name + " " + (p.type || "") : "") + " " + (s.description || ""));
+        var sub = p ? p.name : (s.description ? (s.description.length > 80 ? s.description.slice(0, 80) + "…" : s.description) : "");
+        var nAtt = (s.attachments || []).filter(function (a) { return a && a.url; }).length;
         html += '<div class="activity-row"><div class="activity-time">' + esc(ftime(s.timeStart) || ftime(s.time) || "") +
           (s.timeEnd ? '<span class="end">' + esc(ftime(s.timeEnd)) + "</span>" : "") + "</div>" +
-          '<div class="activity-card"><div class="head"><div class="activity-icon">' + svgInline2(icon, 16) + "</div>" +
+          '<div class="activity-card" data-day="' + state.dayIdx + '" data-slot="' + esc(s.id) + '">' +
+          '<div class="head"><div class="activity-icon">' + svgInline2(icon, 16) + "</div>" +
           '<div class="activity-body"><div class="activity-title-text">' + esc(s.title || "") + "</div>" +
-          (s.description ? '<div class="activity-sub">' + esc(s.description) + "</div>" : "") + "</div></div>";
-        if (p) {
-          var gm = gmaps(p);
-          html += '<div class="activity-prov"><div class="pn">' + svgInline2("pin", 13) + " " + esc(p.name) + "</div>" +
-            (p.address || p.location ? '<div class="pa">' + esc(p.address || p.location) + "</div>" : "") +
-            '<div class="pl">' +
-            (gm ? '<a class="chip solid" target="_blank" rel="noopener" href="' + esc(gm) + '">' + svgInline2("pin", 12) + " Mapa</a>" : "") +
-            (p.phone ? '<a class="chip" href="' + esc(telUrl(p.phone)) + '">' + svgInline2("phone", 12) + " " + esc(p.phone) + "</a>" : "") +
-            (p.web ? '<a class="chip" target="_blank" rel="noopener" href="' + esc(webUrl(p.web)) + '">Web</a>' : "") +
-            "</div></div>";
-        }
-        if (s.attachments && s.attachments.length) {
-          html += '<div class="att">';
-          s.attachments.forEach(function (a) {
-            if (!a || !a.url) return; var im = /^image\//.test(a.mimeType || "");
-            html += '<a target="_blank" rel="noopener" href="' + esc(a.url) + '">' + svgInline2(im ? "img" : "doc", 13) + " " + esc(a.name || (im ? "Imagen" : "Documento")) + "</a>";
-          });
-          html += "</div>";
-        }
-        html += "</div></div>";
+          (sub ? '<div class="activity-sub">' + esc(sub) + "</div>" : "") + "</div>" +
+          '<span class="go">' + svgInline2("chev", 16) + "</span></div>" +
+          (nAtt ? '<div class="att-hint">' + svgInline2("doc", 12) + " " + nAtt + (nAtt === 1 ? " adjunto" : " adjuntos") + "</div>" : "") +
+          "</div></div>";
       });
       html += "</div>";
     }
     $("#dayContent").innerHTML = html;
   }
+
+  // ── render: detail (slot) ──
+  function openSlotDetail(dayIdx, slotId) {
+    var t = state.trip, days = t.itinerary || [], day = days[dayIdx]; if (!day) return;
+    var slots = sortedSlots(day);
+    var slot = slots.filter(function (s) { return String(s.id) === String(slotId); })[0]; if (!slot) return;
+    var meta = t.meta || {};
+    var palette = (meta.dayColorPalette && meta.dayColorPalette.length) ? meta.dayColorPalette : DEFAULT_PALETTE;
+    var color = palette[dayIdx % palette.length];
+    var p = providersMap()[slot.providerId];
+    var dd = pdate(day.date);
+    var icon = pickIcon((slot.title || "") + " " + (p ? p.name + " " + (p.type || "") : "") + " " + (slot.description || ""));
+    var cat = p ? (p.type || "Lugar") : "Actividad";
+    var dir = p ? dirProvider(p) : null;
+    var when = (dd ? dd.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }) : "") +
+      (ftime(slot.timeStart) || ftime(slot.time) ? " · " + (ftime(slot.timeStart) || ftime(slot.time)) : "") +
+      (slot.timeEnd ? "–" + ftime(slot.timeEnd) : "");
+
+    var html = "";
+    html += '<div class="detail-hero" style="background:linear-gradient(160deg,' + color + ' 0%,' + color + 'dd 100%)">' +
+      '<div class="detail-hero-top">' +
+        '<button class="circle-btn" id="detailBack" aria-label="Volver">' + svgInline2("back", 18) + "</button>" +
+      "</div>" +
+      '<div class="detail-hero-art"><svg width="180" height="180" viewBox="0 0 24 24" style="color:rgba(255,255,255,.18)">' + (I[icon] || I.pin) + "</svg></div>" +
+      '<div class="detail-cat-badge">' + svgInline2(icon, 12) + " " + esc(cat) + "</div>" +
+      "</div>";
+
+    html += '<div class="detail-body">' +
+      '<h1 class="detail-title">' + esc(slot.title || "Actividad") + "</h1>" +
+      (when ? '<div class="detail-subtitle"><span>' + svgInline2("cal", 13) + " " + esc(when) + "</span></div>" : "");
+
+    // action row: Cómo llegar / Llamar / Web
+    var actions = [];
+    if (dir) actions.push('<a class="btn primary full" target="_blank" rel="noopener" href="' + esc(dir) + '">' + svgInline2("nav", 15) + ' Cómo llegar</a>');
+    if (p && p.phone) actions.push('<a class="btn secondary" href="' + esc(telUrl(p.phone)) + '">' + svgInline2("phone", 15) + ' Llamar</a>');
+    if (p && p.web) actions.push('<a class="btn secondary" target="_blank" rel="noopener" href="' + esc(webUrl(p.web)) + '">' + svgInline2("web", 15) + ' Web</a>');
+    if (actions.length) html += '<div class="action-row">' + actions.join("") + "</div>";
+
+    if (slot.description) html += '<p class="detail-desc">' + esc(slot.description) + "</p>";
+
+    // info-card del proveedor
+    if (p) {
+      var rows = [];
+      if (p.name) rows.push({ ic: "pin", t: "Lugar", v: esc(p.name) });
+      if (p.address || p.location) rows.push({ ic: "map", t: "Dirección", v: esc(p.address || p.location) });
+      if (p.phone) rows.push({ ic: "phone", t: "Teléfono", v: '<a href="' + esc(telUrl(p.phone)) + '">' + esc(p.phone) + "</a>" });
+      if (p.web) rows.push({ ic: "web", t: "Sitio web", v: '<a target="_blank" rel="noopener" href="' + esc(webUrl(p.web)) + '">' + esc(p.web) + "</a>" });
+      if (rows.length) {
+        html += '<div class="info-card">';
+        rows.forEach(function (r, i) {
+          html += '<div class="info-row' + (i === rows.length - 1 ? " last" : "") + '">' +
+            '<div class="info-icon">' + svgInline2(r.ic, 14) + "</div>" +
+            '<div class="info-body"><div class="info-label">' + r.t + '</div><div class="info-value">' + r.v + "</div></div></div>";
+        });
+        html += "</div>";
+      }
+    }
+
+    // attachments
+    var atts = (slot.attachments || []).filter(function (a) { return a && a.url; });
+    if (atts.length) {
+      html += '<div class="block-title" style="padding:18px 0 8px">Adjuntos</div><div class="docs-list">';
+      atts.forEach(function (a) {
+        var im = /^image\//.test(a.mimeType || "");
+        html += '<a class="doc-row" target="_blank" rel="noopener" href="' + esc(a.url) + '">' +
+          '<div class="doc-icon">' + svgInline2(im ? "img" : "doc", 18) + "</div>" +
+          '<div class="doc-body"><div class="doc-name">' + esc(a.name || (im ? "Imagen" : "Documento")) + "</div></div>" +
+          '<div class="doc-icon" style="background:transparent;color:var(--text-dim)">' + svgInline2("down", 16) + "</div></a>";
+      });
+      html += "</div>";
+    }
+
+    html += "</div>"; // /detail-body
+
+    $("#detailContent").innerHTML = html;
+    // activar pantalla
+    state.prevTab = $$(".screen.active")[0] ? $$(".screen.active")[0].id : "itinerary";
+    $$(".screen").forEach(function (s) { s.classList.toggle("active", s.id === "detail"); });
+    $$("#bottomNav button, #topNav button").forEach(function (b) { b.classList.remove("active"); });
+    window.scrollTo(0, 0);
+    var bb = $("#detailBack"); if (bb) bb.addEventListener("click", closeSlotDetail);
+  }
+  function closeSlotDetail() { setTab(state.prevTab || "itinerary"); }
 
   // ── render: mundial ──
   function renderMundial() {
@@ -323,10 +456,10 @@
       list.forEach(function (m) {
         var played = m.home_score != null && m.away_score != null;
         html += '<div class="match-row' + (isArg(m) ? " arg" : "") + '">' +
-          '<div class="match-time"><div class="h">' + ftime(m.match_time) + '</div><div class="stage">#' + (m.match_number || "") + "</div></div>" +
+          '<div class="match-time"><div class="h">' + ftime(m.match_time) + '</div><div class="stage">' + esc(stageLabel(m)) + "</div></div>" +
           '<div class="match-main"><div class="match-vs">' + matchup(m) + "</div>" +
           '<div class="match-venue">' + esc(m.stadium || "") + " · " + esc(m.city || "") + ", " + esc(m.country || "") + "</div></div>" +
-          (played ? '<div class="match-score">' + m.home_score + "–" + m.away_score + "</div>" : '<div class="match-grp">' + esc(stageLabel(m)) + "</div>") +
+          (played ? '<div class="match-score">' + m.home_score + "–" + m.away_score + "</div>" : "") +
           "</div>";
       });
       html += "</div></div>";
@@ -378,6 +511,11 @@
       var nav = e.target.closest("[data-tab]"); if (nav) { setTab(nav.dataset.tab); return; }
       var di = e.target.closest(".date-item"); if (di) { state.dayIdx = parseInt(di.dataset.idx, 10); renderItinerary(); requestAnimationFrame(function () { var a = $(".date-item.active"); if (a) a.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }); return; }
       var fc = e.target.closest(".filter-chip"); if (fc) { state.filter = fc.dataset.filter; $$(".filter-chip").forEach(function (c) { c.classList.toggle("active", c === fc); }); renderMundial(); return; }
+      var ac = e.target.closest(".activity-card");
+      if (ac && ac.dataset.slot && !e.target.closest("a")) {
+        openSlotDetail(parseInt(ac.dataset.day, 10), ac.dataset.slot);
+        return;
+      }
     });
     var input = $("#codeInput"), btn = $("#codeBtn");
     input.addEventListener("input", function () { var c = normCode(input.value); input.value = fmtCode(c); btn.disabled = c.length !== 8; $("#codeErr").textContent = ""; });
