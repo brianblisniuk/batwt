@@ -54,10 +54,10 @@
 
   function countdown(startS, endS, total) {
     var t = new Date(); t.setHours(0, 0, 0, 0);
-    var s = pdate(startS); if (!s) return null;
+    var s = pdate(startS); if (!s) return null; s.setHours(0, 0, 0, 0);
     var n = Math.round((s - t) / 86400000);
     if (n > 0) return { band: "<b>" + n + "</b> " + (n === 1 ? "día para el viaje" : "días para el viaje") };
-    var e = pdate(endS);
+    var e = pdate(endS); if (e) e.setHours(0, 0, 0, 0);
     if (e && t <= e) {
       var dn = Math.round((t - s) / 86400000) + 1;
       var tot = total || (Math.round((e - s) / 86400000) + 1);
@@ -92,7 +92,11 @@
       '<div class="chk-head"><span class="chk-title">Checklist</span><span class="chk-count">' + n + "/" + items.length + "</span></div>";
     items.forEach(function (it, i) {
       var on = done.indexOf(i) >= 0;
-      h += '<label class="chk-item' + (on ? " on" : "") + '"><input type="checkbox" data-chk-i="' + i + '"' + (on ? " checked" : "") + '><span class="chk-box"></span><span class="chk-text">' + esc(it) + "</span></label>";
+      h += '<div class="chk-item' + (on ? " on" : "") + '">' +
+        '<label class="chk-main"><input type="checkbox" data-chk-i="' + i + '"' + (on ? " checked" : "") + '><span class="chk-box"></span><span class="chk-text">' + esc(it) + "</span></label>" +
+        '<button class="chk-cam" type="button" data-cam-i="' + i + '" aria-label="Agregar foto"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span class="chk-cam-n"></span></button>' +
+        '<input class="chk-cam-input" type="file" accept="image/*" capture="environment" hidden data-cam-input="' + i + '">' +
+        "</div>";
     });
     return h + "</div>";
   }
@@ -103,10 +107,9 @@
   }
   function renderPhotos(slot) {
     return '<div class="rv-photos" data-sid="' + esc(slot.id || "") + '">' +
-      '<div class="rv-photos-head"><span>Fotos del estado del motorhome</span>' +
-      '<label class="rv-add"><input type="file" accept="image/*" capture="environment" hidden>' + svgInline2("img", 15) + " Agregar</label></div>" +
+      '<div class="rv-photos-head"><span>Fotos del estado del motorhome</span></div>' +
       '<div class="rv-grid"><div class="rv-empty">Cargando…</div></div>' +
-      '<div class="rv-note">Sacá fotos al retirar y al devolver: quedan guardadas para toda la familia y sirven de respaldo ante cualquier reclamo.</div></div>';
+      '<div class="rv-note">Agregá fotos desde cada ítem del checklist con el botón de cámara. Acá las ves todas juntas. Sirven de respaldo ante cualquier reclamo.</div></div>';
   }
   function compressImage(file, maxDim, quality) {
     return new Promise(function (resolve) {
@@ -125,39 +128,7 @@
       } catch (e) { resolve(file); }
     });
   }
-  function loadPhotos(slot, grid) {
-    if (!grid) return;
-    sb.storage.from("trip-attachments").list(photoPrefix(slot).replace(/\/$/, ""), { limit: 100, sortBy: { column: "name", order: "asc" } })
-      .then(function (res) {
-        var items = ((res && res.data) || []).filter(function (x) { return x.name && x.name.indexOf(".") !== 0 && x.id; });
-        if (!items.length) { grid.innerHTML = '<div class="rv-empty">Todavía no hay fotos.</div>'; return; }
-        grid.innerHTML = items.map(function (x) {
-          var url = sb.storage.from("trip-attachments").getPublicUrl(photoPrefix(slot) + x.name).data.publicUrl;
-          return '<div class="rv-ph"><a href="' + esc(url) + '" target="_blank" rel="noopener"><img src="' + esc(url) + '" loading="lazy" alt=""></a>' +
-            '<button class="rv-del" data-path="' + esc(photoPrefix(slot) + x.name) + '" aria-label="Borrar">×</button></div>';
-        }).join("");
-      })
-      .catch(function () { grid.innerHTML = '<div class="rv-empty">No se pudieron cargar las fotos.</div>'; });
-  }
-  function initPhotos(slot) {
-    var root = $('.rv-photos[data-sid="' + (slot.id || "") + '"]'); if (!root) return;
-    var grid = $(".rv-grid", root), input = $('input[type="file"]', root);
-    loadPhotos(slot, grid);
-    if (input) input.addEventListener("change", function () {
-      var file = input.files && input.files[0]; if (!file) return;
-      grid.innerHTML = '<div class="rv-empty">Subiendo…</div>';
-      compressImage(file, 1600, 0.82).then(function (blob) {
-        return sb.storage.from("trip-attachments").upload(photoPrefix(slot) + Date.now() + ".jpg", blob, { contentType: "image/jpeg", upsert: true });
-      }).then(function () { input.value = ""; loadPhotos(slot, grid); })
-        .catch(function () { input.value = ""; loadPhotos(slot, grid); });
-    });
-    root.addEventListener("click", function (e) {
-      var del = e.target.closest(".rv-del"); if (!del) return;
-      e.preventDefault();
-      if (!window.confirm("¿Borrar esta foto?")) return;
-      sb.storage.from("trip-attachments").remove([del.dataset.path]).then(function () { loadPhotos(slot, grid); }).catch(function () { loadPhotos(slot, grid); });
-    });
-  }
+
   function stageLabel(m) {
     var map = { group: "Grupos", r32: "16avos", r16: "8vos", qf: "4tos", sf: "Semifinal", third: "3er puesto", final: "Final" };
     if (m.stage === "group") return m.group_code ? "Grupo " + m.group_code : "Grupos";
@@ -281,7 +252,7 @@
     var cd = countdown(meta.startDate, meta.endDate, (t.itinerary || []).length);
     $("#overviewHeader").innerHTML =
       '<header class="trip-header has-cover">' +
-      '<img class="cover-img" src="webfifa26.jpg?v=17" alt="">' +
+      '<img class="cover-img" src="webfifa26.jpg?v=18" alt="">' +
       '<div class="cover-grad"></div>' +
       '<div class="trip-header-top"><span class="trip-header-title">Mi Viaje</span></div>' +
       '<div class="trip-hero">' +
@@ -403,7 +374,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v17";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v18";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
