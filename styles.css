@@ -444,3 +444,14 @@ img{max-width:100%;display:block;}
 /* documentos como pantalla */
 .detail-body.docs-screen{padding-top:max(64px,calc(env(safe-area-inset-top) + 56px));}
 .stat.stat-wx{white-space:nowrap;}
+
+/* ── mapa: ruta + tira de días + banner ── */
+.map-wrap{position:relative;}
+.map-daystrip{position:absolute;top:10px;left:0;right:0;z-index:5;display:flex;gap:7px;overflow-x:auto;padding:0 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.map-daystrip::-webkit-scrollbar{display:none;}
+.map-chip{flex:0 0 auto;background:rgba(255,255,255,.95);border:1px solid var(--border);border-radius:20px;padding:7px 13px;font:600 12.5px var(--font-body);color:var(--text);white-space:nowrap;cursor:pointer;box-shadow:0 2px 8px rgba(10,20,48,.14);}
+.map-chip.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+.map-banner{position:absolute;left:12px;right:12px;bottom:14px;z-index:5;background:rgba(10,20,48,.93);color:#fff;border-radius:13px;padding:11px 15px;display:none;box-shadow:0 8px 24px rgba(10,20,48,.32);}
+.map-banner.on{display:block;}
+.map-banner .mb-day{font:700 14px var(--font-body);}
+.map-banner .mb-sub{font:500 12.5px var(--font-body);color:#AEB7CE;margin-top:2px;}

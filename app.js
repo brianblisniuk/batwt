@@ -340,7 +340,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v12";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v13";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
@@ -702,22 +702,111 @@
 
 
   // ── render: map ──
+  function mapMarkerIcon(kind, num) {
+    var COL = { base: "#1E3FB8", stadium: "#c0392b", attraction: "#1f7a43", stop: "#7a8399" };
+    var scale = num != null ? 10 : (kind === "stadium" ? 9 : kind === "base" || kind === "attraction" ? 8 : 6);
+    return { path: google.maps.SymbolPath.CIRCLE, scale: scale, fillColor: COL[kind] || COL.stop, fillOpacity: 1, strokeColor: "#fff", strokeWeight: 2 };
+  }
   function initMap() {
     if (state.mapDone || !window.google || !google.maps) return;
     state.mapDone = true;
     var t = state.trip, meta = t.meta || {};
+    var pm = providersMap();
+    var days = t.itinerary || [];
+    // armar paradas por día (usando sortedSlots, para que el pin abra el slot correcto)
+    state.mapDays = days.map(function (d, di) {
+      var ss = sortedSlots(d); var pts = [];
+      ss.forEach(function (s, si) {
+        var p = pm[s.providerId];
+        if (!p || p.latitude == null || p.longitude == null) return;
+        var kind = "stop";
+        if (s.providerId === "stadium-att" || /stadium|estadio/i.test(p.name || "")) kind = "stadium";
+        else if (["fan-festival", "space-center", "schlitterbahn"].indexOf(s.providerId) >= 0 || p.type === "activity") kind = "attraction";
+        pts.push({ lat: +p.latitude, lng: +p.longitude, name: s.title || p.name, place: p.name, kind: kind, di: di, si: si });
+      });
+      if (pts.length && pts[pts.length - 1].kind === "stop") pts[pts.length - 1].kind = "base"; // pernocte
+      return { di: di, date: d.date, title: d.title, dayNumber: d.dayNumber, km: d.km, driveMinutes: d.driveMinutes, pts: pts };
+    });
+
     google.maps.importLibrary("maps").then(function (lib) {
-      var map = new lib.Map($("#map"), { center: meta.mapCenter || { lat: 39, lng: -98 }, zoom: meta.mapZoom || 5, mapTypeControl: false, streetViewControl: false, fullscreenControl: false, styles: MAP_STYLE });
-      var bounds = new google.maps.LatLngBounds(), n = 0;
-      function mark(pos, title, color) {
-        var mk = new google.maps.Marker({ position: pos, map: map, title: title, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 6, fillColor: color, fillOpacity: 1, strokeColor: "#fff", strokeWeight: 2 } });
-        var iw = new google.maps.InfoWindow({ content: '<div style="font:600 13px Inter,sans-serif;color:#0A1430">' + esc(title) + "</div>" });
-        mk.addListener("click", function () { iw.open(map, mk); });
-        bounds.extend(pos); n++;
+      var map = new lib.Map($("#map"), { center: meta.mapCenter || { lat: 31, lng: -97 }, zoom: meta.mapZoom || 6, mapTypeControl: false, streetViewControl: false, fullscreenControl: false, clickableIcons: false, styles: MAP_STYLE });
+      state._map = map; state._markers = []; state._seg = null; state._iw = new google.maps.InfoWindow();
+      var sub = $("#mapSub"); if (sub) sub.textContent = "El recorrido · tocá un día";
+
+      // ruta completa (línea punteada tenue) — dedup de puntos consecutivos iguales
+      var route = []; var fb = new google.maps.LatLngBounds();
+      state.mapDays.forEach(function (d) { d.pts.forEach(function (p) {
+        var L = route[route.length - 1];
+        if (!L || Math.abs(L.lat - p.lat) > 1e-6 || Math.abs(L.lng - p.lng) > 1e-6) route.push({ lat: p.lat, lng: p.lng });
+        fb.extend({ lat: p.lat, lng: p.lng });
+      }); });
+      state._routeLine = new google.maps.Polyline({ path: route, map: map, strokeOpacity: 0, icons: [{ icon: { path: "M 0,-1 0,1", strokeColor: "#6B768F", strokeOpacity: 0.7, scale: 3 }, offset: "0", repeat: "13px" }] });
+
+      function clearMarkers() { state._markers.forEach(function (m) { m.setMap(null); }); state._markers = []; if (state._seg) { state._seg.setMap(null); state._seg = null; } }
+      function addMarker(p, num, onClick) {
+        var m = new google.maps.Marker({ position: { lat: p.lat, lng: p.lng }, map: map, title: p.name, zIndex: num != null ? 60 : (p.kind === "stop" ? 1 : 12), icon: mapMarkerIcon(p.kind, num), label: num != null ? { text: String(num), color: "#fff", fontSize: "11px", fontWeight: "700" } : null });
+        m.addListener("click", function () {
+          if (onClick) { onClick(); return; }
+          state._iw.setContent('<div style="font:700 13px Inter,sans-serif;color:#0A1430;max-width:210px">' + esc(p.name) + (p.place && p.place !== p.name ? '<div style="font:500 12px Inter;color:#5C6680;margin-top:2px">' + esc(p.place) + "</div>" : "") + "</div>");
+          state._iw.open(map, m);
+        });
+        state._markers.push(m);
       }
-      (t.providers || []).forEach(function (p) { if (p.latitude != null && p.longitude != null) mark({ lat: +p.latitude, lng: +p.longitude }, p.name, "#1E3FB8"); });
-      var bc = meta.basecamp && meta.basecamp.coords; if (bc && bc.lat != null) mark({ lat: +bc.lat, lng: +bc.lon }, (meta.basecamp.shortName || "Base"), "#0A1F70");
-      if (n > 1) map.fitBounds(bounds, 56); else if (n === 1) { map.setCenter(bounds.getCenter()); map.setZoom(11); }
+      function banner(d) {
+        var el = $("#mapBanner"); if (!el) return;
+        if (!d) { el.className = "map-banner"; el.innerHTML = ""; return; }
+        var dd = pdate(d.date);
+        var ds = dd ? dd.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }) : "";
+        var info;
+        if (d.km != null && d.km > 0) {
+          var mi = Math.round(d.km * 0.621371), mm = d.driveMinutes || 0, h = Math.floor(mm / 60), m2 = mm % 60;
+          info = "~" + d.km + " km · " + mi + " mi · " + (h > 0 ? h + " h" + (m2 ? " " + m2 + " min" : "") : m2 + " min") + " de manejo";
+        } else info = "Sin traslados";
+        el.className = "map-banner on";
+        el.innerHTML = '<div class="mb-day">' + esc(d.title || ("Día " + (d.dayNumber != null ? d.dayNumber : d.di))) + '</div><div class="mb-sub">' + esc(ds) + (ds ? " · " : "") + info + "</div>";
+      }
+      var strip = $("#mapDayStrip");
+      function markStripActive(key) { if (strip) $$(".map-chip", strip).forEach(function (c) { c.classList.toggle("on", c.dataset.k === String(key)); }); }
+
+      function showAll() {
+        clearMarkers(); state._routeLine.setMap(map);
+        var seen = {};
+        state.mapDays.forEach(function (d) { d.pts.forEach(function (p) {
+          if (p.kind === "stop") return; // vista general: solo bases, estadio y atracciones
+          var k = p.lat.toFixed(3) + "," + p.lng.toFixed(3); if (seen[k]) return; seen[k] = 1;
+          addMarker(p, null, null);
+        }); });
+        if (!fb.isEmpty()) map.fitBounds(fb, 60);
+        banner(null); markStripActive("all");
+      }
+      function showDay(di) {
+        clearMarkers(); state._routeLine.setMap(map);
+        var d = state.mapDays[di]; if (!d || !d.pts.length) { showAll(); return; }
+        if (d.pts.length >= 2) state._seg = new google.maps.Polyline({ path: d.pts.map(function (p) { return { lat: p.lat, lng: p.lng }; }), map: map, geodesic: true, strokeColor: "#1E3FB8", strokeOpacity: 0.95, strokeWeight: 5 });
+        var b = new google.maps.LatLngBounds(), num = 0, lastK = null;
+        d.pts.forEach(function (p) {
+          var k = p.lat.toFixed(4) + "," + p.lng.toFixed(4); if (k !== lastK) num++; lastK = k;
+          addMarker(p, num, function () { openSlotDetail(p.di, p.si); });
+          b.extend({ lat: p.lat, lng: p.lng });
+        });
+        if (!b.isEmpty()) { if (d.pts.length === 1) { map.setCenter(b.getCenter()); map.setZoom(12); } else map.fitBounds(b, 70); }
+        banner(d); markStripActive(di);
+      }
+      state._showAll = showAll; state._showDay = showDay;
+
+      if (strip) {
+        var sh = '<button class="map-chip" data-k="all">Todo el viaje</button>';
+        state.mapDays.forEach(function (d) { if (d.pts.length) sh += '<button class="map-chip" data-k="' + d.di + '">Día ' + (d.dayNumber != null ? d.dayNumber : d.di) + "</button>"; });
+        strip.innerHTML = sh;
+        $$(".map-chip", strip).forEach(function (c) {
+          c.addEventListener("click", function () {
+            var k = c.dataset.k;
+            if (k === "all") showAll(); else showDay(parseInt(k, 10));
+            c.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+          });
+        });
+      }
+      showAll();
     });
   }
 

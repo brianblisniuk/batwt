@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="styles.css?v=12"/>
+  <link rel="stylesheet" href="styles.css?v=13"/>
 </head>
 <body>
 
@@ -86,7 +86,11 @@
     <!-- MAPA -->
     <section class="screen" id="mapa">
       <div class="bar"><h2>Mapa</h2><div class="sub" id="mapSub"></div></div>
-      <div id="map"></div>
+      <div class="map-wrap">
+        <div id="mapDayStrip" class="map-daystrip"></div>
+        <div id="map"></div>
+        <div id="mapBanner" class="map-banner"></div>
+      </div>
     </section>
 
     <!-- ACCESOS DIRECTOS -->
@@ -132,7 +136,7 @@
       key:"AIzaSyCUeZyKs2jjtKLNIwHq9V7Caw2bW_ehEDE", v:"weekly", language:"es", region:"US"
     });
   </script>
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
   <script>
     if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
   </script>
