@@ -305,7 +305,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v9";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v10";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
@@ -316,6 +316,17 @@
         '<span class="l">' + (dd ? dd.toLocaleDateString("es-AR", { weekday: "short" }).replace(".", "") : "") + "</span></button>";
     }).join("");
     renderDay();
+  }
+  function goToDay(delta) {
+    var days = (state.trip && state.trip.itinerary) || [];
+    if (!days.length) return;
+    var ni = state.dayIdx + delta;
+    if (ni < 0 || ni >= days.length) return;
+    state.dayIdx = ni;
+    renderItinerary();
+    var dc = $("#dayContent");
+    if (dc) { dc.classList.remove("slide-from-right", "slide-from-left"); void dc.offsetWidth; dc.classList.add(delta > 0 ? "slide-from-right" : "slide-from-left"); }
+    requestAnimationFrame(function () { var a = $(".date-item.active"); if (a) a.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); });
   }
   function renderDay() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [], day = days[state.dayIdx];
@@ -684,6 +695,27 @@
     window.addEventListener("popstate", function () {
       if (state.detailOpen) { state.detailOpen = false; setTab(state.prevTab || "itinerary"); }
     });
+    (function () {
+      var dc = $("#dayContent"); if (!dc) return;
+      var sx = 0, sy = 0, on = false, decided = false, horiz = false;
+      dc.addEventListener("touchstart", function (e) {
+        if (e.touches.length !== 1) { on = false; return; }
+        sx = e.touches[0].clientX; sy = e.touches[0].clientY; on = true; decided = false; horiz = false;
+      }, { passive: true });
+      dc.addEventListener("touchmove", function (e) {
+        if (!on || e.touches.length !== 1) return;
+        var dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+        if (!decided && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) { decided = true; horiz = Math.abs(dx) > Math.abs(dy) * 1.3; }
+        if (decided && horiz) e.preventDefault();
+      }, { passive: false });
+      dc.addEventListener("touchend", function (e) {
+        if (!on) return; on = false;
+        if (!decided || !horiz) return;
+        var dx = e.changedTouches[0].clientX - sx;
+        if (dx <= -40) goToDay(1);
+        else if (dx >= 40) goToDay(-1);
+      }, { passive: true });
+    })();
     var input = $("#codeInput"), btn = $("#codeBtn");
     input.addEventListener("input", function () { var c = normCode(input.value); input.value = fmtCode(c); btn.disabled = c.length !== 8; $("#codeErr").textContent = ""; });
     input.addEventListener("keydown", function (e) { if (e.key === "Enter" && normCode(input.value).length === 8) submit(); });

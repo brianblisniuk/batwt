@@ -412,3 +412,10 @@ img{max-width:100%;display:block;}
 /* ── fixed back button on detail screen ── */
 .detail-back-fab{position:fixed;top:max(12px,env(safe-area-inset-top));left:12px;z-index:60;width:40px;height:40px;border-radius:50%;background:rgba(15,18,28,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);}
 .detail-back-fab:active{transform:scale(.95);}
+
+/* ── swipe horizontal entre días (estilo stories) ── */
+.iti-body{touch-action:pan-y;}
+@keyframes itiSlideR{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:translateX(0)}}
+@keyframes itiSlideL{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:translateX(0)}}
+.iti-body.slide-from-right{animation:itiSlideR .18s ease}
+.iti-body.slide-from-left{animation:itiSlideL .18s ease}
