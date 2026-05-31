@@ -96,6 +96,68 @@
     });
     return h + "</div>";
   }
+  // ── fotos del estado del motorhome (cliente sube/ve, persistidas en storage) ──
+  function photoPrefix(slot) {
+    var tid = (state.trip && state.trip.id) || "trip";
+    return tid + "/photos/" + (slot.id || "slot") + "/";
+  }
+  function renderPhotos(slot) {
+    return '<div class="rv-photos" data-sid="' + esc(slot.id || "") + '">' +
+      '<div class="rv-photos-head"><span>Fotos del estado del motorhome</span>' +
+      '<label class="rv-add"><input type="file" accept="image/*" capture="environment" hidden>' + svgInline2("img", 15) + " Agregar</label></div>" +
+      '<div class="rv-grid"><div class="rv-empty">Cargando…</div></div>' +
+      '<div class="rv-note">Sacá fotos al retirar y al devolver: quedan guardadas para toda la familia y sirven de respaldo ante cualquier reclamo.</div></div>';
+  }
+  function compressImage(file, maxDim, quality) {
+    return new Promise(function (resolve) {
+      try {
+        var img = new Image(), url = URL.createObjectURL(file);
+        img.onload = function () {
+          URL.revokeObjectURL(url);
+          var w = img.width, h = img.height, scale = Math.min(1, maxDim / Math.max(w, h));
+          var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+          var c = document.createElement("canvas"); c.width = cw; c.height = ch;
+          c.getContext("2d").drawImage(img, 0, 0, cw, ch);
+          c.toBlob(function (blob) { resolve(blob || file); }, "image/jpeg", quality || 0.82);
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+      } catch (e) { resolve(file); }
+    });
+  }
+  function loadPhotos(slot, grid) {
+    if (!grid) return;
+    sb.storage.from("trip-attachments").list(photoPrefix(slot).replace(/\/$/, ""), { limit: 100, sortBy: { column: "name", order: "asc" } })
+      .then(function (res) {
+        var items = ((res && res.data) || []).filter(function (x) { return x.name && x.name.indexOf(".") !== 0 && x.id; });
+        if (!items.length) { grid.innerHTML = '<div class="rv-empty">Todavía no hay fotos.</div>'; return; }
+        grid.innerHTML = items.map(function (x) {
+          var url = sb.storage.from("trip-attachments").getPublicUrl(photoPrefix(slot) + x.name).data.publicUrl;
+          return '<div class="rv-ph"><a href="' + esc(url) + '" target="_blank" rel="noopener"><img src="' + esc(url) + '" loading="lazy" alt=""></a>' +
+            '<button class="rv-del" data-path="' + esc(photoPrefix(slot) + x.name) + '" aria-label="Borrar">×</button></div>';
+        }).join("");
+      })
+      .catch(function () { grid.innerHTML = '<div class="rv-empty">No se pudieron cargar las fotos.</div>'; });
+  }
+  function initPhotos(slot) {
+    var root = $('.rv-photos[data-sid="' + (slot.id || "") + '"]'); if (!root) return;
+    var grid = $(".rv-grid", root), input = $('input[type="file"]', root);
+    loadPhotos(slot, grid);
+    if (input) input.addEventListener("change", function () {
+      var file = input.files && input.files[0]; if (!file) return;
+      grid.innerHTML = '<div class="rv-empty">Subiendo…</div>';
+      compressImage(file, 1600, 0.82).then(function (blob) {
+        return sb.storage.from("trip-attachments").upload(photoPrefix(slot) + Date.now() + ".jpg", blob, { contentType: "image/jpeg", upsert: true });
+      }).then(function () { input.value = ""; loadPhotos(slot, grid); })
+        .catch(function () { input.value = ""; loadPhotos(slot, grid); });
+    });
+    root.addEventListener("click", function (e) {
+      var del = e.target.closest(".rv-del"); if (!del) return;
+      e.preventDefault();
+      if (!window.confirm("¿Borrar esta foto?")) return;
+      sb.storage.from("trip-attachments").remove([del.dataset.path]).then(function () { loadPhotos(slot, grid); }).catch(function () { loadPhotos(slot, grid); });
+    });
+  }
   function stageLabel(m) {
     var map = { group: "Grupos", r32: "16avos", r16: "8vos", qf: "4tos", sf: "Semifinal", third: "3er puesto", final: "Final" };
     if (m.stage === "group") return m.group_code ? "Grupo " + m.group_code : "Grupos";
@@ -218,8 +280,10 @@
     var t = state.trip, meta = t.meta || {};
     var cd = countdown(meta.startDate, meta.endDate, (t.itinerary || []).length);
     $("#overviewHeader").innerHTML =
-      '<header class="trip-header has-cover"><div class="cover-ov"></div><div class="trip-header-top">' +
-      '<span class="trip-header-title">Mi Viaje</span></div>' +
+      '<header class="trip-header has-cover">' +
+      '<img class="cover-img" src="webfifa26.jpg?v=17" alt="">' +
+      '<div class="cover-grad"></div>' +
+      '<div class="trip-header-top"><span class="trip-header-title">Mi Viaje</span></div>' +
       '<div class="trip-hero">' +
       '<h2 class="trip-title">' + esc(meta.tripName || "Tu viaje") + "</h2>" +
       '<div class="trip-dates">' + fdate(meta.startDate, { day: "numeric", month: "long" }) + " — " + fdate(meta.endDate, { day: "numeric", month: "long", year: "numeric" }) + "</div>" +
@@ -242,6 +306,9 @@
     html += link("itinerary", "cal", "Itinerario día a día", (t.itinerary || []).length + " días");
     html += link("mapa", "map", "Mapa del viaje", "el recorrido por Texas");
     html += link("mundial", "stadium", "Todos los partidos del Mundial", state.matches.length + " partidos");
+    html += '<a class="big-link" target="_blank" rel="noopener" href="https://www.united.com/es/us/checkin"><span class="ll"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5a2.12 2.12 0 0 0-3-3L13 8 4.8 6.2a1 1 0 0 0-.9 1.6l3.3 3.9-2.6 2.6-1.5-.3a1 1 0 0 0-.9 1.6l1.9 2 2 1.9a1 1 0 0 0 1.6-.9l-.3-1.5 2.6-2.6 3.9 3.3a1 1 0 0 0 1.6-.9z"/></svg></span>' +
+      '<span>Check-in del vuelo<div style="font:500 12px var(--font-body);color:var(--text-muted);margin-top:1px">United · online</div></span></span>' +
+      '<span class="chev"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>';
     html += '<a class="big-link" target="_blank" rel="noopener" href="https://www.cruiseamerica.com/rv-rentals/renters-resources/rv-orientation-language-videos?wvideo=dfuk8apec8#Espanol"><span class="ll"><span class="ic">' + svgInline("rv") + "</span>" +
       '<span>Video de orientación del motorhome<div style="font:500 12px var(--font-body);color:var(--text-muted);margin-top:1px">Cruise America · en español</div></span></span>' +
       '<span class="chev"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>';
@@ -336,7 +403,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v16";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v17";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
@@ -504,6 +571,7 @@
     if (slot.description) html += '<p class="detail-desc">' + esc(slot.description) + "</p>";
 
     if (slot.checklist && slot.checklist.length) html += renderChecklist(slot);
+    if (slot.checklist && slot.checklist.length) html += renderPhotos(slot);
 
     // info-card del proveedor
     if (p) {
@@ -547,6 +615,7 @@
     window.scrollTo(0, 0);
     state.detailOpen = true;
     try { history.pushState({ d: 1 }, ""); } catch (e) {}
+    if (slot.checklist && slot.checklist.length) initPhotos(slot);
   }
   function closeSlotDetail() {
     if (state.detailOpen) { try { history.back(); return; } catch (e) {} }
@@ -724,6 +793,7 @@
     google.maps.importLibrary("maps").then(function (lib) {
       var map = new lib.Map($("#map"), { center: meta.mapCenter || { lat: 31, lng: -97 }, zoom: meta.mapZoom || 6, mapTypeControl: false, streetViewControl: false, fullscreenControl: false, clickableIcons: false, styles: MAP_STYLE });
       state._map = map; state._markers = []; state._seg = null; state._iw = new google.maps.InfoWindow();
+      var dayToken = 0;
       var sub = $("#mapSub"); if (sub) sub.textContent = "El recorrido · tocá un día";
 
       // ruta completa (línea punteada tenue) — dedup de puntos consecutivos iguales
@@ -776,27 +846,45 @@
         clearMarkers(); state._routeLine.setMap(map);
         var d = state.mapDays[di]; if (!d || !d.pts.length) { showAll(); return; }
         if (d.pts.length >= 2) state._seg = new google.maps.Polyline({ path: d.pts.map(function (p) { return { lat: p.lat, lng: p.lng }; }), map: map, geodesic: true, strokeColor: "#1E3FB8", strokeOpacity: 0.95, strokeWeight: 5 });
-        // una chincheta por ubicación única (orden de visita), sin duplicar
+        // una ubicación única por lugar (orden de visita), sin duplicar
         var uniq = [], seenLoc = {};
         d.pts.forEach(function (p) { var k = p.lat.toFixed(4) + "," + p.lng.toFixed(4); if (!seenLoc[k]) { seenLoc[k] = 1; uniq.push(p); } });
-        // separar las paradas muy cercanas para que los números no se solapen
-        var cells = {}, off = {};
-        uniq.forEach(function (p, i) { var c = p.lat.toFixed(2) + "," + p.lng.toFixed(2); (cells[c] = cells[c] || []).push(i); });
-        Object.keys(cells).forEach(function (c) {
-          var arr = cells[c]; if (arr.length < 2) return;
-          arr.forEach(function (idx, j) {
-            var ang = (2 * Math.PI * j / arr.length) - Math.PI / 2;
-            off[idx] = { dlat: 0.0055 * Math.sin(ang), dlng: 0.0055 * Math.cos(ang) / Math.cos(uniq[idx].lat * Math.PI / 180) };
+        var b = new google.maps.LatLngBounds(); uniq.forEach(function (p) { b.extend({ lat: p.lat, lng: p.lng }); });
+        if (uniq.length === 1) { map.setCenter(b.getCenter()); map.setZoom(12); } else map.fitBounds(b, 80);
+        banner(d); markStripActive(di);
+        // colocar los pines numerados cuando el mapa se asienta, separando los que quedan cerca EN PÍXELES
+        var token = ++dayToken, placed = false;
+        function place() { if (placed || dayToken !== token) return; placed = true; placeDayMarkers(uniq); }
+        google.maps.event.addListenerOnce(map, "idle", place);
+        setTimeout(place, 450);
+      }
+      function placeDayMarkers(uniq) {
+        var z = map.getZoom() || 7;
+        function mpp(lat) { return 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, z); }
+        function pxDist(a, c) {
+          var lat = (a.lat + c.lat) / 2, m = mpp(lat);
+          var dy = (a.lat - c.lat) * 111320, dx = (a.lng - c.lng) * 111320 * Math.cos(lat * Math.PI / 180);
+          return Math.sqrt(dx * dx + dy * dy) / m;
+        }
+        var groups = [];
+        uniq.forEach(function (p, i) {
+          var g = null;
+          for (var gi = 0; gi < groups.length; gi++) { if (pxDist(uniq[groups[gi][0]], p) <= 46) { g = groups[gi]; break; } }
+          if (g) g.push(i); else groups.push([i]);
+        });
+        var off = {};
+        groups.forEach(function (g) {
+          if (g.length < 2) return;
+          var lat0 = uniq[g[0]].lat, m = mpp(lat0), Rdeg = (30 * m) / 111320;
+          g.forEach(function (idx, j) {
+            var ang = (2 * Math.PI * j / g.length) - Math.PI / 2;
+            off[idx] = { dlat: Rdeg * Math.sin(ang), dlng: Rdeg * Math.cos(ang) / Math.cos(lat0 * Math.PI / 180) };
           });
         });
-        var b = new google.maps.LatLngBounds();
         uniq.forEach(function (p, i) {
           var o = off[i] || { dlat: 0, dlng: 0 };
           addMarker(p, i + 1, function () { openSlotDetail(p.di, p.si); }, { lat: p.lat + o.dlat, lng: p.lng + o.dlng });
-          b.extend({ lat: p.lat + o.dlat, lng: p.lng + o.dlng });
         });
-        if (!b.isEmpty()) { if (uniq.length === 1) { map.setCenter(b.getCenter()); map.setZoom(12); } else map.fitBounds(b, 80); }
-        banner(d); markStripActive(di);
       }
       state._showAll = showAll; state._showDay = showDay;
 
