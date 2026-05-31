@@ -74,6 +74,15 @@
     if (code >= 71 && code < 80) return "Nieve";
     return "Templado";
   }
+  function weatherEmoji(code) {
+    if (code === 0 || code === 1) return "☀️";
+    if (code === 2) return "🌤️";
+    if (code === 3) return "☁️";
+    if (code >= 95) return "⛈️";
+    if (code >= 71 && code < 80) return "🌨️";
+    if (code >= 80 || (code >= 51 && code < 70)) return "🌦️";
+    return "🌡️";
+  }
   function checklistKey(slot) { return "em:chk:" + (state.code || "x") + ":" + (slot.id || slot.title || ""); }
   function renderChecklist(slot) {
     var items = slot.checklist; var key = checklistKey(slot);
@@ -209,14 +218,12 @@
     var t = state.trip, meta = t.meta || {};
     var cd = countdown(meta.startDate, meta.endDate, (t.itinerary || []).length);
     $("#overviewHeader").innerHTML =
-      '<header class="trip-header"><div class="trip-header-top">' +
-      '<span class="trip-header-title">Mi Viaje</span>' +
-      '<span style="font:600 11px var(--font-body);letter-spacing:2px;opacity:.6">EM</span></div>' +
-      '<div class="trip-hero"><div class="brand-mark">EM</div>' +
-      '<div class="brand-name">Expedición Mundial</div>' +
+      '<header class="trip-header has-cover"><div class="cover-ov"></div><div class="trip-header-top">' +
+      '<span class="trip-header-title">Mi Viaje</span></div>' +
+      '<div class="trip-hero">' +
       '<h2 class="trip-title">' + esc(meta.tripName || "Tu viaje") + "</h2>" +
       '<div class="trip-dates">' + fdate(meta.startDate, { day: "numeric", month: "long" }) + " — " + fdate(meta.endDate, { day: "numeric", month: "long", year: "numeric" }) + "</div>" +
-      (cd ? '<div class="countdown-band">' + cd.band + "</div>" : "") +
+      (cd ? '<div class="countdown-hero">' + cd.band + "</div>" : "") +
       "</div></header>";
 
     var html = "";
@@ -233,23 +240,12 @@
     // quick links
     html += '<div class="section-header">Tu viaje</div>';
     html += link("itinerary", "cal", "Itinerario día a día", (t.itinerary || []).length + " días");
+    html += link("mapa", "map", "Mapa del viaje", "el recorrido por Texas");
     html += link("mundial", "stadium", "Todos los partidos del Mundial", state.matches.length + " partidos");
-    html += link("mapa", "map", "Mapa del viaje", "lugares y estadios");
+    html += '<a class="big-link" target="_blank" rel="noopener" href="https://www.cruiseamerica.com/rv-rentals/renters-resources/rv-orientation-language-videos?wvideo=dfuk8apec8#Espanol"><span class="ll"><span class="ic">' + svgInline("rv") + "</span>" +
+      '<span>Video de orientación del motorhome<div style="font:500 12px var(--font-body);color:var(--text-muted);margin-top:1px">Cruise America · en español</div></span></span>' +
+      '<span class="chev"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>';
     if (state.deferredInstall) html += '<button class="big-link" id="installBtn"><span class="ll"><span class="ic">' + svgInline("down") + '</span>Instalar la app</button>';
-
-    // alojamiento (basecamp)
-    var bc = meta.basecamp;
-    if (bc && (bc.name || bc.shortName)) {
-      var bcDir = basecampDir(bc);
-      html += '<div class="section-header">Alojamiento</div>';
-      html += '<div class="place-card"><div class="place-hero"><div class="pat"></div>' +
-        '<div class="place-cat">' + svgInline2("rv", 12) + esc(bc.type || bc.label || "Base") + "</div></div>" +
-        '<div class="place-body"><div class="place-name">' + esc(bc.shortName || bc.name) + "</div>" +
-        (bc.address ? '<div class="place-addr">' + esc(bc.address) + "</div>" : "") +
-        '<div class="place-links">' +
-        (bcDir ? '<a class="chip solid" target="_blank" rel="noopener" href="' + esc(bcDir) + '">' + svgInline2("nav", 13) + " Cómo llegar</a>" : "") +
-        "</div></div></div>";
-    }
 
     // documentos: un botón que abre la lista completa (no sueltos)
     var docs = collectDocs(t);
@@ -340,7 +336,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v14";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v15";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
@@ -382,17 +378,14 @@
       : "background:linear-gradient(155deg," + color + " 0%," + color + "cc 100%)";
     html += '<div class="day-hero' + (cover ? " has-img" : "") + '" style="' + heroStyle + '">' +
       '<div class="pat"></div>' + (cover ? "" : '<div class="big-ic"><svg width="200" height="200" viewBox="0 0 24 24">' + (I[heroIcon] || "") + "</svg></div>") +
-      '<div class="date-chip"><span class="m">' + (dd ? dd.toLocaleDateString("es-AR", { month: "short" }).toUpperCase().replace(".", "") : "") + '</span><span class="d">' + (dd ? dd.getDate() : "") + "</span></div>" +
+      '<div class="hero-top"><div class="date-chip"><span class="m">' + (dd ? dd.toLocaleDateString("es-AR", { month: "short" }).toUpperCase().replace(".", "") : "") + '</span><span class="d">' + (dd ? dd.getDate() : "") + "</span></div>" +
+      (day.weather && day.weather.tmax != null ? '<div class="wx-chip">' + weatherEmoji(day.weather.code) + " <span>" + day.weather.tmax + "°</span></div>" : "") +
+      "</div>" +
       '<div class="ov"></div><div class="ttl"><div class="sub">' + (dd ? dd.toLocaleDateString("es-AR", { weekday: "long" }) : "") + (day.dayNumber != null ? " · Día " + day.dayNumber : "") + "</div>" +
       '<div class="main">' + esc(day.title || "") + "</div></div></div>";
 
-    // stats del día: clima + manejo (km · millas · horas)
+    // stats del día: manejo (km · millas · horas)
     var stats = [];
-    var wx = day.weather;
-    if (wx && wx.tmax != null) {
-      var tf = Math.round(wx.tmax * 9 / 5 + 32);
-      stats.push('<span class="stat stat-wx">' + weatherLabel(wx.code) + " · " + wx.tmax + "°/" + wx.tmin + "°C · " + tf + "°F</span>");
-    }
     if (km != null && km > 0) {
       var mi = Math.round(km * 0.621371);
       stats.push('<span class="stat">' + svgInline2("car", 13) + " ~" + km + " km · " + mi + " mi</span>");
@@ -743,8 +736,8 @@
       state._routeLine = new google.maps.Polyline({ path: route, map: map, strokeOpacity: 0, icons: [{ icon: { path: "M 0,-1 0,1", strokeColor: "#6B768F", strokeOpacity: 0.7, scale: 3 }, offset: "0", repeat: "13px" }] });
 
       function clearMarkers() { state._markers.forEach(function (m) { m.setMap(null); }); state._markers = []; if (state._seg) { state._seg.setMap(null); state._seg = null; } }
-      function addMarker(p, num, onClick) {
-        var m = new google.maps.Marker({ position: { lat: p.lat, lng: p.lng }, map: map, title: p.name, zIndex: num != null ? 60 : (p.kind === "stop" ? 1 : 12), icon: mapMarkerIcon(p.kind, num), label: num != null ? { text: String(num), color: "#fff", fontSize: "11px", fontWeight: "700" } : null });
+      function addMarker(p, num, onClick, posOverride) {
+        var m = new google.maps.Marker({ position: posOverride || { lat: p.lat, lng: p.lng }, map: map, title: p.name, zIndex: num != null ? 60 : (p.kind === "stop" ? 1 : 12), icon: mapMarkerIcon(p.kind, num), label: num != null ? { text: String(num), color: "#fff", fontSize: "11px", fontWeight: "700" } : null });
         m.addListener("click", function () {
           if (onClick) { onClick(); return; }
           state._iw.setContent('<div style="font:700 13px Inter,sans-serif;color:#0A1430;max-width:210px">' + esc(p.name) + (p.place && p.place !== p.name ? '<div style="font:500 12px Inter;color:#5C6680;margin-top:2px">' + esc(p.place) + "</div>" : "") + "</div>");
@@ -766,7 +759,7 @@
         el.innerHTML = '<div class="mb-day">' + esc(d.title || ("Día " + (d.dayNumber != null ? d.dayNumber : d.di))) + '</div><div class="mb-sub">' + esc(ds) + (ds ? " · " : "") + info + "</div>";
       }
       var strip = $("#mapDayStrip");
-      function markStripActive(key) { if (strip) $$(".map-chip", strip).forEach(function (c) { c.classList.toggle("on", c.dataset.k === String(key)); }); }
+      function markStripActive(key) { if (strip) $$("[data-k]", strip).forEach(function (c) { var on = c.dataset.k === String(key); c.classList.toggle("on", on); c.classList.toggle("active", on); }); }
 
       function showAll() {
         clearMarkers(); state._routeLine.setMap(map);
@@ -783,22 +776,42 @@
         clearMarkers(); state._routeLine.setMap(map);
         var d = state.mapDays[di]; if (!d || !d.pts.length) { showAll(); return; }
         if (d.pts.length >= 2) state._seg = new google.maps.Polyline({ path: d.pts.map(function (p) { return { lat: p.lat, lng: p.lng }; }), map: map, geodesic: true, strokeColor: "#1E3FB8", strokeOpacity: 0.95, strokeWeight: 5 });
-        var b = new google.maps.LatLngBounds(), num = 0, lastK = null;
-        d.pts.forEach(function (p) {
-          var k = p.lat.toFixed(4) + "," + p.lng.toFixed(4); if (k !== lastK) num++; lastK = k;
-          addMarker(p, num, function () { openSlotDetail(p.di, p.si); });
-          b.extend({ lat: p.lat, lng: p.lng });
+        // una chincheta por ubicación única (orden de visita), sin duplicar
+        var uniq = [], seenLoc = {};
+        d.pts.forEach(function (p) { var k = p.lat.toFixed(4) + "," + p.lng.toFixed(4); if (!seenLoc[k]) { seenLoc[k] = 1; uniq.push(p); } });
+        // separar las paradas muy cercanas para que los números no se solapen
+        var cells = {}, off = {};
+        uniq.forEach(function (p, i) { var c = p.lat.toFixed(2) + "," + p.lng.toFixed(2); (cells[c] = cells[c] || []).push(i); });
+        Object.keys(cells).forEach(function (c) {
+          var arr = cells[c]; if (arr.length < 2) return;
+          arr.forEach(function (idx, j) {
+            var ang = (2 * Math.PI * j / arr.length) - Math.PI / 2;
+            off[idx] = { dlat: 0.0055 * Math.sin(ang), dlng: 0.0055 * Math.cos(ang) / Math.cos(uniq[idx].lat * Math.PI / 180) };
+          });
         });
-        if (!b.isEmpty()) { if (d.pts.length === 1) { map.setCenter(b.getCenter()); map.setZoom(12); } else map.fitBounds(b, 70); }
+        var b = new google.maps.LatLngBounds();
+        uniq.forEach(function (p, i) {
+          var o = off[i] || { dlat: 0, dlng: 0 };
+          addMarker(p, i + 1, function () { openSlotDetail(p.di, p.si); }, { lat: p.lat + o.dlat, lng: p.lng + o.dlng });
+          b.extend({ lat: p.lat + o.dlat, lng: p.lng + o.dlng });
+        });
+        if (!b.isEmpty()) { if (uniq.length === 1) { map.setCenter(b.getCenter()); map.setZoom(12); } else map.fitBounds(b, 80); }
         banner(d); markStripActive(di);
       }
       state._showAll = showAll; state._showDay = showDay;
 
       if (strip) {
-        var sh = '<button class="map-chip" data-k="all">Todo el viaje</button>';
-        state.mapDays.forEach(function (d) { if (d.pts.length) sh += '<button class="map-chip" data-k="' + d.di + '">Día ' + (d.dayNumber != null ? d.dayNumber : d.di) + "</button>"; });
+        var sh = '<button class="map-chip-all" data-k="all">Todo el viaje</button>';
+        state.mapDays.forEach(function (d) {
+          if (!d.pts.length) return;
+          var dd = pdate(d.date);
+          sh += '<button class="date-item map-date" data-k="' + d.di + '">' +
+            (matchesOnDate(d.date).length ? '<span class="dot"></span>' : "") +
+            '<span class="d">' + (dd ? dd.getDate() : (d.di + 1)) + '</span>' +
+            '<span class="l">' + (dd ? dd.toLocaleDateString("es-AR", { weekday: "short" }).replace(".", "") : "") + "</span></button>";
+        });
         strip.innerHTML = sh;
-        $$(".map-chip", strip).forEach(function (c) {
+        $$("[data-k]", strip).forEach(function (c) {
           c.addEventListener("click", function () {
             var k = c.dataset.k;
             if (k === "all") showAll(); else showDay(parseInt(k, 10));

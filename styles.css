@@ -455,3 +455,26 @@ img{max-width:100%;display:block;}
 .map-banner.on{display:block;}
 .map-banner .mb-day{font:700 14px var(--font-body);}
 .map-banner .mb-sub{font:500 12.5px var(--font-body);color:#AEB7CE;margin-top:2px;}
+
+/* ── Mi Viaje: portada con foto + countdown destacado ── */
+.trip-header.has-cover{position:relative;overflow:hidden;}
+.trip-header.has-cover .cover-ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,20,48,.5) 0%,rgba(10,20,48,.82) 100%),url('webfifa26.jpg?v=15') center/cover;}
+.trip-header.has-cover .trip-header-top,.trip-header.has-cover .trip-hero{position:relative;z-index:1;}
+.countdown-hero{display:inline-flex;align-items:baseline;gap:8px;margin-top:18px;background:var(--primary);color:#fff;border-radius:999px;padding:10px 20px;font:600 13.5px var(--font-body);box-shadow:0 8px 22px rgba(30,63,184,.45);}
+.countdown-hero b{font:800 22px var(--font-display);color:#fff;line-height:1;}
+/* ── clima en el hero del día (al lado del número) ── */
+.day-hero .hero-top{position:absolute;top:14px;left:16px;z-index:2;display:flex;align-items:stretch;gap:8px;}
+.day-hero .hero-top .date-chip{position:static;top:auto;left:auto;}
+.day-hero .wx-chip{display:inline-flex;align-items:center;gap:5px;color:#fff;background:rgba(0,0,0,.22);border-radius:12px;padding:0 12px;font:800 18px var(--font-display);line-height:1;}
+.day-hero .wx-chip span{font:800 18px var(--font-display);}
+.day-hero.has-img .wx-chip{text-shadow:0 1px 6px rgba(0,0,0,.4);}
+/* ── strip del mapa: mismo componente de fechas que el itinerario ── */
+.map-daystrip{position:absolute;top:10px;left:10px;right:10px;z-index:5;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:5px 8px;background:rgba(255,255,255,.96);border-radius:14px;box-shadow:0 4px 16px rgba(10,20,48,.18);}
+.map-chip-all{flex:0 0 auto;background:var(--surface-alt);border:none;border-radius:10px;padding:9px 12px;font:700 12.5px var(--font-body);color:var(--text);white-space:nowrap;cursor:pointer;margin-right:2px;}
+.map-chip-all.on{background:var(--primary);color:#fff;}
+.map-daystrip .date-item{min-width:42px;padding:5px 7px;}
+.map-daystrip .date-item .d{font-size:18px;}
+.map-daystrip .date-item .l{font-size:9.5px;}
+.map-daystrip .date-item.active,.map-daystrip .date-item.on{background:rgba(30,63,184,.1);border-radius:10px;}
+.map-daystrip .date-item.active::after{display:none;}
+.map-daystrip .date-item .dot{top:1px;right:6px;}
