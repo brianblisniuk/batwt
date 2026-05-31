@@ -52,12 +52,40 @@
     return label ? dirTo(encodeURIComponent(label)) : null;
   }
 
-  function countdown(startS) {
+  function countdown(startS, endS, total) {
     var t = new Date(); t.setHours(0, 0, 0, 0);
     var s = pdate(startS); if (!s) return null;
     var n = Math.round((s - t) / 86400000);
-    if (n > 0) return { n: n, txt: (n === 1 ? "día para el viaje" : "días para el viaje") };
+    if (n > 0) return { band: "<b>" + n + "</b> " + (n === 1 ? "día para el viaje" : "días para el viaje") };
+    var e = pdate(endS);
+    if (e && t <= e) {
+      var dn = Math.round((t - s) / 86400000) + 1;
+      var tot = total || (Math.round((e - s) / 86400000) + 1);
+      return { band: "Día <b>" + dn + "</b> de " + tot + " · ¡estás en el viaje!" };
+    }
     return null;
+  }
+  function weatherLabel(code) {
+    if (code === 0 || code === 1) return "Soleado";
+    if (code === 2) return "Parcial";
+    if (code === 3) return "Nublado";
+    if (code >= 95) return "Tormenta";
+    if (code >= 80 || (code >= 51 && code < 70)) return "Chubascos";
+    if (code >= 71 && code < 80) return "Nieve";
+    return "Templado";
+  }
+  function checklistKey(slot) { return "em:chk:" + (state.code || "x") + ":" + (slot.id || slot.title || ""); }
+  function renderChecklist(slot) {
+    var items = slot.checklist; var key = checklistKey(slot);
+    var done; try { done = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) { done = []; }
+    var n = 0; items.forEach(function (_, i) { if (done.indexOf(i) >= 0) n++; });
+    var h = '<div class="chk" data-key="' + esc(key) + '">' +
+      '<div class="chk-head"><span class="chk-title">Checklist</span><span class="chk-count">' + n + "/" + items.length + "</span></div>";
+    items.forEach(function (it, i) {
+      var on = done.indexOf(i) >= 0;
+      h += '<label class="chk-item' + (on ? " on" : "") + '"><input type="checkbox" data-chk-i="' + i + '"' + (on ? " checked" : "") + '><span class="chk-box"></span><span class="chk-text">' + esc(it) + "</span></label>";
+    });
+    return h + "</div>";
   }
   function stageLabel(m) {
     var map = { group: "Grupos", r32: "16avos", r16: "8vos", qf: "4tos", sf: "Semifinal", third: "3er puesto", final: "Final" };
@@ -179,7 +207,7 @@
   // ── render: overview ──
   function renderOverview() {
     var t = state.trip, meta = t.meta || {};
-    var cd = countdown(meta.startDate);
+    var cd = countdown(meta.startDate, meta.endDate, (t.itinerary || []).length);
     $("#overviewHeader").innerHTML =
       '<header class="trip-header"><div class="trip-header-top">' +
       '<span class="trip-header-title">Mi Viaje</span>' +
@@ -188,7 +216,7 @@
       '<div class="brand-name">Expedición Mundial</div>' +
       '<h2 class="trip-title">' + esc(meta.tripName || "Tu viaje") + "</h2>" +
       '<div class="trip-dates">' + fdate(meta.startDate, { day: "numeric", month: "long" }) + " — " + fdate(meta.endDate, { day: "numeric", month: "long", year: "numeric" }) + "</div>" +
-      (cd ? '<div class="countdown-band"><b>' + cd.n + "</b> " + cd.txt + "</div>" : "") +
+      (cd ? '<div class="countdown-band">' + cd.band + "</div>" : "") +
       "</div></header>";
 
     var html = "";
@@ -223,15 +251,22 @@
         "</div></div></div>";
     }
 
-    // documentos (attachments del itinerario)
+    // documentos: un botón que abre la lista completa (no sueltos)
     var docs = collectDocs(t);
     if (docs.length) {
-      html += '<div class="section-header">Documentos</div><div class="docs-list">';
-      docs.forEach(function (d) {
-        var isImg = /^image\//.test(d.mimeType || "");
-        html += '<a class="doc-row" target="_blank" rel="noopener" href="' + esc(d.url) + '"><div class="doc-icon">' + svgInline2(isImg ? "img" : "doc", 18) + "</div>" +
-          '<div class="doc-body"><div class="doc-name">' + esc(d.name || "Documento") + '</div><div class="doc-meta">' + esc(d.dayLabel || "") + "</div></div>" +
-          '<div class="doc-icon" style="background:transparent;color:var(--text-dim)">' + svgInline2("down", 16) + "</div></a>";
+      html += '<div class="section-header">Documentos</div>';
+      html += '<button class="big-link" data-docs="1"><span class="ll"><span class="ic">' + svgInline("doc") + "</span>" +
+        '<span>Todos los documentos<div style="font:500 12px var(--font-body);color:var(--text-muted);margin-top:1px">' + docs.length + (docs.length === 1 ? " archivo" : " archivos") + '</div></span></span>' +
+        '<span class="chev"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>';
+    }
+
+    // emergencias (tarjeta fija)
+    var emg = meta.emergency || [];
+    if (emg.length) {
+      html += '<div class="section-header">Emergencias</div><div class="emg-card">';
+      emg.forEach(function (x) {
+        html += '<a class="emg-row" href="' + esc(telUrl(x.tel || x.value)) + '"><span class="emg-ic">' + svgInline2("phone", 15) + "</span>" +
+          '<span class="emg-body"><span class="emg-label">' + esc(x.label) + '</span><span class="emg-value">' + esc(x.value) + "</span></span></a>";
       });
       html += "</div>";
     }
@@ -305,7 +340,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v11";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v12";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
@@ -351,8 +386,13 @@
       '<div class="ov"></div><div class="ttl"><div class="sub">' + (dd ? dd.toLocaleDateString("es-AR", { weekday: "long" }) : "") + (day.dayNumber != null ? " · Día " + day.dayNumber : "") + "</div>" +
       '<div class="main">' + esc(day.title || "") + "</div></div></div>";
 
-    // stats del día: manejo (km · millas · horas). Nada si no hay manejo.
+    // stats del día: clima + manejo (km · millas · horas)
     var stats = [];
+    var wx = day.weather;
+    if (wx && wx.tmax != null) {
+      var tf = Math.round(wx.tmax * 9 / 5 + 32);
+      stats.push('<span class="stat stat-wx">' + weatherLabel(wx.code) + " · " + wx.tmax + "°/" + wx.tmin + "°C · " + tf + "°F</span>");
+    }
     if (km != null && km > 0) {
       var mi = Math.round(km * 0.621371);
       stats.push('<span class="stat">' + svgInline2("car", 13) + " ~" + km + " km · " + mi + " mi</span>");
@@ -470,6 +510,8 @@
 
     if (slot.description) html += '<p class="detail-desc">' + esc(slot.description) + "</p>";
 
+    if (slot.checklist && slot.checklist.length) html += renderChecklist(slot);
+
     // info-card del proveedor
     if (p) {
       var rows = [];
@@ -516,6 +558,27 @@
   function closeSlotDetail() {
     if (state.detailOpen) { try { history.back(); return; } catch (e) {} }
     setTab(state.prevTab || "itinerary");
+  }
+  function openDocs() {
+    var t = state.trip; var docs = collectDocs(t);
+    var h = '<div class="detail-body docs-screen">' +
+      '<h1 class="detail-title">Documentos</h1>' +
+      '<div class="detail-subtitle"><span>' + docs.length + (docs.length === 1 ? " archivo" : " archivos") + " del viaje</span></div>" +
+      '<div class="docs-list" style="margin-top:14px">';
+    docs.forEach(function (d) {
+      var im = /^image\//.test(d.mimeType || "");
+      h += '<a class="doc-row" target="_blank" rel="noopener" href="' + esc(d.url) + '"><div class="doc-icon">' + svgInline2(im ? "img" : "doc", 18) + "</div>" +
+        '<div class="doc-body"><div class="doc-name">' + esc(d.name || "Documento") + '</div><div class="doc-meta">' + esc(d.dayLabel || "") + "</div></div>" +
+        '<div class="doc-icon" style="background:transparent;color:var(--text-dim)">' + svgInline2("down", 16) + "</div></a>";
+    });
+    h += "</div></div>";
+    $("#detailContent").innerHTML = h;
+    state.prevTab = $$(".screen.active")[0] ? $$(".screen.active")[0].id : "overview";
+    $$(".screen").forEach(function (s) { s.classList.toggle("active", s.id === "detail"); });
+    $$("#bottomNav button, #topNav button").forEach(function (b) { b.classList.remove("active"); });
+    window.scrollTo(0, 0);
+    state.detailOpen = true;
+    try { history.pushState({ d: 1 }, ""); } catch (e) {}
   }
 
   // ── render: mundial ──
@@ -688,6 +751,7 @@
         return;
       }
       var nav = e.target.closest("[data-tab]"); if (nav) { setTab(nav.dataset.tab); return; }
+      var dq = e.target.closest("[data-docs]"); if (dq) { openDocs(); return; }
       var di = e.target.closest(".date-item"); if (di) { state.dayIdx = parseInt(di.dataset.idx, 10); renderItinerary(); requestAnimationFrame(function () { var a = $(".date-item.active"); if (a) a.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }); return; }
       var fc = e.target.closest(".filter-chip"); if (fc) { state.filter = fc.dataset.filter; $$(".filter-chip").forEach(function (c) { c.classList.toggle("active", c === fc); }); renderMundial(); return; }
       var ac = e.target.closest(".activity-card");
@@ -699,6 +763,18 @@
     var dbf = $("#detailBackFab"); if (dbf) dbf.addEventListener("click", closeSlotDetail);
     window.addEventListener("popstate", function () {
       if (state.detailOpen) { state.detailOpen = false; setTab(state.prevTab || "itinerary"); }
+    });
+    document.addEventListener("change", function (e) {
+      var cb = e.target.closest("input[data-chk-i]"); if (!cb) return;
+      var wrap = cb.closest(".chk"); if (!wrap) return;
+      var key = wrap.getAttribute("data-key"); var i = parseInt(cb.getAttribute("data-chk-i"), 10);
+      var arr; try { arr = JSON.parse(localStorage.getItem(key) || "[]"); } catch (_) { arr = []; }
+      var pos = arr.indexOf(i);
+      if (cb.checked && pos < 0) arr.push(i); else if (!cb.checked && pos >= 0) arr.splice(pos, 1);
+      try { localStorage.setItem(key, JSON.stringify(arr)); } catch (_) {}
+      var lab = cb.closest(".chk-item"); if (lab) lab.classList.toggle("on", cb.checked);
+      var total = wrap.querySelectorAll("input[data-chk-i]").length;
+      var c = wrap.querySelector(".chk-count"); if (c) c.textContent = arr.length + "/" + total;
     });
     (function () {
       var dc = $("#dayContent"); if (!dc) return;
