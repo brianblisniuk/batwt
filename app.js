@@ -128,6 +128,62 @@
       } catch (e) { resolve(file); }
     });
   }
+  function loadPhotos(slot) {
+    var root = $("#detailContent"); if (!root) return;
+    var grid = $(".rv-grid", root);
+    sb.storage.from("trip-attachments").list(photoPrefix(slot).replace(/\/$/, ""), { limit: 200, sortBy: { column: "name", order: "asc" } })
+      .then(function (res) {
+        var items = ((res && res.data) || []).filter(function (x) { return x.name && x.name.indexOf(".") !== 0 && x.id; });
+        items.forEach(function (x) { var k = parseInt(x.name.split("_")[0], 10); x._i = isNaN(k) ? -1 : k; });
+        var counts = {}; items.forEach(function (x) { counts[x._i] = (counts[x._i] || 0) + 1; });
+        $$(".chk-cam", root).forEach(function (btn) {
+          var i = parseInt(btn.dataset.camI, 10), nn = counts[i] || 0, nEl = $(".chk-cam-n", btn);
+          if (nEl) nEl.textContent = nn ? String(nn) : "";
+          btn.classList.toggle("has", nn > 0);
+        });
+        if (grid) {
+          if (!items.length) { grid.innerHTML = '<div class="rv-empty">Todavía no hay fotos.</div>'; return; }
+          items.sort(function (a, b) { return (a._i - b._i) || (a.name < b.name ? -1 : 1); });
+          grid.innerHTML = items.map(function (x) {
+            var url = sb.storage.from("trip-attachments").getPublicUrl(photoPrefix(slot) + x.name).data.publicUrl;
+            return '<div class="rv-ph"><a href="' + esc(url) + '" target="_blank" rel="noopener"><img src="' + esc(url) + '" loading="lazy" alt=""></a>' +
+              (x._i >= 0 ? '<span class="rv-badge">' + (x._i + 1) + "</span>" : "") +
+              '<button class="rv-del" data-path="' + esc(photoPrefix(slot) + x.name) + '" aria-label="Borrar">×</button></div>';
+          }).join("");
+        }
+      })
+      .catch(function () { if (grid) grid.innerHTML = '<div class="rv-empty">No se pudieron cargar las fotos.</div>'; });
+  }
+  function uploadPhoto(slot, i, file, inp) {
+    var grid = $("#detailContent .rv-grid"); if (grid) grid.innerHTML = '<div class="rv-empty">Subiendo…</div>';
+    compressImage(file, 1600, 0.82).then(function (blob) {
+      return sb.storage.from("trip-attachments").upload(photoPrefix(slot) + i + "_" + Date.now() + ".jpg", blob, { contentType: "image/jpeg", upsert: true });
+    }).then(function () { if (inp) inp.value = ""; loadPhotos(slot); })
+      .catch(function () { if (inp) inp.value = ""; loadPhotos(slot); });
+  }
+  function initPhotos(slot) {
+    var root = $("#detailContent"); if (!root) return;
+    var chk = $(".chk", root), gallery = $(".rv-photos", root);
+    loadPhotos(slot);
+    if (chk) {
+      chk.addEventListener("click", function (e) {
+        var cam = e.target.closest(".chk-cam"); if (!cam) return;
+        e.preventDefault();
+        var inp = $('input[data-cam-input="' + cam.dataset.camI + '"]', chk); if (inp) inp.click();
+      });
+      chk.addEventListener("change", function (e) {
+        var inp = e.target.closest("input[data-cam-input]"); if (!inp) return;
+        var file = inp.files && inp.files[0]; if (!file) return;
+        uploadPhoto(slot, parseInt(inp.dataset.camInput, 10), file, inp);
+      });
+    }
+    if (gallery) gallery.addEventListener("click", function (e) {
+      var del = e.target.closest(".rv-del"); if (!del) return;
+      e.preventDefault();
+      if (!window.confirm("¿Borrar esta foto?")) return;
+      sb.storage.from("trip-attachments").remove([del.dataset.path]).then(function () { loadPhotos(slot); }).catch(function () { loadPhotos(slot); });
+    });
+  }
 
   function stageLabel(m) {
     var map = { group: "Grupos", r32: "16avos", r16: "8vos", qf: "4tos", sf: "Semifinal", third: "3er puesto", final: "Final" };
@@ -252,7 +308,7 @@
     var cd = countdown(meta.startDate, meta.endDate, (t.itinerary || []).length);
     $("#overviewHeader").innerHTML =
       '<header class="trip-header has-cover">' +
-      '<img class="cover-img" src="webfifa26.jpg?v=18" alt="">' +
+      '<img class="cover-img" src="webfifa26.jpg?v=19" alt="">' +
       '<div class="cover-grad"></div>' +
       '<div class="trip-header-top"><span class="trip-header-title">Mi Viaje</span></div>' +
       '<div class="trip-hero">' +
@@ -374,7 +430,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v18";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v19";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
