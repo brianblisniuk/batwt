@@ -305,7 +305,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v8";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v9";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
@@ -350,13 +350,12 @@
     if (day.summary) html += '<p class="day-desc">' + esc(day.summary) + "</p>";
 
     if (dayMatches.length) {
-      html += '<div class="block-title">Partidos de hoy</div><div class="matchday">';
+      html += '<div class="block-title">Partidos de hoy</div><div class="matchgrid">';
       dayMatches.forEach(function (m) {
-        html += '<div class="matchday-card">' +
-          (isArg(m) ? '<div class="badge">Argentina</div>' : "") +
-          '<div class="t">' + ftime(m.match_time) + " · " + esc(stageLabel(m)) + "</div>" +
-          '<div class="vs">' + matchup(m) + "</div>" +
-          '<div class="mt">' + esc(m.stadium) + " · " + esc(m.city) + "</div></div>";
+        html += '<div class="mtile' + (isArg(m) ? " arg" : "") + '">' +
+          '<div class="mt-top">' + ftime(m.match_time) + " · " + esc(stageLabel(m)) + "</div>" +
+          '<div class="mt-vs">' + matchup(m) + "</div>" +
+          '<div class="mt-loc">' + esc(m.city || m.stadium || "") + "</div></div>";
       });
       html += "</div>";
     }
@@ -436,9 +435,6 @@
       ? "background-image:linear-gradient(160deg," + color + "44 0%," + color + "dd 100%)," + cssUrl(img) + ";background-size:cover;background-position:center;"
       : "background:linear-gradient(160deg," + color + " 0%," + color + "dd 100%)";
     html += '<div class="detail-hero' + (img ? " has-img" : "") + '" style="' + dHeroStyle + '">' +
-      '<div class="detail-hero-top">' +
-        '<button class="circle-btn" id="detailBack" aria-label="Volver">' + svgInline2("back", 18) + "</button>" +
-      "</div>" +
       '<div class="detail-hero-art"' + (img ? ' style="display:none"' : "") + '><svg width="180" height="180" viewBox="0 0 24 24" style="color:rgba(255,255,255,.18)">' + (I[icon] || I.pin) + "</svg></div>" +
       '<div class="detail-cat-badge">' + svgInline2(icon, 12) + " " + esc(cat) + "</div>" +
       "</div>";
@@ -498,9 +494,13 @@
     $$(".screen").forEach(function (s) { s.classList.toggle("active", s.id === "detail"); });
     $$("#bottomNav button, #topNav button").forEach(function (b) { b.classList.remove("active"); });
     window.scrollTo(0, 0);
-    var bb = $("#detailBack"); if (bb) bb.addEventListener("click", closeSlotDetail);
+    state.detailOpen = true;
+    try { history.pushState({ d: 1 }, ""); } catch (e) {}
   }
-  function closeSlotDetail() { setTab(state.prevTab || "itinerary"); }
+  function closeSlotDetail() {
+    if (state.detailOpen) { try { history.back(); return; } catch (e) {} }
+    setTab(state.prevTab || "itinerary");
+  }
 
   // ── render: mundial ──
   function renderMundial() {
@@ -646,6 +646,7 @@
 
   // ── nav ──
   function setTab(tab) {
+    if (tab !== "detail") state.detailOpen = false;
     $$(".screen").forEach(function (s) { s.classList.toggle("active", s.id === tab); });
     $$("#bottomNav button, #topNav button").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === tab); });
     if (tab === "mapa") { initMap(); setTimeout(function () { if (window.google && google.maps && state.mapDone) window.dispatchEvent(new Event("resize")); }, 120); }
@@ -678,6 +679,10 @@
         openSlotDetail(parseInt(ac.dataset.day, 10), parseInt(ac.dataset.slotIdx, 10));
         return;
       }
+    });
+    var dbf = $("#detailBackFab"); if (dbf) dbf.addEventListener("click", closeSlotDetail);
+    window.addEventListener("popstate", function () {
+      if (state.detailOpen) { state.detailOpen = false; setTab(state.prevTab || "itinerary"); }
     });
     var input = $("#codeInput"), btn = $("#codeBtn");
     input.addEventListener("input", function () { var c = normCode(input.value); input.value = fmtCode(c); btn.disabled = c.length !== 8; $("#codeErr").textContent = ""; });
