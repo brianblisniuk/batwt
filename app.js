@@ -308,7 +308,7 @@
     var cd = countdown(meta.startDate, meta.endDate, (t.itinerary || []).length);
     $("#overviewHeader").innerHTML =
       '<header class="trip-header has-cover">' +
-      '<img class="cover-img" src="webfifa26.jpg?v=20" alt="">' +
+      '<img class="cover-img" src="webfifa26.jpg?v=21" alt="">' +
       '<div class="cover-grad"></div>' +
       '<div class="trip-header-top"><span class="trip-header-title">Mi Viaje</span></div>' +
       '<div class="trip-hero">' +
@@ -430,7 +430,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v20";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v21";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
