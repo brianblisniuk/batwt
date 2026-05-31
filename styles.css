@@ -458,7 +458,7 @@ img{max-width:100%;display:block;}
 
 /* ── Mi Viaje: portada con foto + countdown destacado ── */
 .trip-header.has-cover{position:relative;overflow:hidden;}
-.trip-header.has-cover .cover-ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,20,48,.5) 0%,rgba(10,20,48,.82) 100%),url('webfifa26.jpg?v=15') center/cover;}
+.trip-header.has-cover .cover-ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,20,48,.5) 0%,rgba(10,20,48,.82) 100%),url('webfifa26.jpg?v=16') center/cover;}
 .trip-header.has-cover .trip-header-top,.trip-header.has-cover .trip-hero{position:relative;z-index:1;}
 .countdown-hero{display:inline-flex;align-items:baseline;gap:8px;margin-top:18px;background:var(--primary);color:#fff;border-radius:999px;padding:10px 20px;font:600 13.5px var(--font-body);box-shadow:0 8px 22px rgba(30,63,184,.45);}
 .countdown-hero b{font:800 22px var(--font-display);color:#fff;line-height:1;}

@@ -336,7 +336,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v15";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v16";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
@@ -855,7 +855,7 @@
       }
       var nav = e.target.closest("[data-tab]"); if (nav) { setTab(nav.dataset.tab); return; }
       var dq = e.target.closest("[data-docs]"); if (dq) { openDocs(); return; }
-      var di = e.target.closest(".date-item"); if (di) { state.dayIdx = parseInt(di.dataset.idx, 10); renderItinerary(); requestAnimationFrame(function () { var a = $(".date-item.active"); if (a) a.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }); return; }
+      var di = e.target.closest(".date-item"); if (di && di.dataset.idx != null) { state.dayIdx = parseInt(di.dataset.idx, 10); renderItinerary(); requestAnimationFrame(function () { var a = $(".date-item.active"); if (a) a.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }); }); return; }
       var fc = e.target.closest(".filter-chip"); if (fc) { state.filter = fc.dataset.filter; $$(".filter-chip").forEach(function (c) { c.classList.toggle("active", c === fc); }); renderMundial(); return; }
       var ac = e.target.closest(".activity-card");
       if (ac && ac.dataset.slotIdx != null && !e.target.closest("a")) {
