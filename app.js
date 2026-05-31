@@ -305,7 +305,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v10";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v11";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
@@ -351,11 +351,16 @@
       '<div class="ov"></div><div class="ttl"><div class="sub">' + (dd ? dd.toLocaleDateString("es-AR", { weekday: "long" }) : "") + (day.dayNumber != null ? " · Día " + day.dayNumber : "") + "</div>" +
       '<div class="main">' + esc(day.title || "") + "</div></div></div>";
 
-    // stats del día (km, minutos, partidos)
+    // stats del día: manejo (km · millas · horas). Nada si no hay manejo.
     var stats = [];
-    if (km != null && km > 0) stats.push('<span class="stat">' + svgInline2("car", 13) + " ~" + km + " km</span>");
-    if (dMin != null && dMin > 0) stats.push('<span class="stat">' + svgInline2("nav", 13) + " " + Math.round(dMin) + " min</span>");
-    if (dayMatches.length) stats.push('<span class="stat">' + svgInline2("stadium", 13) + " " + dayMatches.length + (dayMatches.length === 1 ? " partido" : " partidos") + "</span>");
+    if (km != null && km > 0) {
+      var mi = Math.round(km * 0.621371);
+      stats.push('<span class="stat">' + svgInline2("car", 13) + " ~" + km + " km · " + mi + " mi</span>");
+    }
+    if (dMin != null && dMin > 0) {
+      var dh = Math.floor(dMin / 60), dmm = Math.round(dMin % 60);
+      stats.push('<span class="stat">' + svgInline2("nav", 13) + " " + (dh > 0 ? dh + " h" + (dmm ? " " + dmm + " min" : "") : dmm + " min") + "</span>");
+    }
     if (stats.length) html += '<div class="day-stats">' + stats.join("") + "</div>";
 
     if (day.summary) html += '<p class="day-desc">' + esc(day.summary) + "</p>";
