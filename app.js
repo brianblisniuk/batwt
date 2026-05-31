@@ -367,6 +367,7 @@
       slots.forEach(function (s, idx) {
         var p = provs[s.providerId];
         var icon = pickIcon((s.title || "") + " " + (p ? p.name + " " + (p.type || "") : "") + " " + (s.description || ""));
+        var simg = slotImage(s);
         var sub = p ? p.name : (s.description ? (s.description.length > 80 ? s.description.slice(0, 80) + "…" : s.description) : "");
         var nAtt = (s.attachments || []).filter(function (a) { return a && a.url; }).length;
         var resvChips = "";
@@ -383,6 +384,7 @@
           '<div class="head"><div class="activity-icon">' + svgInline2(icon, 16) + "</div>" +
           '<div class="activity-body"><div class="activity-title-text">' + esc(s.title || "") + "</div>" +
           (sub ? '<div class="activity-sub">' + esc(sub) + "</div>" : "") + "</div>" +
+          (simg ? '<img class="activity-thumb" src="' + esc(simg) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display=\'none\'" style="width:50px;height:50px;border-radius:10px;object-fit:cover;flex:0 0 auto;margin-left:10px;">' : "") +
           '<span class="go">' + svgInline2("chev", 16) + "</span></div>" +
           (nAtt ? '<div class="att-hint">' + svgInline2("doc", 12) + " " + nAtt + (nAtt === 1 ? " adjunto" : " adjuntos") + "</div>" : "") +
           resvChips +
