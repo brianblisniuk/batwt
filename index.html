@@ -15836,7 +15836,15 @@ function app() {
       for (let i = 0; i < positioned.length - 1; i++) {
         const a = positioned[i].c, b = positioned[i + 1].c;
         // Fire-and-await sequentially to be gentle on API
-        await this._fetchDirections(a, b);
+        const d = await this._fetchDirections(a, b);
+        // Persist the real result into the trip data so it rides along on the
+        // next save. After that, the km/time chips read real numbers across
+        // devices and sessions without re-hitting the API and without depending
+        // on the per-device localStorage directions cache.
+        if (d && d.duration_min != null) {
+          this.data.travelCache = this.data.travelCache || {};
+          this.data.travelCache[this._travelKey(a, b)] = { duration_min: d.duration_min, distance_km: d.distance_km };
+        }
       }
     },
     // Prefetch real Google Directions for EVERY consecutive positioned-slot pair
@@ -15876,8 +15884,9 @@ function app() {
       });
       let totalMin = 0, totalKm = 0;
       for (let i = 0; i < positioned.length - 1; i++) {
-        const cached = this._cachedDirections(positioned[i], positioned[i + 1]);
-        if (cached) {
+        const cached = this._cachedDirections(positioned[i], positioned[i + 1])
+          || (this.data.travelCache || {})[this._travelKey(positioned[i], positioned[i + 1])];
+        if (cached && cached.duration_min != null) {
           totalMin += cached.duration_min;
           totalKm += cached.distance_km;
         } else {
@@ -16085,9 +16094,17 @@ function app() {
       if (directKm < 0.05) {
         return { duration_min: 0, distance_km: 0, estimated: true, same_location: true };
       }
-      const roadKm = directKm * 1.3;
-      // 50 km/h average for Langhe rural roads, 5 min minimum for any transfer
-      const minutes = Math.max(5, Math.round(roadKm / 50 * 60));
+      // Road factor + distance-aware effective speed, calibrated to this trip's
+      // driving profile. Short hops are urban/slow; long legs are interstate-
+      // dominated and fast. Replaces the old flat 50 km/h (Langhe rural roads),
+      // which overestimated highway times by ~2x.
+      const roadKm = directKm * 1.18;
+      let kmh;
+      if (roadKm < 20) kmh = 45;
+      else if (roadKm < 70) kmh = 72;
+      else if (roadKm < 150) kmh = 85;
+      else kmh = 92;
+      const minutes = Math.max(5, Math.round(roadKm / kmh * 60));
       return {
         duration_min: minutes,
         distance_km: Math.round(roadKm * 10) / 10,
