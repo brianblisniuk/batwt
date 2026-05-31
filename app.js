@@ -340,7 +340,7 @@
   function cssUrl(u) { return "url('" + String(u).replace(/'/g, "%27").replace(/\)/g, "%29") + "')"; }
   function renderItinerary() {
     var t = state.trip, meta = t.meta || {}, days = t.itinerary || [];
-    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v13";
+    $("#itiSub").textContent = days.length + " días · " + fdate(meta.startDate) + " – " + fdate(meta.endDate) + " · v14";
     // scroller
     $("#dateScroller").innerHTML = days.map(function (d, i) {
       var dd = pdate(d.date);
@@ -806,7 +806,8 @@
           });
         });
       }
-      showAll();
+      var d0 = state.mapDays[state.dayIdx];
+      if (d0 && d0.pts && d0.pts.length) showDay(state.dayIdx); else showAll();
     });
   }
 
@@ -817,7 +818,7 @@
     if (tab !== "detail") state.detailOpen = false;
     $$(".screen").forEach(function (s) { s.classList.toggle("active", s.id === tab); });
     $$("#bottomNav button, #topNav button").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === tab); });
-    if (tab === "mapa") { initMap(); setTimeout(function () { if (window.google && google.maps && state.mapDone) window.dispatchEvent(new Event("resize")); }, 120); }
+    if (tab === "mapa") { initMap(); setTimeout(function () { if (window.google && google.maps && state.mapDone) { window.dispatchEvent(new Event("resize")); if (state._showDay) { var d = state.mapDays && state.mapDays[state.dayIdx]; if (d && d.pts && d.pts.length) state._showDay(state.dayIdx); else if (state._showAll) state._showAll(); } } }, 160); }
     var sb2 = $("#" + tab + " .screen-body") || $("#" + tab); if (sb2) sb2.scrollTop = 0;
     window.scrollTo(0, 0);
   }
