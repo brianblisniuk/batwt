@@ -291,6 +291,7 @@
   }
   // Primera imagen adjunta de un slot (mimeType image/*), o null.
   function slotImage(slot) {
+    if (slot.coverImage) return slot.coverImage;
     var a = (slot.attachments || []).filter(function (x) { return x && x.url && /^image\//.test(x.mimeType || ""); });
     return a.length ? a[0].url : null;
   }
