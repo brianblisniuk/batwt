@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="styles.css?v=21"/>
+  <link rel="stylesheet" href="styles.css?v=22"/>
 </head>
 <body>
 
@@ -136,9 +136,19 @@
       key:"AIzaSyCUeZyKs2jjtKLNIwHq9V7Caw2bW_ehEDE", v:"weekly", language:"es", region:"US"
     });
   </script>
-  <script src="app.js?v=21"></script>
+  <script src="app.js?v=22"></script>
   <script>
-    if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        var refreshing = false;
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.addEventListener('controllerchange', function () {
+            if (refreshing) return; refreshing = true; window.location.reload();
+          });
+        }
+        navigator.serviceWorker.register('sw.js').then(function (reg) { try { reg.update(); } catch (e) {} }).catch(function () {});
+      });
+    }
   </script>
 </body>
 </html>
