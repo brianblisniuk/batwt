@@ -8278,6 +8278,23 @@ textarea:focus-visible {
     .bx-task-t{font-family:'Fraunces',serif;font-size:15.5px;font-weight:500;color:var(--ink);line-height:1.25}
     .bx-task-d{font-size:12px;color:var(--ink-mute);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .bx-task-pri{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--sienna);border:1px solid rgba(154,90,58,.4);border-radius:4px;padding:2px 6px;white-space:nowrap}
+    .bx-act{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}
+    .bx-act-h{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:12px}
+    .bx-act-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+    .bx-act-l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);width:78px;flex-shrink:0}
+    .bx-act-sel{flex:1;min-width:0;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 10px;-webkit-appearance:none;appearance:none}
+    .bx-act-saved{font-family:'JetBrains Mono',monospace;font-size:10px;color:#3f5a2e;margin-top:2px}
+    .bx-act-pay{margin-top:14px;border:1px dashed rgba(154,90,58,.4);border-radius:10px;padding:12px;background:rgba(154,90,58,.04)}
+    .bx-act-paytop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .bx-act-amt{font-family:'Fraunces',serif;font-size:18px;color:var(--sienna);font-weight:600;margin-top:2px}
+    .bx-act-btn{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--paper);background:var(--sienna);border:none;border-radius:7px;padding:9px 13px;cursor:pointer;white-space:nowrap}
+    .bx-act-cuotas{margin-top:12px}
+    .bx-cuota{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+    .bx-cuota-mid{min-width:0}
+    .bx-cuota-t{font-family:'Fraunces',serif;font-size:13.5px;color:var(--ink);line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bx-cuota-s{font-size:11px;color:var(--ink-faint);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bx-cuota-amt{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink);white-space:nowrap}
+    .bx-cuota-btn{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);background:var(--paper);border:1px solid var(--ink);border-radius:6px;padding:7px 10px;cursor:pointer;white-space:nowrap}
   </style>
   <main class="v5-home" x-show="currentView === 'bandeja'" x-cloak>
     <div class="v5-home-inner">
@@ -8364,6 +8381,52 @@ textarea:focus-visible {
           <div class="bx-ai">
             <div class="bx-ai-h"><span>◆ Análisis IA</span><span class="bx-ai-soon" x-show="!selectedEmail.ai_summary">Fase 2 · próximamente</span></div>
             <div class="bx-ai-body" x-text="selectedEmail.ai_summary || 'Acá la IA va a mostrar el resumen, la categoría, los datos detectados y un borrador de respuesta en voseo, y va a enganchar el correo al trip, proveedor o lead que corresponda.'"></div>
+          </div>
+
+          <div class="bx-act" x-show="selectedEmail.direction==='inbound'">
+            <div class="bx-act-h">◆ Acciones</div>
+            <div class="bx-act-row">
+              <label class="bx-act-l">Viaje</label>
+              <select class="bx-act-sel" @change="linkEmailTrip($event.target.value)">
+                <option value="">— sin vincular —</option>
+                <template x-for="t in bandejaTrips" :key="t.id">
+                  <option :value="t.id" :selected="selectedEmail.trip_id===t.id" x-text="(t.title || t.region_label || t.id)"></option>
+                </template>
+              </select>
+            </div>
+            <div class="bx-act-row">
+              <label class="bx-act-l">Proveedor</label>
+              <select class="bx-act-sel" @change="linkEmailProvider($event.target.value)">
+                <option value="">— sin vincular —</option>
+                <template x-for="pv in bandejaProviders" :key="pv.id">
+                  <option :value="pv.id" :selected="selectedEmail.provider_id===pv.id" x-text="pv.name + (pv.type ? ' · ' + pv.type : '')"></option>
+                </template>
+              </select>
+            </div>
+            <div class="bx-act-saved" x-show="actSaved" x-transition>Vinculado ✓</div>
+
+            <div class="bx-act-pay" x-show="selectedEmail.ai_category==='Pago' || (selectedEmail.ai_extracted && selectedEmail.ai_extracted.monto)">
+              <div class="bx-act-paytop">
+                <div>
+                  <div class="bx-act-l">Pago detectado</div>
+                  <div class="bx-act-amt" x-show="selectedEmail.ai_extracted && selectedEmail.ai_extracted.monto" x-text="(selectedEmail.ai_extracted?.moneda || '') + ' ' + (selectedEmail.ai_extracted?.monto || '')"></div>
+                </div>
+                <button class="bx-act-btn" @click="openReconcile()" x-text="showReconcile ? 'Ocultar' : 'Conciliar →'"></button>
+              </div>
+              <div class="bx-act-cuotas" x-show="showReconcile" x-cloak>
+                <div class="bx-empty" x-show="!dueLoading && duePayments.length===0">No hay cuotas pendientes.</div>
+                <template x-for="p in duePayments" :key="p.id">
+                  <div class="bx-cuota">
+                    <div class="bx-cuota-mid">
+                      <div class="bx-cuota-t" x-text="(p.full_name || 'Sin nombre') + ' · ' + (p.label || '')"></div>
+                      <div class="bx-cuota-s"><span x-text="p.region_label || p.trip_id"></span> · vence <span x-text="boardDate(p.due_date)"></span></div>
+                    </div>
+                    <span class="bx-cuota-amt" x-text="money0(p.amount)"></span>
+                    <button class="bx-cuota-btn" @click="reconcilePaid(p.id)">Cobrada</button>
+                  </div>
+                </template>
+              </div>
+            </div>
           </div>
         </div>
         <div class="bx-compose" x-show="selectedEmail.direction==='inbound'">
@@ -12477,6 +12540,7 @@ function app() {
     // Bandeja (correo)
     emails: [], bandejaLoading: false, bandejaAcct: 'all', bandejaOnlyUnread: false, selectedEmail: null, replyText: '', replySending: false, _bandejaChannel: null,
     tasks: [], bandejaStats: null, showTasks: false,
+    bandejaTrips: [], bandejaProviders: [], showReconcile: false, actSaved: false, _actT: null,
     clientsRows: [], clientsLoading: false,    // Clientes
     proposalBusy: false, proposalResult: null, // Propuesta desde el lead drawer
     leadDrawerPayments: [], paymentBusy: false, // Plan de pagos en el drawer
@@ -12873,6 +12937,33 @@ function app() {
       try { await this._client.from('tasks').update({ status: next }).eq('id', t.id); this.loadStats(); } catch (e) { console.error('cycleTask', e); }
     },
     openTaskEmail(t) { if (!t.email_id) return; const e = this.emails.find(x => x.id === t.email_id); if (e) { this.showTasks = false; this.openEmail(e); } },
+    async loadBandejaRefs() {
+      if (!this._client) return;
+      try {
+        const [tr, pv] = await Promise.all([
+          this._client.from('trips').select('id,title,region_label,status,start_date').order('start_date', { ascending: true }),
+          this._client.from('providers_library').select('id,name,type').order('name', { ascending: true })
+        ]);
+        this.bandejaTrips = tr.data || [];
+        this.bandejaProviders = pv.data || [];
+      } catch (e) { console.error('loadBandejaRefs', e); }
+    },
+    _flashSaved() { this.actSaved = true; clearTimeout(this._actT); this._actT = setTimeout(() => { this.actSaved = false; }, 1800); },
+    async linkEmailTrip(tripId) {
+      if (!this.selectedEmail) return;
+      const v = tripId || null;
+      try { await this._client.from('emails').update({ trip_id: v }).eq('id', this.selectedEmail.id); this.selectedEmail.trip_id = v; this._flashSaved(); } catch (e) { console.error('linkEmailTrip', e); }
+    },
+    async linkEmailProvider(provId) {
+      if (!this.selectedEmail) return;
+      const v = provId || null;
+      try { await this._client.from('emails').update({ provider_id: v }).eq('id', this.selectedEmail.id); this.selectedEmail.provider_id = v; this._flashSaved(); } catch (e) { console.error('linkEmailProvider', e); }
+    },
+    async openReconcile() {
+      this.showReconcile = !this.showReconcile;
+      if (this.showReconcile && this.duePayments.length === 0) await this.loadDuePayments();
+    },
+    async reconcilePaid(id) { await this.markPaid(id); this.loadStats(); },
     async loadBandeja(force) {
       if (!this._client) return;
       this.bandejaLoading = true;
@@ -12886,7 +12977,7 @@ function app() {
         this.emails = data || [];
       } catch (e) { console.error('loadBandeja', e); if (this.toast) this.toast('No se pudo cargar la bandeja', 'error'); }
       finally { this.bandejaLoading = false; }
-      this.subscribeBandeja(); this.loadTasks(); this.loadStats();
+      this.subscribeBandeja(); this.loadTasks(); this.loadStats(); this.loadBandejaRefs();
     },
     get bandejaFiltered() {
       return (this.emails || []).filter(e =>
