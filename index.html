@@ -8269,6 +8269,8 @@ textarea:focus-visible {
     .bx-stat b{font-family:'Fraunces',serif;font-size:15px;color:var(--ink);margin-right:5px;font-weight:600}
     .bx-stat.active{border-color:var(--ink);background:var(--ink);color:var(--paper)}
     .bx-stat.active b{color:var(--paper)}
+    .bx-stat-alert{border-color:rgba(154,90,58,.45);color:var(--sienna)}
+    .bx-stat-alert b{color:var(--sienna)}
     .bx-tasks{padding:0 8px 24px}
     .bx-task{display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:start;padding:13px 10px;border-bottom:1px solid var(--line)}
     .bx-task-st{background:none;border:none;cursor:pointer;font-size:18px;line-height:1;padding:2px;color:var(--ink-mute)}
@@ -8320,6 +8322,8 @@ textarea:focus-visible {
         <button class="bx-stat" :class="{active: bandejaOnlyUnread && !showTasks}" @click="showTasks=false; bandejaOnlyUnread=!bandejaOnlyUnread"><b x-text="bandejaStats?.unread ?? 0"></b> sin leer</button>
         <button class="bx-stat" @click="showTasks=false; bandejaOnlyUnread=false"><b x-text="bandejaStats?.needs_reply ?? 0"></b> a responder</button>
         <button class="bx-stat" :class="{active: showTasks}" @click="showTasks=!showTasks"><b x-text="bandejaStats?.tasks_pendientes ?? 0"></b> pendientes</button>
+        <button class="bx-stat bx-stat-alert" x-show="(bandejaStats?.sin_responder_24h ?? 0) > 0" @click="showTasks=false; bandejaOnlyUnread=false"><b x-text="bandejaStats?.sin_responder_24h ?? 0"></b> +24h sin responder</button>
+        <button class="bx-stat bx-stat-alert" x-show="(bandejaStats?.cobros_vencidos ?? 0) > 0" @click="navigateToCobranzas()"><b x-text="bandejaStats?.cobros_vencidos ?? 0"></b> cobros vencidos</button>
       </div>
 
       <div class="bx-tasks" x-show="showTasks" x-cloak>
