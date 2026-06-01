@@ -7719,6 +7719,78 @@ textarea:focus-visible {
         </div>
       </header>
 
+      <!-- ===== Tablero de Salidas (motor de ventas) ===== -->
+      <style>
+        .v5-home-board{margin:6px 0 38px;}
+        .v5-board-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+        .v5-board-title{font-family:'Fraunces',serif;font-weight:400;font-size:22px;color:var(--ink);margin:0;}
+        .v5-board-kpis{display:flex;gap:22px;flex-wrap:wrap;}
+        .v5-board-kpi{display:flex;flex-direction:column;}
+        .v5-board-kpi .n{font-family:'Fraunces',serif;font-size:18px;color:var(--ink);line-height:1;}
+        .v5-board-kpi .l{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-mute);margin-top:4px;}
+        .v5-board-list{display:flex;flex-direction:column;gap:10px;}
+        .v5-board-row{border:1px solid var(--line);border-radius:var(--radius);padding:13px 15px;background:var(--surface-2,#fbf7ef);cursor:pointer;transition:border-color .15s, transform .05s;}
+        .v5-board-row:hover{border-color:var(--ink-faint);}
+        .v5-board-row:active{transform:scale(.997);}
+        .v5-board-row-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px;}
+        .v5-board-reg{font-family:'Fraunces',serif;font-size:16px;color:var(--ink);line-height:1.15;}
+        .v5-board-date{font-size:11px;color:var(--ink-mute);margin-top:3px;}
+        .v5-board-badge{font-size:9px;font-weight:700;letter-spacing:.1em;color:#fff;padding:3px 9px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
+        .v5-board-bar{position:relative;height:11px;border-radius:3px;overflow:hidden;display:flex;background:#EBE3D6;}
+        .v5-board-seg{height:100%;}
+        .v5-board-tick{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink);}
+        .v5-board-meta{display:flex;gap:13px;flex-wrap:wrap;align-items:center;margin-top:9px;font-size:11.5px;color:var(--ink-soft);}
+        .v5-board-meta b{color:var(--ink);}
+        .v5-board-meta .fc{color:var(--accent-deep,#9A5A3A);font-weight:700;}
+        .v5-board-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:13px;font-size:10px;color:var(--ink-mute);}
+        .v5-board-sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;}
+      </style>
+      <section class="v5-home-board" x-show="boardRows.length > 0" x-cloak>
+        <div class="v5-board-head">
+          <h2 class="v5-board-title">Tablero de salidas</h2>
+          <div class="v5-board-kpis">
+            <div class="v5-board-kpi"><span class="n" x-text="boardRows.length"></span><span class="l">Salidas</span></div>
+            <div class="v5-board-kpi"><span class="n" x-text="boardRows.reduce((s,r)=>s+(r.confirmed||0),0)"></span><span class="l">Confirmadas</span></div>
+            <div class="v5-board-kpi"><span class="n" x-text="boardRows.reduce((s,r)=>s+(r.opt||0),0)"></span><span class="l">En opción</span></div>
+            <div class="v5-board-kpi"><span class="n" x-text="'US$ ' + boardRows.reduce((s,r)=>s+(r.revenue_forecast||0),0).toLocaleString('es-AR')"></span><span class="l">Forecast</span></div>
+          </div>
+        </div>
+        <div class="v5-board-list">
+          <template x-for="r in boardRows" :key="r.id">
+            <div class="v5-board-row" @click="navigateToTrip(r.id)">
+              <div class="v5-board-row-top">
+                <div>
+                  <div class="v5-board-reg" x-text="r.region_label || r.title"></div>
+                  <div class="v5-board-date"><span x-text="boardDate(r.start_date)"></span> · US$ <span x-text="(r.price||0).toLocaleString('es-AR')"></span>/pax</div>
+                </div>
+                <span class="v5-board-badge" :style="'background:' + ({GO:'#5E7A52',EN_RIESGO:'#B0742F',NO_GO:'#6B6258',EN_CURSO:'#6B6258'}[r.go_status] || '#6B6258')" x-text="({GO:'GO',EN_RIESGO:'EN RIESGO',NO_GO:'NO VA',EN_CURSO:'EN CURSO'}[r.go_status] || r.go_status)"></span>
+              </div>
+              <div class="v5-board-bar">
+                <div class="v5-board-seg" :style="`width:${Math.max(0,Math.min(100,(r.confirmed/r.capacity)*100))}%;background:#9A5A3A`"></div>
+                <div class="v5-board-seg" :style="`width:${Math.max(0,Math.min(100,(r.opt/r.capacity)*100))}%;background:#D9C9B4`"></div>
+                <div class="v5-board-seg" :style="`width:${Math.max(0,Math.min(100,(r.libres/r.capacity)*100))}%;background:#EBE3D6`"></div>
+                <div class="v5-board-tick" :style="`left:${Math.min(100,(r.min_pax/r.capacity)*100)}%`" title="Break-even"></div>
+              </div>
+              <div class="v5-board-meta">
+                <span><b x-text="r.confirmed"></b>/<span x-text="r.min_pax"></span> confirmadas · break-even</span>
+                <span x-show="r.opt > 0"><b x-text="r.opt"></b> en opción</span>
+                <span><b x-text="r.libres"></b> libres</span>
+                <span>decisión en <b x-text="r.days_to_decision"></b>d</span>
+                <span>accesos <span x-text="r.accesos_cerrados"></span>/<span x-text="r.accesos_total"></span></span>
+                <span x-show="r.readiness_pct > 0">readiness <span x-text="r.readiness_pct"></span>%</span>
+                <span class="fc" x-show="r.revenue_forecast > 0" x-text="'US$ ' + (r.revenue_forecast||0).toLocaleString('es-AR') + ' forecast'"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+        <div class="v5-board-legend">
+          <span><span class="v5-board-sw" style="background:#9A5A3A"></span>Confirmadas</span>
+          <span><span class="v5-board-sw" style="background:#D9C9B4"></span>En opción</span>
+          <span><span class="v5-board-sw" style="background:#EBE3D6"></span>Libres</span>
+          <span><span class="v5-board-sw" style="background:var(--ink);width:2px;height:11px"></span>Break-even (mínimo para que salga)</span>
+        </div>
+      </section>
+
       <!-- Grouped trip list -->
       <template x-for="group in [
         { key: 'active',    label: 'En curso' },
@@ -12078,6 +12150,8 @@ function app() {
     operator: null,           // operators row, populated on init from Supabase
     tripList: [],             // all trips for the operator, used by home view
     tripListLoading: false,
+    boardRows: [],            // sales board (trips_board RPC) — home command center
+    boardLoading: false,
     newTripForm: {
       open: false,
       category: 'gastro',
@@ -12508,12 +12582,33 @@ function app() {
           .order('start_date', { ascending: true });
         if (error) throw error;
         this.tripList = data || [];
+        this.loadBoard();   // refresh sales board alongside the trip list
       } catch (e) {
         console.warn('Trip list load failed:', e);
         this.tripList = [];
       } finally {
         this.tripListLoading = false;
       }
+    },
+    // Sales board (occupancy + go/no-go + readiness) for the home command center
+    async loadBoard() {
+      if (!this._client || !this.operator?.id) return;
+      this.boardLoading = true;
+      try {
+        const { data, error } = await this._client.rpc('trips_board');
+        if (error) throw error;
+        this.boardRows = Array.isArray(data) ? data : (data || []);
+      } catch (e) {
+        console.warn('Sales board load failed:', e);
+        this.boardRows = [];
+      } finally {
+        this.boardLoading = false;
+      }
+    },
+    boardDate(s) {
+      if (!s) return '';
+      try { return new Date(s + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }); }
+      catch (_) { return s; }
     },
     // Group trips by status for the home view
     get tripsByStatus() {
