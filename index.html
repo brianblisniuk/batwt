@@ -8158,6 +8158,7 @@ textarea:focus-visible {
             </div>
             <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
               <span class="amt" :class="p.status==='overdue'?'over':''" x-text="money0(p.amount)"></span>
+              <button class="v5-ops-btn" :disabled="cobroBusy" @click="sendCobroReminder(p)">Recordar</button>
               <button class="v5-ops-btn" @click="markPaid(p.id)">Marcar pagado</button>
             </div>
           </div>
@@ -8196,6 +8197,16 @@ textarea:focus-visible {
         </template>
       </div>
       <div class="v5-ops-empty" x-show="cashflowRows.length === 0 && !projLoading">La caja se llena cuando generes planes de pago.</div>
+      <h2 class="v5-ops-section-title">De dónde vienen las reservas</h2>
+      <div x-show="attributionRows.length > 0">
+        <template x-for="a in attributionRows" :key="a.fuente">
+          <div class="v5-ops-row">
+            <div class="main"><div class="t" x-text="a.fuente || 'sin fuente'"></div><div class="s"><span x-text="a.leads"></span> leads · <span x-text="a.booked"></span> reservaron · <span x-text="a.conv_pct"></span>% conversión</div></div>
+            <div class="amt" x-text="money0(a.revenue)"></div>
+          </div>
+        </template>
+      </div>
+      <div class="v5-ops-empty" x-show="attributionRows.length === 0 && !projLoading">Todavía no hay datos de atribución (aparece cuando entren leads con fuente y reserven).</div>
     </div>
   </main>
 
@@ -12593,8 +12604,8 @@ function app() {
     tripListLoading: false,
     boardRows: [],            // sales board (trips_board RPC) — home command center
     boardLoading: false,
-    duePayments: [], dueLoading: false,        // Cobranzas (payments_due)
-    forecastRows: [], cashflowRows: [], projLoading: false,  // Proyección
+    duePayments: [], dueLoading: false, cobroBusy: false,    // Cobranzas (payments_due)
+    forecastRows: [], cashflowRows: [], attributionRows: [], projLoading: false,  // Proyección + atribución
     // Bandeja (correo)
     emails: [], bandejaLoading: false, bandejaAcct: 'all', bandejaOnlyUnread: false, selectedEmail: null, replyText: '', replySending: false, _bandejaChannel: null,
     tasks: [], bandejaStats: null, showTasks: false,
@@ -13225,14 +13236,44 @@ function app() {
         await this.loadDuePayments();
       } catch (e) { console.warn('mark_payment_paid failed:', e); }
     },
+    async sendCobroReminder(p) {
+      if (!p || !p.lead_id) return;
+      if (!window.confirm('¿Enviar recordatorio de pago al cliente?')) return;
+      this.cobroBusy = true;
+      try {
+        const { data: lead, error: le } = await this._client.from('leads').select('email, full_name').eq('id', p.lead_id).maybeSingle();
+        if (le) throw le;
+        if (!lead || !lead.email) { if (typeof this.toast === 'function') this.toast('El cliente no tiene email cargado', 'error'); return; }
+        const nombre = (lead.full_name || '').trim().split(/\s+/)[0] || 'ahí';
+        const vence = this.boardDate(p.due_date);
+        const viaje = p.region_label || 'tu viaje';
+        const monto = this.money0(p.amount);
+        const text = `Hola ${nombre}, te recuerdo que ${p.label} de ${viaje} (${monto}) vence el ${vence}. Cualquier cosa, respondé este mail.`;
+        const html = `<div style="font-family:Georgia,serif;font-size:15px;color:#1A1A1A;line-height:1.6"><p>Hola ${nombre},</p><p>Te recuerdo que ${p.label} de ${viaje} (${monto}) vence el ${vence}. Cualquier cosa, respondé este mail.</p><p style="color:#6B6258">Brian · Blisniuk &amp; Amanov</p></div>`;
+        const { data: session } = await this._client.auth.getSession();
+        const accessToken = session?.session?.access_token;
+        if (!accessToken) throw new Error('No hay sesión activa, recargá');
+        const resp = await fetch(`${this.SUPABASE_URL}/functions/v1/email-dispatch`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json', 'apikey': this.SUPABASE_KEY },
+          body: JSON.stringify({ account: 'info', to: [lead.email], subject: 'Recordatorio de pago — ' + viaje, text, html, reply_to_email_id: null })
+        });
+        const out = await resp.json();
+        if (!resp.ok) throw new Error(out.error || out.message || 'Error al enviar');
+        if (typeof this.toast === 'function') this.toast('Recordatorio enviado ✓', 'success');
+        try { await this._client.rpc('lead_add_note', { p_lead_id: p.lead_id, p_text: 'Recordatorio de cobro enviado: ' + p.label }); } catch (_) {}
+      } catch (e) { console.error('sendCobroReminder failed:', e); if (typeof this.toast === 'function') this.toast('Error: ' + (e.message || ''), 'error'); }
+      finally { this.cobroBusy = false; }
+    },
     // ---- Proyección ----
     async loadProjection() {
       if (!this._client || !this.operator?.id) return;
       this.projLoading = true;
       try {
-        const [f, c] = await Promise.all([ this._client.rpc('sales_forecast'), this._client.rpc('cashflow_projection') ]);
+        const [f, c, a] = await Promise.all([ this._client.rpc('sales_forecast'), this._client.rpc('cashflow_projection'), this._client.rpc('sales_attribution') ]);
         this.forecastRows = Array.isArray(f.data) ? f.data : (f.data || []);
         this.cashflowRows = Array.isArray(c.data) ? c.data : (c.data || []);
+        this.attributionRows = Array.isArray(a.data) ? a.data : (a.data || []);
       } catch (e) { console.warn('projection failed:', e); this.forecastRows = []; this.cashflowRows = []; }
       finally { this.projLoading = false; }
     },
