@@ -9719,6 +9719,60 @@ textarea:focus-visible {
               </template>
             </div>
 
+            <!-- Seguimiento sugerido (cadencias manuales) -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">Seguimiento sugerido</div>
+              <template x-if="leadDrawerCadence.length === 0">
+                <div style="font-size: 12px; color: var(--text-3);">No hay pasos sugeridos para esta etapa.</div>
+              </template>
+              <div x-show="leadDrawerCadence.length > 0" style="display: flex; flex-direction: column; gap: 6px;">
+                <template x-for="r in leadDrawerCadence" :key="r.id">
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 11px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius);">
+                    <div style="min-width: 0;">
+                      <div style="font-size: 13px; color: var(--text-1);">
+                        <span x-text="r.name"></span>
+                        <span :style="'font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:99px;color:#fff;margin-left:4px;background:'+({email:'#9A5A3A',whatsapp:'#5E7A52',call:'#6B6258'}[r.channel]||'#6B6258')" x-text="({email:'MAIL',whatsapp:'WHATSAPP',call:'LLAMADA'}[r.channel]||r.channel)"></span>
+                      </div>
+                      <div style="font-size: 11px; color: var(--text-3);">paso <span x-text="r.step_no"></span> · sugerido a los <span x-text="r.offset_days"></span>d</div>
+                    </div>
+                    <button class="btn btn-sm" :disabled="cadenceBusy" @click="cadencePrepare(r)" x-text="r.channel === 'email' ? 'Preparar mail' : (r.channel === 'whatsapp' ? 'Ver mensaje' : 'Ver guion')"></button>
+                  </div>
+                </template>
+              </div>
+              <template x-if="cadencePreview">
+                <div style="margin-top: 10px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper, #fbf7ef);">
+                  <template x-if="cadencePreview.channel === 'email'">
+                    <div>
+                      <input type="text" x-model="cadencePreview.subject" placeholder="Asunto" style="width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-family: inherit; font-size: 13px; box-sizing: border-box; margin-bottom: 6px;">
+                      <textarea x-model="cadencePreview.body" rows="5" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>
+                      <div style="font-size: 11px; color: var(--text-3); margin: 6px 0;">Se manda desde reservas@blisniukamanov.com a <span x-text="cadencePreview.email || '(sin email)'"></span>. Las respuestas entran a la Bandeja.</div>
+                      <div style="display: flex; gap: 6px;">
+                        <button class="btn btn-sm" :disabled="cadenceBusy || !cadencePreview.email" @click="sendCadenceEmail()" x-text="cadenceBusy ? 'Enviando…' : 'Enviar mail'"></button>
+                        <button class="btn btn-sm" @click="cadenceClear()">Cancelar</button>
+                      </div>
+                    </div>
+                  </template>
+                  <template x-if="cadencePreview.channel === 'whatsapp'">
+                    <div>
+                      <div style="font-size: 13px; color: var(--text-1); white-space: pre-wrap;" x-text="cadencePreview.body"></div>
+                      <div style="display: flex; gap: 6px; margin-top: 8px; align-items: center;">
+                        <a x-show="cadencePreview.phone" :href="cadenceWaLink()" target="_blank" rel="noopener" class="btn btn-sm" style="text-decoration: none;">Abrir WhatsApp</a>
+                        <span x-show="!cadencePreview.phone" style="font-size: 11px; color: var(--text-3);">El lead no tiene teléfono cargado.</span>
+                        <button class="btn btn-sm" @click="cadenceClear()">Cerrar</button>
+                      </div>
+                    </div>
+                  </template>
+                  <template x-if="cadencePreview.channel === 'call'">
+                    <div>
+                      <div style="font-size: 11px; color: var(--text-3); margin-bottom: 4px;">Guion para la llamada:</div>
+                      <div style="font-size: 13px; color: var(--text-1); white-space: pre-wrap;" x-text="cadencePreview.body"></div>
+                      <button class="btn btn-sm" style="margin-top: 8px;" @click="cadenceClear()">Cerrar</button>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+
             <!-- Add note -->
             <div style="margin-bottom: 24px;">
               <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">Agregar nota</div>
@@ -12548,6 +12602,7 @@ function app() {
     clientsRows: [], clientsLoading: false,    // Clientes
     proposalBusy: false, proposalResult: null, // Propuesta desde el lead drawer
     leadDrawerPayments: [], paymentBusy: false, // Plan de pagos en el drawer
+    leadDrawerCadence: [], cadencePreview: null, cadenceBusy: false, // Seguimiento (cadencias manuales)
     newTripForm: {
       open: false,
       category: 'gastro',
@@ -15785,12 +15840,15 @@ function app() {
       this.leadDrawerEvents = [];
       this.proposalResult = null;
       this.leadDrawerPayments = [];
+      this.leadDrawerCadence = [];
+      this.cadencePreview = null;
       try {
         var res = await this._client.rpc('lead_full_detail', { p_lead_id: leadId });
         if (res.error) throw res.error;
         this.leadDrawerLead = (res.data && res.data.lead) || null;
         this.leadDrawerEvents = (res.data && res.data.events) || [];
         await this._loadLeadPayments(leadId);
+        await this._loadCadence(this.leadDrawerLead);
       } catch (e) {
         console.error('openLeadDrawer error:', e);
         if (typeof this.toast === 'function') this.toast('No se pudo abrir el lead: ' + (e.message || e), 'error');
@@ -15866,6 +15924,58 @@ function app() {
         if (typeof this.toast === 'function') this.toast('Cuota marcada como pagada ✓', 'success');
       } catch (e) { console.error('mark_payment_paid failed:', e); if (typeof this.toast === 'function') this.toast('Error: ' + (e.message || ''), 'error'); }
       finally { this.paymentBusy = false; }
+    },
+    async _loadCadence(lead) {
+      this.leadDrawerCadence = [];
+      if (!lead || !lead.stage) return;
+      try {
+        const { data, error } = await this._client.from('cadence_rules').select('*').eq('stage', lead.stage).eq('active', true).order('step_no', { ascending: true });
+        if (error) throw error;
+        this.leadDrawerCadence = data || [];
+      } catch (e) { console.warn('load cadence failed:', e); this.leadDrawerCadence = []; }
+    },
+    async cadencePrepare(rule) {
+      const lead = this.leadDrawerLead;
+      if (!lead || !rule) return;
+      this.cadenceBusy = true;
+      try {
+        const { data, error } = await this._client.rpc('cadence_render', { p_lead_id: lead.id, p_rule_id: rule.id });
+        if (error) throw error;
+        this.cadencePreview = Object.assign({ rule_id: rule.id, name: rule.name }, data || {});
+      } catch (e) { console.error('cadence_render failed:', e); if (typeof this.toast === 'function') this.toast('Error: ' + (e.message || ''), 'error'); }
+      finally { this.cadenceBusy = false; }
+    },
+    cadenceClear() { this.cadencePreview = null; },
+    cadenceWaLink() {
+      const p = this.cadencePreview; if (!p) return '#';
+      const num = (p.phone || '').replace(/[^0-9]/g, '');
+      return 'https://wa.me/' + num + '?text=' + encodeURIComponent(p.body || '');
+    },
+    async sendCadenceEmail() {
+      const p = this.cadencePreview; const lead = this.leadDrawerLead;
+      if (!p || !lead) return;
+      if (!p.email) { if (typeof this.toast === 'function') this.toast('El lead no tiene email', 'error'); return; }
+      this.cadenceBusy = true;
+      try {
+        const { data: session } = await this._client.auth.getSession();
+        const accessToken = session?.session?.access_token;
+        if (!accessToken) throw new Error('No hay sesión activa, recargá');
+        const html = '<div style="font-family:Georgia,serif;font-size:15px;color:#1A1A1A;line-height:1.6">'
+          + (p.body || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>')
+          + '<br><br><span style="color:#6B6258">Brian · Blisniuk &amp; Amanov</span></div>';
+        const resp = await fetch(`${this.SUPABASE_URL}/functions/v1/email-dispatch`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json', 'apikey': this.SUPABASE_KEY },
+          body: JSON.stringify({ account: 'reservas', to: [p.email], subject: p.subject || 'Sobre tu viaje', text: p.body, html, reply_to_email_id: null })
+        });
+        const out = await resp.json();
+        if (!resp.ok) throw new Error(out.error || out.message || 'Error al enviar');
+        if (typeof this.toast === 'function') this.toast('Mail de seguimiento enviado ✓', 'success');
+        this.cadencePreview = null;
+        try { await this._client.rpc('lead_add_note', { p_lead_id: lead.id, p_text: 'Cadencia enviada por mail: ' + (p.name || '') }); } catch (_) {}
+        if (this.leadDrawerOpen && this.leadDrawerLead && this.leadDrawerLead.id === lead.id) await this.openLeadDrawer(lead.id);
+      } catch (e) { console.error('sendCadenceEmail failed:', e); if (typeof this.toast === 'function') this.toast('Error: ' + (e.message || ''), 'error'); }
+      finally { this.cadenceBusy = false; }
     },
     async changeLeadStage(leadId, newStage, note) {
       try {
