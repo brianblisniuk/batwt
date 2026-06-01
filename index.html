@@ -9443,6 +9443,22 @@ textarea:focus-visible {
               </div>
             </div>
 
+            <!-- Propuesta -->
+            <div style="margin-bottom: 24px;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">Propuesta</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                <button class="btn btn-sm" :disabled="proposalBusy || !leadDrawerLead.trip_id" @click="generateProposal(false)" x-text="proposalBusy ? 'Generando…' : 'Generar PDF'"></button>
+                <button class="btn btn-sm" :disabled="proposalBusy || !leadDrawerLead.trip_id || !leadDrawerLead.email" @click="generateProposal(true)" x-text="'Generar y enviar por mail'"></button>
+              </div>
+              <div x-show="!leadDrawerLead.trip_id" style="font-size: 11px; color: var(--text-3); margin-top: 6px;">Asociá un viaje al lead para generar la propuesta.</div>
+              <template x-if="proposalResult && proposalResult.url">
+                <div style="margin-top: 8px; font-size: 12px;">
+                  <a :href="proposalResult.url" target="_blank" rel="noopener" style="color: var(--accent); font-weight: 600;">↗ Abrir el PDF</a>
+                  <span style="color: var(--text-3);" x-text="proposalResult.emailed ? ' · enviado por mail' : ' · (PDF listo; mail pendiente de verificar dominio)'"></span>
+                </div>
+              </template>
+            </div>
+
             <!-- Add note -->
             <div style="margin-bottom: 24px;">
               <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px;">Agregar nota</div>
@@ -12266,6 +12282,7 @@ function app() {
     duePayments: [], dueLoading: false,        // Cobranzas (payments_due)
     forecastRows: [], cashflowRows: [], projLoading: false,  // Proyección
     clientsRows: [], clientsLoading: false,    // Clientes
+    proposalBusy: false, proposalResult: null, // Propuesta desde el lead drawer
     newTripForm: {
       open: false,
       category: 'gastro',
@@ -15380,6 +15397,7 @@ function app() {
       this.leadDrawerOpen = true;
       this.leadDrawerLead = null;
       this.leadDrawerEvents = [];
+      this.proposalResult = null;
       try {
         var res = await this._client.rpc('lead_full_detail', { p_lead_id: leadId });
         if (res.error) throw res.error;
@@ -15395,6 +15413,41 @@ function app() {
       this.leadDrawerOpen = false;
       this.leadDrawerLead = null;
       this.leadDrawerEvents = [];
+    },
+    async generateProposal(send) {
+      const lead = this.leadDrawerLead;
+      if (!lead || !lead.id) return;
+      if (!lead.trip_id) { if (typeof this.toast === 'function') this.toast('Asociá un viaje al lead primero', 'error'); return; }
+      this.proposalBusy = true;
+      try {
+        const { data: session } = await this._client.auth.getSession();
+        const accessToken = session?.session?.access_token;
+        if (!accessToken) throw new Error('No hay sesión activa, recargá');
+        const resp = await fetch(`${this.SUPABASE_URL}/functions/v1/proposal_send`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json', 'apikey': this.SUPABASE_KEY },
+          body: JSON.stringify({ lead_id: lead.id, send: !!send }),
+        });
+        const result = await resp.json();
+        if (!resp.ok) throw new Error(result.message || result.error || `HTTP ${resp.status}`);
+        // refrescar timeline (muestra el evento proposal_sent), luego mostrar el link
+        if (this.leadDrawerOpen && this.leadDrawerLead && this.leadDrawerLead.id === lead.id) {
+          await this.openLeadDrawer(lead.id);
+        }
+        this.proposalResult = { url: result.signed_url || null, emailed: !!result.emailed };
+        if (typeof this.toast === 'function') {
+          if (send && result.emailed) this.toast('Propuesta enviada por mail ✓', 'success');
+          else if (send && !result.emailed) {
+            const reason = (result.email_result && (result.email_result.message || result.email_result.error)) || 'el dominio todavía no está verificado en Resend';
+            this.toast('PDF generado. El mail no salió: ' + reason, 'info');
+          } else this.toast('Propuesta generada ✓', 'success');
+        }
+      } catch (e) {
+        console.error('generateProposal failed:', e);
+        if (typeof this.toast === 'function') this.toast('Error generando propuesta: ' + (e.message || ''), 'error');
+      } finally {
+        this.proposalBusy = false;
+      }
     },
     async changeLeadStage(leadId, newStage, note) {
       try {
