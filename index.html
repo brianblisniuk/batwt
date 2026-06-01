@@ -7548,6 +7548,23 @@ textarea:focus-visible {
   .ct-sw.pipe{background:var(--gold-soft)}
   .ct-sw.free{background:var(--paper-warm);border:1px solid var(--rule-strong)}
   .ct-empty{color:var(--ink-faint);font-size:13px;padding:20px 0}
+  /* ===== Pulso de pipeline ===== */
+  .pu-board{max-width:680px}
+  .pu-sec{margin:18px 0 0}
+  .pu-sec h3{font-family:'Fraunces',serif;font-weight:500;font-size:15px;color:var(--ink);margin:0 0 8px;display:flex;align-items:center;gap:8px}
+  .pu-sec h3 .c{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink-mute);background:var(--paper-warm);border:1px solid var(--rule);border-radius:999px;padding:1px 8px;line-height:1.6}
+  .pu-row{display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--paper);border:1px solid var(--rule);border-radius:10px;margin-bottom:6px}
+  .pu-row .nm{font-weight:600;font-size:13.5px;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pu-row .tg{font-size:11px;color:var(--ink-mute);white-space:nowrap}
+  .pu-row .mt{font-size:11.5px;font-weight:600;white-space:nowrap}
+  .pu-row .mt.warn{color:var(--bad)}
+  .pu-row .mt.cool{color:var(--gold)}
+  .pu-row .mt.pot{color:var(--ok)}
+  .pu-empty{font-size:12.5px;color:var(--ink-faint);padding:6px 2px}
+  .pu-dep{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);padding:6px 0;border-bottom:1px solid var(--rule)}
+  .pu-dep:last-child{border-bottom:0}
+  .pu-dep .d-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:500}
+  .pu-dep .d-mt{color:var(--ink-mute);white-space:nowrap}
 </style>
 
 </head>
@@ -8078,6 +8095,10 @@ textarea:focus-visible {
       <button class="v5-nav-item" :class="{active: tab === 'cupos'}" @click="tab = 'cupos'; loadSalesTrips()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></svg>
         <span>Cupos</span>
+      </button>
+      <button class="v5-nav-item" :class="{active: tab === 'pulse'}" @click="tab = 'pulse'; loadPulse()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span>Pulso</span>
       </button>
       <button class="v5-nav-item" :class="{active: tab === 'actions'}" @click="tab = 'actions'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
@@ -9275,6 +9296,70 @@ textarea:focus-visible {
   </template>
 </section>
 
+<!-- ====== PULSO DE PIPELINE ====== -->
+<section x-show="tab === 'pulse'">
+  <div class="section-header">
+    <div>
+      <h1>Pulso del <em>día</em></h1>
+      <p class="lead">Qué vence, qué se enfría y qué está por cerrar — la foto del pipeline en un vistazo.</p>
+    </div>
+  </div>
+  <div class="pu-board" x-show="!pulseLoading">
+    <div class="ct-totals">
+      <div class="ct-tot"><div class="n" x-text="(pulse.health && pulse.health.total_active) || 0"></div><div class="l">Leads activos</div></div>
+      <div class="ct-tot book"><div class="n" x-text="puMoney(pulse.health && pulse.health.total_potential_active_usd)"></div><div class="l">Potencial</div></div>
+      <div class="ct-tot"><div class="n" x-text="(pulse.health && pulse.health.booked_this_month) || 0"></div><div class="l">Reservados / mes</div></div>
+    </div>
+
+    <div class="pu-sec">
+      <h3>Vence hoy <span class="c" x-text="(pulse.due || []).length"></span></h3>
+      <template x-for="r in (pulse.due || [])" :key="r.id">
+        <div class="pu-row">
+          <span class="nm" x-text="r.full_name"></span>
+          <span class="tg" x-text="puTripTitle(r.trip_id)"></span>
+          <span class="mt warn" x-text="r.days_overdue > 0 ? ('vencido ' + r.days_overdue + 'd') : 'hoy'"></span>
+        </div>
+      </template>
+      <div class="pu-empty" x-show="(pulse.due || []).length === 0">Nada vence hoy — igual mirá lo que se enfría.</div>
+    </div>
+
+    <div class="pu-sec">
+      <h3>Se está enfriando <span class="c" x-text="(pulse.cooling || []).length"></span></h3>
+      <template x-for="r in (pulse.cooling || [])" :key="r.id">
+        <div class="pu-row">
+          <span class="nm" x-text="r.full_name"></span>
+          <span class="tg" x-text="puStage(r.stage) + (puTripTitle(r.trip_id) ? ' · ' + puTripTitle(r.trip_id) : '')"></span>
+          <span class="mt cool" x-text="r.days_since_interaction + 'd sin contacto'"></span>
+        </div>
+      </template>
+      <div class="pu-empty" x-show="(pulse.cooling || []).length === 0">Todo al día.</div>
+    </div>
+
+    <div class="pu-sec">
+      <h3>Por cerrar <span class="c" x-text="(pulse.closing || []).length"></span></h3>
+      <template x-for="r in (pulse.closing || [])" :key="r.id">
+        <div class="pu-row">
+          <span class="nm" x-text="r.full_name"></span>
+          <span class="tg" x-text="puStage(r.stage) + (puTripTitle(r.trip_id) ? ' · ' + puTripTitle(r.trip_id) : '')"></span>
+          <span class="mt pot" x-text="puMoney(r.potential_usd)"></span>
+        </div>
+      </template>
+      <div class="pu-empty" x-show="(pulse.closing || []).length === 0">Sin propuestas activas.</div>
+    </div>
+
+    <div class="pu-sec">
+      <h3>Salidas <span class="c" x-text="(pulse.departures || []).length"></span></h3>
+      <template x-for="d in (pulse.departures || [])" :key="d.trip_id">
+        <div class="pu-dep">
+          <span class="d-nm" x-text="d.title"></span>
+          <span class="d-mt" x-text="cuposFmtDate(d.next_departure) + ' · ' + d.booked + '/' + d.capacity + ' · en ' + d.days_to_departure + 'd'"></span>
+        </div>
+      </template>
+    </div>
+  </div>
+  <div class="ct-empty" x-show="pulseLoading">Cargando pulso…</div>
+</section>
+
 <!-- ====== CUPOS POR SALIDA ====== -->
 <section x-show="tab === 'cupos'">
   <div class="section-header">
@@ -9972,6 +10057,11 @@ textarea:focus-visible {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></svg>
               <div class="v5-more-label">Cupos</div>
               <div class="v5-more-meta">asientos por salida</div>
+            </button>
+            <button class="v5-more-tile" :class="{active: tab === 'pulse'}" @click="tab = 'pulse'; moreDrawerOpen = false; loadPulse()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              <div class="v5-more-label">Pulso</div>
+              <div class="v5-more-meta">foco del día</div>
             </button>
             <button class="v5-more-tile" :class="{active: tab === 'actions'}" @click="tab = 'actions'; moreDrawerOpen = false">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
@@ -12130,6 +12220,9 @@ function app() {
     salesTrips: [],
     salesTripsLoading: false,
     salesTripsLoaded: false,
+    pulse: {},
+    pulseLoading: false,
+    pulseLoaded: false,
     leadStats: [],
     leadsList: [],
     leadsPipeline: {},
@@ -14874,6 +14967,37 @@ function app() {
     },
 
     // V5D · Leads CRM methods (Phase 2)
+    async loadPulse(force) {
+      if (this.pulseLoading) return;
+      if (this.pulseLoaded && !force) return;
+      this.pulseLoading = true;
+      try {
+        if (!this._client) return;
+        var r = await this._client.rpc('sales_pulse', { p_stale_days: 4, p_limit: 8 });
+        if (r.error) throw r.error;
+        this.pulse = r.data || {};
+        this.pulseLoaded = true;
+      } catch (e) {
+        console.warn('sales_pulse load failed:', e);
+        this.pulse = {};
+      } finally {
+        this.pulseLoading = false;
+      }
+    },
+    puMoney(n) {
+      if (n == null) return 'US$0';
+      return 'US$' + Number(n).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+    },
+    puStage(s) {
+      var m = { new: 'Nuevo', contacted: 'Contactado', qualified: 'Calificado', proposal: 'Propuesta', negotiating: 'Negociando', booked: 'Reservado', lost: 'Perdido' };
+      return m[s] || s;
+    },
+    puTripTitle(tid) {
+      if (!tid) return '';
+      var deps = (this.pulse && this.pulse.departures) || [];
+      var d = deps.find(function (x) { return x.trip_id === tid; });
+      return d ? d.title : tid;
+    },
     async loadSalesTrips(force) {
       if (this.salesTripsLoading) return;
       if (this.salesTripsLoaded && !force) return;
