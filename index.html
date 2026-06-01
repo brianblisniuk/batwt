@@ -7712,6 +7712,9 @@ textarea:focus-visible {
           <span x-show="tripListLoading">Cargando viajes…</span>
         </p>
         <div class="v5-home-nav">
+          <button class="v5-home-nav-btn" @click="navigateToCobranzas()">Cobranzas →</button>
+          <button class="v5-home-nav-btn" @click="navigateToProyeccion()">Proyección →</button>
+          <button class="v5-home-nav-btn" @click="navigateToClientes()">Clientes →</button>
           <button class="v5-home-nav-btn" @click="navigateToLibrary()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
             Biblioteca de proveedores →
@@ -8107,6 +8110,114 @@ textarea:focus-visible {
       </aside>
     </div>
   </template>
+
+  <!-- ===== Vistas de operador: Cobranzas / Proyección / Clientes (motor de ventas) ===== -->
+  <style>
+    .v5-ops-kpis{display:flex;gap:26px;flex-wrap:wrap;margin:2px 0 20px;}
+    .v5-ops-kpi{display:flex;flex-direction:column;}
+    .v5-ops-kpi .n{font-family:'Fraunces',serif;font-size:22px;color:var(--ink);line-height:1;}
+    .v5-ops-kpi .l{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-mute);margin-top:5px;}
+    .v5-ops-section-title{font-family:'Fraunces',serif;font-weight:400;font-size:18px;color:var(--ink);margin:28px 0 12px;}
+    .v5-ops-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 15px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-2,#fbf7ef);margin-bottom:8px;}
+    .v5-ops-row .main{min-width:0;}
+    .v5-ops-row .t{font-family:'Fraunces',serif;font-size:15px;color:var(--ink);line-height:1.2;}
+    .v5-ops-row .s{font-size:11.5px;color:var(--ink-mute);margin-top:3px;}
+    .v5-ops-row .amt{font-family:'Fraunces',serif;font-size:16px;color:var(--ink);white-space:nowrap;}
+    .v5-ops-row .amt.over{color:#B0742F;}
+    .v5-ops-empty{padding:28px;text-align:center;color:var(--ink-mute);border:1px dashed var(--line);border-radius:var(--radius);font-size:13px;}
+    .v5-ops-pill{font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:99px;background:#B0742F;color:#fff;vertical-align:1px;}
+    .v5-ops-btn{font-size:11px;padding:5px 11px;border:1px solid var(--line);border-radius:99px;background:transparent;color:var(--ink-soft);cursor:pointer;white-space:nowrap;}
+    .v5-ops-btn:hover{border-color:var(--accent);color:var(--accent);}
+  </style>
+
+  <!-- COBRANZAS -->
+  <main class="v5-home" x-show="currentView === 'cobranzas'" x-cloak>
+    <div class="v5-home-inner">
+      <header class="v5-home-head">
+        <div class="v5-home-eyebrow"><span x-text="operator?.name || 'Operador'"></span> · cobranzas</div>
+        <h1 class="v5-home-title">Qué <em>cobrar</em></h1>
+        <p class="v5-home-sub">
+          <span x-show="duePayments.length > 0"><span x-text="duePayments.length"></span> cuota(s) por vencer o vencidas en los próximos 45 días.</span>
+          <span x-show="duePayments.length === 0 && !dueLoading">No hay cobros pendientes.</span>
+          <span x-show="dueLoading">Cargando…</span>
+        </p>
+        <div class="v5-home-nav"><button class="v5-home-nav-btn" @click="navigateToHome()">← Volver a viajes</button></div>
+      </header>
+      <div class="v5-ops-kpis" x-show="duePayments.length > 0">
+        <div class="v5-ops-kpi"><span class="n" x-text="money0(duePayments.reduce((s,p)=>s+(p.amount||0),0))"></span><span class="l">Total por cobrar</span></div>
+        <div class="v5-ops-kpi"><span class="n" x-text="money0(duePayments.filter(p=>p.status==='overdue').reduce((s,p)=>s+(p.amount||0),0))"></span><span class="l">Vencido</span></div>
+        <div class="v5-ops-kpi"><span class="n" x-text="duePayments.filter(p=>p.dias<=7).length"></span><span class="l">Vence en ≤7 días</span></div>
+      </div>
+      <div x-show="duePayments.length > 0">
+        <template x-for="p in duePayments" :key="p.id">
+          <div class="v5-ops-row">
+            <div class="main">
+              <div class="t"><span x-text="p.full_name || 'Sin nombre'"></span> <span class="v5-ops-pill" x-show="p.status==='overdue'">VENCIDO</span></div>
+              <div class="s"><span x-text="p.region_label || p.trip_id"></span> · <span x-text="p.label"></span> · vence <span x-text="boardDate(p.due_date)"></span> (<span x-text="p.dias"></span>d)</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+              <span class="amt" :class="p.status==='overdue'?'over':''" x-text="money0(p.amount)"></span>
+              <button class="v5-ops-btn" @click="markPaid(p.id)">Marcar pagado</button>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="v5-ops-empty" x-show="duePayments.length === 0 && !dueLoading">Cuando generes un plan de pagos y haya cuotas próximas, aparecen acá.</div>
+    </div>
+  </main>
+
+  <!-- PROYECCIÓN -->
+  <main class="v5-home" x-show="currentView === 'proyeccion'" x-cloak>
+    <div class="v5-home-inner">
+      <header class="v5-home-head">
+        <div class="v5-home-eyebrow"><span x-text="operator?.name || 'Operador'"></span> · proyección</div>
+        <h1 class="v5-home-title">Ingresos y <em>caja</em></h1>
+        <p class="v5-home-sub"><span x-show="!projLoading">Ingreso ponderado por mes de salida, y caja por mes de vencimiento.</span><span x-show="projLoading">Cargando…</span></p>
+        <div class="v5-home-nav"><button class="v5-home-nav-btn" @click="navigateToHome()">← Volver a viajes</button></div>
+      </header>
+      <h2 class="v5-ops-section-title">Ingreso por mes de salida</h2>
+      <div x-show="forecastRows.length > 0">
+        <template x-for="r in forecastRows" :key="r.ym">
+          <div class="v5-ops-row">
+            <div class="main"><div class="t" x-text="monthLabel(r.ym)"></div><div class="s"><span x-text="r.viajes"></span> salida(s) · <span x-text="r.butacas_confirmadas"></span> confirmadas</div></div>
+            <div style="text-align:right;"><div class="amt" x-text="money0(r.ingreso_forecast)"></div><div class="s">comprometido <span x-text="money0(r.ingreso_comprometido)"></span></div></div>
+          </div>
+        </template>
+      </div>
+      <div class="v5-ops-empty" x-show="forecastRows.length === 0 && !projLoading">Sin datos de forecast todavía.</div>
+      <h2 class="v5-ops-section-title">Caja por mes</h2>
+      <div x-show="cashflowRows.length > 0">
+        <template x-for="r in cashflowRows" :key="r.ym">
+          <div class="v5-ops-row">
+            <div class="main"><div class="t" x-text="monthLabel(r.ym)"></div><div class="s">cobrado <span x-text="money0(r.cobrado)"></span> · vencido <span x-text="money0(r.vencido)"></span></div></div>
+            <div class="amt" x-text="money0(r.por_cobrar)"></div>
+          </div>
+        </template>
+      </div>
+      <div class="v5-ops-empty" x-show="cashflowRows.length === 0 && !projLoading">La caja se llena cuando generes planes de pago.</div>
+    </div>
+  </main>
+
+  <!-- CLIENTES -->
+  <main class="v5-home" x-show="currentView === 'clientes'" x-cloak>
+    <div class="v5-home-inner">
+      <header class="v5-home-head">
+        <div class="v5-home-eyebrow"><span x-text="operator?.name || 'Operador'"></span> · clientes</div>
+        <h1 class="v5-home-title">Los que ya <em>viajaron con vos</em></h1>
+        <p class="v5-home-sub"><span x-show="clientsRows.length > 0"><span x-text="clientsRows.length"></span> cliente(s) que reservaron.</span><span x-show="clientsRows.length === 0 && !clientsLoading">Todavía no hay clientes que hayan reservado.</span><span x-show="clientsLoading">Cargando…</span></p>
+        <div class="v5-home-nav"><button class="v5-home-nav-btn" @click="navigateToHome()">← Volver a viajes</button></div>
+      </header>
+      <div x-show="clientsRows.length > 0">
+        <template x-for="c in clientsRows" :key="c.id">
+          <div class="v5-ops-row">
+            <div class="main"><div class="t" x-text="c.full_name || 'Sin nombre'"></div><div class="s"><span x-text="c.region_label || c.trip_id || '—'"></span><span x-show="c.referido_por"> · referido por <span x-text="c.referido_por"></span></span><span x-show="c.referidos_generados>0"> · trajo <span x-text="c.referidos_generados"></span></span></div></div>
+            <div style="text-align:right;flex-shrink:0;"><div class="amt" x-text="money0(c.total_pagado)"></div><div class="s" x-show="c.nps !== null && c.nps !== undefined">NPS <span x-text="c.nps"></span></div></div>
+          </div>
+        </template>
+      </div>
+      <div class="v5-ops-empty" x-show="clientsRows.length === 0 && !clientsLoading">Cuando un lead pase a “reservado” y registre pagos, aparece acá con su historial y referidos.</div>
+    </div>
+  </main>
 
   <!-- ====== V5 SHELL: sidebar + content (TRIP VIEW only) ====== -->
   <div class="v5-shell" x-show="currentView === 'trip'" x-cloak>
@@ -12152,6 +12263,9 @@ function app() {
     tripListLoading: false,
     boardRows: [],            // sales board (trips_board RPC) — home command center
     boardLoading: false,
+    duePayments: [], dueLoading: false,        // Cobranzas (payments_due)
+    forecastRows: [], cashflowRows: [], projLoading: false,  // Proyección
+    clientsRows: [], clientsLoading: false,    // Clientes
     newTripForm: {
       open: false,
       category: 'gastro',
@@ -12500,6 +12614,9 @@ function app() {
       const h = (window.location.hash || '').replace(/^#\/?/, '').replace(/\/$/, '');
       if (!h) return { view: 'home', tripSlug: null };
       if (h === 'library') return { view: 'library', tripSlug: null };
+      if (h === 'cobranzas') return { view: 'cobranzas', tripSlug: null };
+      if (h === 'proyeccion') return { view: 'proyeccion', tripSlug: null };
+      if (h === 'clientes') return { view: 'clientes', tripSlug: null };
       // Sanitize: only allow slug-safe chars (lowercase, digits, hyphen)
       const safe = h.match(/^[a-z0-9-]+$/);
       if (!safe) return { view: 'home', tripSlug: null };
@@ -12519,6 +12636,9 @@ function app() {
       if (window.location.hash === '#/library/' || window.location.hash === '#/library') return;
       window.location.hash = '#/library/';
     },
+    navigateToCobranzas() { if (window.location.hash !== '#/cobranzas/') window.location.hash = '#/cobranzas/'; },
+    navigateToProyeccion() { if (window.location.hash !== '#/proyeccion/') window.location.hash = '#/proyeccion/'; },
+    navigateToClientes() { if (window.location.hash !== '#/clientes/') window.location.hash = '#/clientes/'; },
     async _onRouteChange() {
       // Gate: if not authenticated, force login view (ignore the hash for now)
       if (!this.authSession) {
@@ -12538,6 +12658,18 @@ function app() {
         this.TRIP_ID = '';
         document.title = (this.operator?.name || 'Blisniuk & Amanov') + ' · Biblioteca';
         await this.loadLibrary();
+      } else if (route.view === 'cobranzas') {
+        this.currentView = 'cobranzas'; this.TRIP_ID = '';
+        document.title = (this.operator?.name || 'Blisniuk & Amanov') + ' · Cobranzas';
+        await this.loadDuePayments();
+      } else if (route.view === 'proyeccion') {
+        this.currentView = 'proyeccion'; this.TRIP_ID = '';
+        document.title = (this.operator?.name || 'Blisniuk & Amanov') + ' · Proyección';
+        await this.loadProjection();
+      } else if (route.view === 'clientes') {
+        this.currentView = 'clientes'; this.TRIP_ID = '';
+        document.title = (this.operator?.name || 'Blisniuk & Amanov') + ' · Clientes';
+        await this.loadClients();
       } else {
         // Trip view
         this.TRIP_ID = route.tripSlug;
@@ -12609,6 +12741,53 @@ function app() {
       if (!s) return '';
       try { return new Date(s + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }); }
       catch (_) { return s; }
+    },
+    monthLabel(ym) {
+      if (!ym) return '';
+      try { const p = String(ym).split('-'); return new Date(+p[0], +p[1] - 1, 1).toLocaleDateString('es-AR', { month: 'short', year: 'numeric' }); }
+      catch (_) { return ym; }
+    },
+    money0(n) { return 'US$ ' + Math.round(n || 0).toLocaleString('es-AR'); },
+    // ---- Cobranzas ----
+    async loadDuePayments() {
+      if (!this._client || !this.operator?.id) return;
+      this.dueLoading = true;
+      try {
+        const { data, error } = await this._client.rpc('payments_due', { p_days: 45 });
+        if (error) throw error;
+        this.duePayments = Array.isArray(data) ? data : (data || []);
+      } catch (e) { console.warn('payments_due failed:', e); this.duePayments = []; }
+      finally { this.dueLoading = false; }
+    },
+    async markPaid(id) {
+      if (!id || !window.confirm('¿Marcar este cobro como pagado?')) return;
+      try {
+        const { error } = await this._client.rpc('mark_payment_paid', { p_payment_id: id, p_method: null, p_when: null });
+        if (error) throw error;
+        await this.loadDuePayments();
+      } catch (e) { console.warn('mark_payment_paid failed:', e); }
+    },
+    // ---- Proyección ----
+    async loadProjection() {
+      if (!this._client || !this.operator?.id) return;
+      this.projLoading = true;
+      try {
+        const [f, c] = await Promise.all([ this._client.rpc('sales_forecast'), this._client.rpc('cashflow_projection') ]);
+        this.forecastRows = Array.isArray(f.data) ? f.data : (f.data || []);
+        this.cashflowRows = Array.isArray(c.data) ? c.data : (c.data || []);
+      } catch (e) { console.warn('projection failed:', e); this.forecastRows = []; this.cashflowRows = []; }
+      finally { this.projLoading = false; }
+    },
+    // ---- Clientes ----
+    async loadClients() {
+      if (!this._client || !this.operator?.id) return;
+      this.clientsLoading = true;
+      try {
+        const { data, error } = await this._client.rpc('clients_list');
+        if (error) throw error;
+        this.clientsRows = Array.isArray(data) ? data : (data || []);
+      } catch (e) { console.warn('clients_list failed:', e); this.clientsRows = []; }
+      finally { this.clientsLoading = false; }
     },
     // Group trips by status for the home view
     get tripsByStatus() {
