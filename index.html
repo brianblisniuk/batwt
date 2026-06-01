@@ -7517,6 +7517,37 @@ textarea:focus-visible {
   .v5d-pp-col { break-inside: avoid; }
 }
 
+  /* ===== Cupos por salida (tablero de ventas) ===== */
+  .ct-board{max-width:680px}
+  .ct-totals{display:flex;gap:8px;margin:4px 0 18px}
+  .ct-tot{flex:1;background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:11px 12px}
+  .ct-tot .n{font-family:'Fraunces',serif;font-size:22px;font-weight:600;line-height:1}
+  .ct-tot .l{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);margin-top:5px;font-weight:600}
+  .ct-tot.book .n{color:var(--ok)}
+  .ct-tot.pipe .n{color:var(--gold)}
+  .ct-tot.free .n{color:var(--ink-soft)}
+  .ct-card{background:var(--paper);border:1px solid var(--rule);border-radius:14px;padding:15px;margin-bottom:12px}
+  .ct-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:3px}
+  .ct-name{font-family:'Fraunces',serif;font-weight:500;font-size:18px;line-height:1.12;color:var(--ink)}
+  .ct-price{flex-shrink:0;font-size:12px;font-weight:600;color:var(--ink-soft);background:var(--paper-warm);border:1px solid var(--rule);border-radius:999px;padding:4px 10px;white-space:nowrap}
+  .ct-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-mute);margin-bottom:13px}
+  .ct-meta .dot{width:3px;height:3px;border-radius:50%;background:var(--ink-faint)}
+  .ct-badge{font-size:10.5px;font-weight:600;letter-spacing:.03em;padding:2px 8px;border-radius:999px;text-transform:uppercase}
+  .ct-badge.conf{background:rgba(60,107,60,.12);color:var(--ok)}
+  .ct-badge.open{background:rgba(58,90,139,.12);color:#3a5a8b}
+  .ct-badge.few{background:rgba(184,137,58,.16);color:#8a6320}
+  .ct-badge.wait{background:rgba(168,42,31,.10);color:var(--bad)}
+  .ct-bar{height:10px;border-radius:999px;background:var(--paper-warm);border:1px solid var(--rule);overflow:hidden;display:flex}
+  .ct-seg-book{background:var(--ok)}
+  .ct-seg-pipe{background-image:repeating-linear-gradient(45deg,var(--gold-soft),var(--gold-soft) 4px,color-mix(in oklab,var(--gold-soft) 55%,#fff) 4px,color-mix(in oklab,var(--gold-soft) 55%,#fff) 8px)}
+  .ct-stats{display:flex;gap:14px;margin-top:11px}
+  .ct-stat{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft)}
+  .ct-stat b{font-weight:600;color:var(--ink)}
+  .ct-sw{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+  .ct-sw.book{background:var(--ok)}
+  .ct-sw.pipe{background:var(--gold-soft)}
+  .ct-sw.free{background:var(--paper-warm);border:1px solid var(--rule-strong)}
+  .ct-empty{color:var(--ink-faint);font-size:13px;padding:20px 0}
 </style>
 
 </head>
@@ -8043,6 +8074,10 @@ textarea:focus-visible {
       <button class="v5-nav-item" :class="{active: tab === 'leads'}" @click="tab = 'leads'; loadLeads()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span>Clientes</span>
+      </button>
+      <button class="v5-nav-item" :class="{active: tab === 'cupos'}" @click="tab = 'cupos'; loadSalesTrips()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></svg>
+        <span>Cupos</span>
       </button>
       <button class="v5-nav-item" :class="{active: tab === 'actions'}" @click="tab = 'actions'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
@@ -9240,6 +9275,48 @@ textarea:focus-visible {
   </template>
 </section>
 
+<!-- ====== CUPOS POR SALIDA ====== -->
+<section x-show="tab === 'cupos'">
+  <div class="section-header">
+    <div>
+      <h1>Cupos <em>por salida</em></h1>
+      <p class="lead">Vendidos y pipeline en tiempo real desde el CRM. <em>Verde</em> reservado · <em>dorado</em> en pipeline · <em>gris</em> libre.</p>
+    </div>
+  </div>
+  <div class="ct-board">
+    <div class="ct-totals">
+      <div class="ct-tot book"><div class="n" x-text="cuposTotals.booked"></div><div class="l">Reservados</div></div>
+      <div class="ct-tot pipe"><div class="n" x-text="cuposTotals.pipeline"></div><div class="l">En pipeline</div></div>
+      <div class="ct-tot free"><div class="n" x-text="cuposTotals.libres"></div><div class="l">Asientos libres</div></div>
+    </div>
+    <template x-for="t in salesTrips" :key="t.trip_id">
+      <div class="ct-card">
+        <div class="ct-card-top">
+          <div class="ct-name" x-text="t.title"></div>
+          <div class="ct-price" x-text="cuposPrice(t)"></div>
+        </div>
+        <div class="ct-meta">
+          <span x-text="t.region"></span><span class="dot"></span>
+          <span x-text="'próx. ' + cuposFmtDate(t.next_departure)"></span><span class="dot"></span>
+          <span x-text="(t.departures ? t.departures.length : 0) + ((t.departures && t.departures.length === 1) ? ' fecha' : ' fechas')"></span>
+          <span class="ct-badge" :class="cuposAvail(t)[1]" x-show="cuposAvail(t)[0]" x-text="cuposAvail(t)[0]"></span>
+        </div>
+        <div class="ct-bar">
+          <div class="ct-seg-book" x-show="t._bookPct > 0" :style="'width:' + t._bookPct + '%'"></div>
+          <div class="ct-seg-pipe" x-show="t._pipePct > 0" :style="'width:' + t._pipePct + '%'"></div>
+        </div>
+        <div class="ct-stats">
+          <div class="ct-stat"><span class="ct-sw book"></span><b x-text="t._booked"></b>&nbsp;reservados</div>
+          <div class="ct-stat"><span class="ct-sw pipe"></span><b x-text="t._pipeline"></b>&nbsp;en pipeline</div>
+          <div class="ct-stat"><span class="ct-sw free"></span><b x-text="t._libres"></b>&nbsp;libres</div>
+        </div>
+      </div>
+    </template>
+    <div class="ct-empty" x-show="salesTripsLoading">Cargando salidas…</div>
+    <div class="ct-empty" x-show="!salesTripsLoading && salesTrips.length === 0">Todavía no hay salidas activas en el catálogo.</div>
+  </div>
+</section>
+
 <!-- ====== MAPA ====== -->
 <section x-show="tab === 'map'">
   <div class="section-header">
@@ -9890,6 +9967,11 @@ textarea:focus-visible {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               <div class="v5-more-label">Clientes</div>
               <div class="v5-more-meta">funnel de ventas</div>
+            </button>
+            <button class="v5-more-tile" :class="{active: tab === 'cupos'}" @click="tab = 'cupos'; moreDrawerOpen = false; loadSalesTrips()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></svg>
+              <div class="v5-more-label">Cupos</div>
+              <div class="v5-more-meta">asientos por salida</div>
             </button>
             <button class="v5-more-tile" :class="{active: tab === 'actions'}" @click="tab = 'actions'; moreDrawerOpen = false">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
@@ -12045,6 +12127,9 @@ function app() {
     pipelineColumns: [ { key: 'pending', label: 'Pendientes' }, { key: 'contacted', label: 'En conversación' }, { key: 'confirmed', label: 'Confirmados' }, { key: 'cancelled', label: 'Cancelados' } ],
     // V5D · Leads CRM state (Phase 2)
     leadView: 'pipeline',
+    salesTrips: [],
+    salesTripsLoading: false,
+    salesTripsLoaded: false,
     leadStats: [],
     leadsList: [],
     leadsPipeline: {},
@@ -14789,6 +14874,68 @@ function app() {
     },
 
     // V5D · Leads CRM methods (Phase 2)
+    async loadSalesTrips(force) {
+      if (this.salesTripsLoading) return;
+      if (this.salesTripsLoaded && !force) return;
+      this.salesTripsLoading = true;
+      try {
+        if (!this._client) return;
+        var res = await Promise.all([
+          this._client.from('sales_trips').select('*').eq('active', true).order('next_departure', { ascending: true }),
+          this._client.from('leads').select('trip_id,stage,pax_count')
+        ]);
+        if (res[0].error) throw res[0].error;
+        if (res[1].error) throw res[1].error;
+        var agg = {};
+        (res[1].data || []).forEach(function (l) {
+          if (!l.trip_id) return;
+          var a = agg[l.trip_id] || (agg[l.trip_id] = { booked: 0, pipeline: 0 });
+          var pax = l.pax_count || 1;
+          if (l.stage === 'booked') a.booked += pax;
+          else if (l.stage !== 'lost') a.pipeline += pax;
+        });
+        this.salesTrips = (res[0].data || []).map(function (t) {
+          var a = agg[t.trip_id] || { booked: 0, pipeline: 0 };
+          var cap = t.capacity || 8;
+          var libres = Math.max(0, cap - a.booked);
+          return Object.assign({}, t, {
+            _booked: a.booked, _pipeline: a.pipeline, _libres: libres, _cap: cap,
+            _bookPct: cap ? Math.round(a.booked / cap * 100) : 0,
+            _pipePct: cap ? Math.round(Math.min(a.pipeline, libres) / cap * 100) : 0
+          });
+        });
+        this.salesTripsLoaded = true;
+      } catch (e) {
+        console.warn('sales_trips load failed:', e);
+        this.salesTrips = [];
+      } finally {
+        this.salesTripsLoading = false;
+      }
+    },
+    get cuposTotals() {
+      return this.salesTrips.reduce(function (s, t) {
+        s.booked += t._booked || 0; s.pipeline += t._pipeline || 0; s.libres += t._libres || 0;
+        return s;
+      }, { booked: 0, pipeline: 0, libres: 0 });
+    },
+    cuposFmtDate(d) {
+      if (!d) return '';
+      var M = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      var p = String(d).slice(0, 10).split('-');
+      if (p.length < 3) return d;
+      return parseInt(p[2], 10) + ' ' + M[parseInt(p[1], 10) - 1] + ' ' + p[0];
+    },
+    cuposAvail(t) {
+      var deps = (t && t.departures) || [];
+      var a = deps.length ? (deps[0].availability || '') : '';
+      var map = { confirmada: ['Confirmada', 'conf'], abierta: ['Abierta', 'open'], pocas: ['Pocas plazas', 'few'], espera: ['Lista de espera', 'wait'] };
+      return map[a] || ['', 'open'];
+    },
+    cuposPrice(t) {
+      var n = t && t.from_price_usd;
+      if (n == null) return '';
+      return 'desde US$' + Number(n).toLocaleString('es-AR');
+    },
     async loadLeads(force) {
       if (this.leadsLoading) return;
       if (this.leadsLoaded && !force) return;
