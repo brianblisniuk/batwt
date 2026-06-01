@@ -7712,6 +7712,7 @@ textarea:focus-visible {
           <span x-show="tripListLoading">Cargando viajes…</span>
         </p>
         <div class="v5-home-nav">
+          <button class="v5-home-nav-btn" @click="navigateToBandeja()">Bandeja →</button>
           <button class="v5-home-nav-btn" @click="navigateToCobranzas()">Cobranzas →</button>
           <button class="v5-home-nav-btn" @click="navigateToProyeccion()">Proyección →</button>
           <button class="v5-home-nav-btn" @click="navigateToClientes()">Clientes →</button>
@@ -8218,6 +8219,129 @@ textarea:focus-visible {
       <div class="v5-ops-empty" x-show="clientsRows.length === 0 && !clientsLoading">Cuando un lead pase a “reservado” y registre pagos, aparece acá con su historial y referidos.</div>
     </div>
   </main>
+
+  <!-- ====== BANDEJA (correo) ====== -->
+  <style>
+    .bx-list{padding:0 4px 28px}
+    .bx-item{display:grid;grid-template-columns:8px 1fr auto;gap:11px;padding:15px 12px;border-radius:8px;cursor:pointer;transition:background .15s;align-items:start;border-bottom:1px solid var(--line)}
+    .bx-item:hover{background:var(--paper)}
+    .bx-udot{width:8px;height:8px;border-radius:50%;margin-top:6px;background:transparent}
+    .bx-item.unread .bx-udot{background:var(--gold)}
+    .bx-mid{min-width:0}
+    .bx-row1{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+    .bx-acct{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:4px;white-space:nowrap}
+    .bx-acct.reservas{background:rgba(184,137,58,.16);color:#7d5a1e}
+    .bx-acct.info{background:rgba(28,20,16,.08);color:var(--ink-soft)}
+    .bx-from{font-size:13px;color:var(--ink-soft);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bx-subj{font-family:'Fraunces',serif;font-size:16.5px;font-weight:500;letter-spacing:-.01em;line-height:1.25;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bx-item.unread .bx-subj{font-weight:600}
+    .bx-snip{font-size:12.5px;color:var(--ink-mute);line-height:1.35;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bx-meta{display:flex;flex-direction:column;align-items:flex-end;gap:7px;white-space:nowrap}
+    .bx-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-faint);letter-spacing:.04em}
+    .bx-cat{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:3px 7px;border-radius:4px;border:1px solid var(--line-strong);color:var(--ink-soft)}
+    .bx-clip{font-size:11px;color:var(--ink-faint)}
+    .bx-empty{padding:40px 16px;text-align:center;color:var(--ink-mute);font-family:'Lora',serif;font-style:italic}
+    .bx-detail{position:fixed;inset:0;max-width:640px;margin:0 auto;background:var(--bg);display:flex;flex-direction:column;z-index:200}
+    .bx-dtop{display:flex;align-items:center;gap:12px;padding:18px 18px 12px;border-bottom:1px solid var(--line)}
+    .bx-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink-soft);line-height:1;padding:2px}
+    .bx-dacct{margin-left:auto}
+    .bx-dbody{flex:1;overflow:auto;padding:18px}
+    .bx-dsubj{font-family:'Fraunces',serif;font-weight:500;font-size:23px;letter-spacing:-.015em;line-height:1.18}
+    .bx-dmeta{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:var(--ink-mute);margin-top:10px;line-height:1.7}
+    .bx-dmeta b{color:var(--ink-soft);font-weight:500}
+    .bx-dtext{font-family:'Lora',serif;font-size:15.5px;line-height:1.62;color:var(--ink-soft);margin-top:18px;white-space:pre-wrap}
+    .bx-ai{margin-top:22px;border:1px dashed var(--line-strong);border-radius:10px;padding:14px;background:rgba(184,137,58,.05)}
+    .bx-ai-h{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+    .bx-ai-soon{margin-left:auto;color:var(--ink-faint);text-transform:none;letter-spacing:.02em}
+    .bx-ai-body{font-family:'Lora',serif;font-style:italic;font-size:13.5px;color:var(--ink-mute);margin-top:9px;line-height:1.5}
+    .bx-compose{border-top:1px solid var(--line);padding:14px 16px;background:var(--paper)}
+    .bx-ta{width:100%;min-height:74px;border:1px solid var(--line-strong);border-radius:8px;padding:11px 12px;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);background:#fff;resize:vertical}
+    .bx-cactions{display:flex;gap:9px;margin-top:10px;align-items:center}
+    .bx-draft{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:9px 12px;border-radius:8px;border:1px dashed var(--line-strong);background:transparent;color:var(--ink-faint);cursor:not-allowed}
+    .bx-spacer{flex:1}
+    .bx-send{font-family:'Fraunces',serif;font-size:15px;padding:9px 20px;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer}
+    .bx-send:disabled{opacity:.5;cursor:default}
+    .bx-toggle{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);cursor:pointer;display:flex;align-items:center;gap:6px}
+    .bx-toggle .d{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+  </style>
+  <main class="v5-home" x-show="currentView === 'bandeja'" x-cloak>
+    <div class="v5-home-inner">
+      <header class="v5-home-head">
+        <div class="v5-home-eyebrow"><span x-text="operator?.name || 'Operador'"></span> · bandeja</div>
+        <h1 class="v5-home-title">Correo de <em>operaciones</em></h1>
+        <p class="v5-home-sub">
+          <span x-show="!bandejaLoading"><span x-text="bandejaUnread"></span> sin leer · <span x-text="emails.length"></span> en total.</span>
+          <span x-show="bandejaLoading">Cargando…</span>
+        </p>
+        <div class="v5-home-nav"><button class="v5-home-nav-btn" @click="navigateToHome()">← Volver a viajes</button></div>
+      </header>
+
+      <div style="display:flex;gap:7px;padding:4px 8px 14px;flex-wrap:wrap;align-items:center">
+        <button class="v5-home-nav-btn" :class="{active: bandejaAcct==='all'}" @click="bandejaAcct='all'" x-text="'Todos'"></button>
+        <button class="v5-home-nav-btn" :class="{active: bandejaAcct==='reservas'}" @click="bandejaAcct='reservas'">reservas@</button>
+        <button class="v5-home-nav-btn" :class="{active: bandejaAcct==='info'}" @click="bandejaAcct='info'">info@</button>
+        <span class="bx-spacer"></span>
+        <span class="bx-toggle" @click="bandejaOnlyUnread=!bandejaOnlyUnread"><span class="d" x-show="bandejaOnlyUnread"></span><span x-text="bandejaOnlyUnread ? 'No leídos' : 'Todos'"></span></span>
+      </div>
+
+      <div class="bx-list">
+        <template x-for="e in bandejaFiltered" :key="e.id">
+          <div class="bx-item" :class="{unread: e.status==='unread'}" @click="openEmail(e)">
+            <span class="bx-udot"></span>
+            <div class="bx-mid">
+              <div class="bx-row1">
+                <span class="bx-acct" :class="e.account" x-show="e.account" x-text="e.account + '@'"></span>
+                <span class="bx-from" x-text="e.direction==='outbound' ? ('→ ' + ((e.to_addrs && e.to_addrs[0]) || '')) : (e.from_addr || '')"></span>
+              </div>
+              <div class="bx-subj" x-text="e.subject || '(sin asunto)'"></div>
+              <div class="bx-snip" x-text="e.snippet || ''"></div>
+            </div>
+            <div class="bx-meta">
+              <span class="bx-time" x-text="emailTime(e)"></span>
+              <span class="bx-cat" x-show="e.ai_category" x-text="e.ai_category"></span>
+              <span class="bx-clip" x-show="e.has_attachments">📎</span>
+            </div>
+          </div>
+        </template>
+        <div class="bx-empty" x-show="!bandejaLoading && bandejaFiltered.length === 0">No hay correos para mostrar.</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bandeja: lectura + respuesta -->
+  <div class="bx-detail" x-show="selectedEmail" x-cloak>
+    <template x-if="selectedEmail">
+      <div style="display:flex;flex-direction:column;height:100%">
+        <div class="bx-dtop">
+          <button class="bx-back" @click="selectedEmail=null">←</button>
+          <span class="bx-cat" x-show="selectedEmail.ai_category" x-text="selectedEmail.ai_category"></span>
+          <span class="bx-acct bx-dacct" :class="selectedEmail.account" x-show="selectedEmail.account" x-text="selectedEmail.account + '@blisniukamanov.com'"></span>
+        </div>
+        <div class="bx-dbody">
+          <div class="bx-dsubj" x-text="selectedEmail.subject || '(sin asunto)'"></div>
+          <div class="bx-dmeta">
+            <span x-show="selectedEmail.direction==='inbound'">De: <b x-text="selectedEmail.from_addr"></b><br></span>
+            <span x-show="selectedEmail.direction==='outbound'">Enviado por <b x-text="selectedEmail.account + '@blisniukamanov.com'"></b><br></span>
+            <span x-show="selectedEmail.to_addrs && selectedEmail.to_addrs.length">Para: <b x-text="(selectedEmail.to_addrs||[]).join(', ')"></b> · </span><span x-text="emailTime(selectedEmail)"></span>
+          </div>
+          <div class="bx-dtext" x-text="selectedEmail.body_text || '(sin contenido de texto)'"></div>
+
+          <div class="bx-ai">
+            <div class="bx-ai-h"><span>◆ Análisis IA</span><span class="bx-ai-soon" x-show="!selectedEmail.ai_summary">Fase 2 · próximamente</span></div>
+            <div class="bx-ai-body" x-text="selectedEmail.ai_summary || 'Acá la IA va a mostrar el resumen, la categoría, los datos detectados y un borrador de respuesta en voseo, y va a enganchar el correo al trip, proveedor o lead que corresponda.'"></div>
+          </div>
+        </div>
+        <div class="bx-compose" x-show="selectedEmail.direction==='inbound'">
+          <textarea class="bx-ta" x-model="replyText" placeholder="Escribí tu respuesta…"></textarea>
+          <div class="bx-cactions">
+            <button class="bx-draft" disabled title="Disponible en la Fase 2">◆ Borrador IA</button>
+            <span class="bx-spacer"></span>
+            <button class="bx-send" @click="sendEmailReply()" :disabled="replySending || !replyText.trim()" x-text="replySending ? 'Enviando…' : 'Responder →'"></button>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
 
   <!-- ====== V5 SHELL: sidebar + content (TRIP VIEW only) ====== -->
   <div class="v5-shell" x-show="currentView === 'trip'" x-cloak>
@@ -12315,6 +12439,8 @@ function app() {
     boardLoading: false,
     duePayments: [], dueLoading: false,        // Cobranzas (payments_due)
     forecastRows: [], cashflowRows: [], projLoading: false,  // Proyección
+    // Bandeja (correo)
+    emails: [], bandejaLoading: false, bandejaAcct: 'all', bandejaOnlyUnread: false, selectedEmail: null, replyText: '', replySending: false, _bandejaChannel: null,
     clientsRows: [], clientsLoading: false,    // Clientes
     proposalBusy: false, proposalResult: null, // Propuesta desde el lead drawer
     leadDrawerPayments: [], paymentBusy: false, // Plan de pagos en el drawer
@@ -12669,6 +12795,7 @@ function app() {
       if (h === 'cobranzas') return { view: 'cobranzas', tripSlug: null };
       if (h === 'proyeccion') return { view: 'proyeccion', tripSlug: null };
       if (h === 'clientes') return { view: 'clientes', tripSlug: null };
+      if (h === 'bandeja') return { view: 'bandeja', tripSlug: null };
       // Sanitize: only allow slug-safe chars (lowercase, digits, hyphen)
       const safe = h.match(/^[a-z0-9-]+$/);
       if (!safe) return { view: 'home', tripSlug: null };
@@ -12691,6 +12818,77 @@ function app() {
     navigateToCobranzas() { if (window.location.hash !== '#/cobranzas/') window.location.hash = '#/cobranzas/'; },
     navigateToProyeccion() { if (window.location.hash !== '#/proyeccion/') window.location.hash = '#/proyeccion/'; },
     navigateToClientes() { if (window.location.hash !== '#/clientes/') window.location.hash = '#/clientes/'; },
+    navigateToBandeja() { if (window.location.hash !== '#/bandeja/') window.location.hash = '#/bandeja/'; },
+    async loadBandeja(force) {
+      if (!this._client) return;
+      this.bandejaLoading = true;
+      try {
+        const { data, error } = await this._client
+          .from('emails')
+          .select('id,direction,account,from_addr,to_addrs,subject,snippet,body_text,body_html,status,has_attachments,ai_category,ai_summary,ai_suggested_reply,received_at,sent_at,created_at,message_id,thread_id')
+          .order('created_at', { ascending: false })
+          .limit(300);
+        if (error) throw error;
+        this.emails = data || [];
+      } catch (e) { console.error('loadBandeja', e); if (this.toast) this.toast('No se pudo cargar la bandeja', 'error'); }
+      finally { this.bandejaLoading = false; }
+      this.subscribeBandeja();
+    },
+    get bandejaFiltered() {
+      return (this.emails || []).filter(e =>
+        (this.bandejaAcct === 'all' || e.account === this.bandejaAcct) &&
+        (!this.bandejaOnlyUnread || e.status === 'unread'));
+    },
+    get bandejaUnread() { return (this.emails || []).filter(e => e.status === 'unread').length; },
+    emailTime(e) { try { return this.relativeTime(e.received_at || e.sent_at || e.created_at); } catch (_) { return ''; } },
+    async openEmail(e) {
+      this.selectedEmail = e; this.replyText = '';
+      if (e.status === 'unread') {
+        e.status = 'read';
+        try { await this._client.from('emails').update({ status: 'read' }).eq('id', e.id); } catch (_) {}
+      }
+    },
+    async sendEmailReply() {
+      const sel = this.selectedEmail;
+      if (!sel || !this.replyText.trim()) return;
+      this.replySending = true;
+      try {
+        const { data: session } = await this._client.auth.getSession();
+        const accessToken = session?.session?.access_token;
+        if (!accessToken) throw new Error('No hay sesión activa, recargá');
+        const subj = (sel.subject || '').replace(/^\s*re:\s*/i, '');
+        const resp = await fetch(`${this.SUPABASE_URL}/functions/v1/email-send`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json', 'apikey': this.SUPABASE_KEY },
+          body: JSON.stringify({ account: sel.account || 'info', to: [sel.from_addr], subject: 'Re: ' + subj, text: this.replyText, reply_to_email_id: sel.id })
+        });
+        const out = await resp.json();
+        if (!resp.ok) throw new Error(out.error || 'Error al enviar');
+        this.replyText = '';
+        if (this.toast) this.toast('Respuesta enviada', 'success');
+        this.selectedEmail = null;
+        await this.loadBandeja(true);
+      } catch (e) { if (this.toast) this.toast(e.message, 'error'); else alert(e.message); }
+      finally { this.replySending = false; }
+    },
+    subscribeBandeja() {
+      if (!this._client || this._bandejaChannel) return;
+      this._bandejaChannel = this._client
+        .channel('bandeja-emails')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'emails' }, (payload) => {
+          const row = payload.new || payload.old;
+          if (!row) return;
+          if (payload.eventType === 'INSERT') {
+            if (!this.emails.find(x => x.id === row.id)) this.emails.unshift(row);
+          } else if (payload.eventType === 'UPDATE') {
+            const i = this.emails.findIndex(x => x.id === row.id);
+            if (i >= 0) this.emails[i] = Object.assign({}, this.emails[i], row);
+          } else if (payload.eventType === 'DELETE') {
+            this.emails = this.emails.filter(x => x.id !== row.id);
+          }
+        })
+        .subscribe();
+    },
     async _onRouteChange() {
       // Gate: if not authenticated, force login view (ignore the hash for now)
       if (!this.authSession) {
@@ -12722,6 +12920,10 @@ function app() {
         this.currentView = 'clientes'; this.TRIP_ID = '';
         document.title = (this.operator?.name || 'Blisniuk & Amanov') + ' · Clientes';
         await this.loadClients();
+      } else if (route.view === 'bandeja') {
+        this.currentView = 'bandeja'; this.TRIP_ID = '';
+        document.title = (this.operator?.name || 'Blisniuk & Amanov') + ' · Bandeja';
+        await this.loadBandeja();
       } else {
         // Trip view
         this.TRIP_ID = route.tripSlug;
