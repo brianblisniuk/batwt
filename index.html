@@ -8258,6 +8258,7 @@ textarea:focus-visible {
     .bx-ta{width:100%;min-height:74px;border:1px solid var(--line-strong);border-radius:8px;padding:11px 12px;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);background:#fff;resize:vertical}
     .bx-cactions{display:flex;gap:9px;margin-top:10px;align-items:center}
     .bx-draft{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:9px 12px;border-radius:8px;border:1px dashed var(--line-strong);background:transparent;color:var(--ink-faint);cursor:not-allowed}
+    .bx-draft:not(:disabled){color:var(--gold);border-color:var(--gold-soft);cursor:pointer}
     .bx-spacer{flex:1}
     .bx-send{font-family:'Fraunces',serif;font-size:15px;padding:9px 20px;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer}
     .bx-send:disabled{opacity:.5;cursor:default}
@@ -8334,7 +8335,7 @@ textarea:focus-visible {
         <div class="bx-compose" x-show="selectedEmail.direction==='inbound'">
           <textarea class="bx-ta" x-model="replyText" placeholder="Escribí tu respuesta…"></textarea>
           <div class="bx-cactions">
-            <button class="bx-draft" disabled title="Disponible en la Fase 2">◆ Borrador IA</button>
+            <button class="bx-draft" @click="replyText = selectedEmail.ai_suggested_reply || replyText" :disabled="!selectedEmail.ai_suggested_reply" title="Usar el borrador en voseo propuesto por la IA">◆ Borrador IA</button>
             <span class="bx-spacer"></span>
             <button class="bx-send" @click="sendEmailReply()" :disabled="replySending || !replyText.trim()" x-text="replySending ? 'Enviando…' : 'Responder →'"></button>
           </div>
