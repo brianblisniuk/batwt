@@ -9745,7 +9745,7 @@ textarea:focus-visible {
                     <div>
                       <input type="text" x-model="cadencePreview.subject" placeholder="Asunto" style="width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-family: inherit; font-size: 13px; box-sizing: border-box; margin-bottom: 6px;">
                       <textarea x-model="cadencePreview.body" rows="5" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-family: inherit; font-size: 13px; box-sizing: border-box;"></textarea>
-                      <div style="font-size: 11px; color: var(--text-3); margin: 6px 0;">Se manda desde reservas@blisniukamanov.com a <span x-text="cadencePreview.email || '(sin email)'"></span>. Las respuestas entran a la Bandeja.</div>
+                      <div style="font-size: 11px; color: var(--text-3); margin: 6px 0;">Se manda desde info@blisniukamanov.com a <span x-text="cadencePreview.email || '(sin email)'"></span>. Las respuestas entran a la Bandeja.</div>
                       <div style="display: flex; gap: 6px;">
                         <button class="btn btn-sm" :disabled="cadenceBusy || !cadencePreview.email" @click="sendCadenceEmail()" x-text="cadenceBusy ? 'Enviando…' : 'Enviar mail'"></button>
                         <button class="btn btn-sm" @click="cadenceClear()">Cancelar</button>
@@ -15966,7 +15966,7 @@ function app() {
         const resp = await fetch(`${this.SUPABASE_URL}/functions/v1/email-dispatch`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json', 'apikey': this.SUPABASE_KEY },
-          body: JSON.stringify({ account: 'reservas', to: [p.email], subject: p.subject || 'Sobre tu viaje', text: p.body, html, reply_to_email_id: null })
+          body: JSON.stringify({ account: 'info', to: [p.email], subject: p.subject || 'Sobre tu viaje', text: p.body, html, reply_to_email_id: null })
         });
         const out = await resp.json();
         if (!resp.ok) throw new Error(out.error || out.message || 'Error al enviar');
