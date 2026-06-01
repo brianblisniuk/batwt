@@ -9,7 +9,7 @@
 <title>Blisniuk & Amanov · Operaciones</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -93,7 +93,7 @@ background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/200
 
 /* === TYPOGRAPHY === */
 .font-display { font-family: 'Fraunces', serif; font-weight: 400; letter-spacing: -0.015em; }
-.font-serif { font-family: 'Lora', serif; }
+.font-serif { font-family: 'Fraunces', serif; }
 .font-mono { font-family: 'JetBrains Mono', monospace; letter-spacing: 0; }
 .italic { font-style: italic; }
 
@@ -189,7 +189,7 @@ letter-spacing: -0.02em;
 }
 .identity-modal h2 em { font-style: italic; color: var(--borgona); }
 .identity-modal p {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-size: 17px;
 font-style: italic;
 color: var(--ink-soft);
@@ -254,7 +254,7 @@ color: var(--terracotta);
 letter-spacing: 0.08em;
 }
 .last-edit {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-size: 13px;
 font-style: italic;
 color: var(--ink-mute);
@@ -366,7 +366,7 @@ font-weight: 300;
 }
 .section-header h1 em { font-style: italic; color: var(--borgona); }
 .section-header .lead {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-size: 18px;
 font-style: italic;
 color: var(--ink-soft);
@@ -429,10 +429,10 @@ font-size: 28px;
 color: rgba(240,230,210,0.6);
 margin-left: 12px;
 font-style: italic;
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 }
 .countdown-detail {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 18px;
 color: rgba(240,230,210,0.75);
@@ -466,7 +466,7 @@ font-weight: 400;
 letter-spacing: -0.02em;
 color: var(--ink);
 }
-.stat-mini-value small { font-size: 14px; color: var(--ink-mute); margin-left: 4px; font-family: 'Lora', serif; font-style: italic; }
+.stat-mini-value small { font-size: 14px; color: var(--ink-mute); margin-left: 4px; font-family: 'Fraunces', serif; font-style: italic; }
 
 .alert-block {
 background: var(--paper);
@@ -791,7 +791,7 @@ letter-spacing: -0.02em;
 font-size: 14px;
 color: var(--ink-mute);
 margin-left: 6px;
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 }
 .summary-card.highlight .summary-card-value small { color: rgba(240,230,210,0.5); }
@@ -1029,7 +1029,7 @@ font-size: 24px;
 margin-bottom: 12px;
 }
 .backup-card p {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 color: var(--ink-soft);
 margin-bottom: 20px;
@@ -1063,7 +1063,7 @@ font-size: 11px;
 padding: 64px 32px;
 text-align: center;
 color: var(--ink-mute);
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 18px;
 border: 1px dashed var(--rule-strong);
@@ -1086,7 +1086,7 @@ letter-spacing: 0.12em;
 text-transform: uppercase;
 z-index: 1000;
 box-shadow: var(--shadow-lg);
-animation: slideIn 0.3s ease;
+animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes slideIn {
 from { transform: translateY(20px); opacity: 0; }
@@ -1197,10 +1197,10 @@ align-items: center;
 justify-content: space-between;
 gap: 16px;
 box-shadow: var(--shadow);
-animation: slideIn 0.4s ease;
+animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .mention-banner-text {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 17px;
 }
@@ -1510,9 +1510,9 @@ main { padding: 20px; max-width: none; }
 --text-2: #4a3a30;
 --text-3: #8b7868;
 --text-4: #c4b5a3;
---accent: #2563eb;
---accent-soft: #60a5fa;
---accent-deep: #1d4ed8;
+--accent: #9A5A3A;
+--accent-soft: #C08457;
+--accent-deep: #7A4329;
 --gold-v5: #b8893a;
 --gold-soft-v5: #d4a85a;
 --olive-v5: #5a6b3a;
@@ -1547,9 +1547,9 @@ main { padding: 20px; max-width: none; }
 --text-2: #d4c8b4;
 --text-3: #a89580;
 --text-4: #6b5d4d;
---accent: #60a5fa;
---accent-soft: #93c5fd;
---accent-deep: #3b82f6;
+--accent: #C28457;
+--accent-soft: #DBA77E;
+--accent-deep: #A6663E;
 --gold-v5: #d4a85a;
 --gold-soft-v5: #e8c47e;
 --olive-v5: #7fa05a;
@@ -1788,7 +1788,7 @@ border-radius: var(--radius-lg);
 box-shadow: var(--shadow-3);
 padding: 6px;
 z-index: 95;
-animation: v5-menuIn 0.18s ease-out;
+animation: v5-menuIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes v5-menuIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 .v5-identity-menu-item {
@@ -1811,7 +1811,7 @@ text-align: left;
 .v5-identity-menu-divider { height: 1px; background: var(--line); margin: 6px 4px; }
 .v5-last-edit {
 padding: 8px 10px;
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 13px;
 color: var(--text-3);
@@ -2059,7 +2059,7 @@ color: #fff;
 .v5-history-summary strong { font-family: 'Fraunces', serif; font-weight: 500; color: var(--text-1); }
 .v5-history-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; white-space: nowrap; }
 .v5-history-empty {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-3);
@@ -2123,7 +2123,7 @@ margin-bottom: 10px;
 letter-spacing: -0.015em;
 }
 .v5-confirm p {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-2);
@@ -2181,9 +2181,9 @@ align-items: center;
 justify-content: space-between;
 gap: 16px;
 box-shadow: var(--shadow-2);
-animation: v5-toastIn 0.4s ease;
+animation: v5-toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.v5-mention-banner-text { font-family: 'Lora', serif; font-style: italic; font-size: 16px; }
+.v5-mention-banner-text { font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; }
 .v5-mention-banner-text strong {
 font-family: 'Fraunces', serif;
 font-weight: 500;
@@ -2273,13 +2273,13 @@ letter-spacing: -0.04em;
 color: #f4e9d2;
 }
 .v5-hoy-count-unit {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: clamp(20px, 2.4vw, 26px);
 color: rgba(244,233,210,0.7);
 }
 .v5-hoy-detail {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 17px;
 color: rgba(244,233,210,0.85);
@@ -2341,7 +2341,7 @@ line-height: 1.2;
 color: var(--text-1);
 }
 .v5-next-action-desc {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-2);
@@ -2389,7 +2389,7 @@ letter-spacing: -0.02em;
 color: var(--text-1);
 }
 .v5-kpi-value small {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 13px;
 color: var(--text-3);
@@ -2397,7 +2397,7 @@ margin-left: 4px;
 font-weight: 400;
 }
 .v5-kpi-statement {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 13px;
 color: var(--text-2);
@@ -2495,7 +2495,7 @@ margin-left: 10px;
 }
 .v5-alert-arrow svg { width: 18px; height: 18px; }
 .v5-alert-empty {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 color: var(--text-3);
 padding: 24px;
@@ -2550,7 +2550,7 @@ text-transform: uppercase;
 color: var(--text-3);
 }
 .v5-day-pill-title {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 12px;
 color: var(--text-2);
@@ -2585,7 +2585,7 @@ margin-top: 16px;
   margin-top: 16px;
 }
 .v5-weather-loading {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   color: var(--text-3);
   text-align: center;
@@ -2675,7 +2675,7 @@ letter-spacing: -0.02em;
 color: var(--text-1);
 }
 .v5-progress-head .v5-progress-ratio small {
-font-family: 'Lora', serif;
+font-family: 'Fraunces', serif;
 font-style: italic;
 font-size: 16px;
 color: var(--text-3);
@@ -4024,7 +4024,7 @@ textarea:focus-visible {
   margin-bottom: 6px; padding-right: 30px;
 }
 .v5c-bsh-desc {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px; line-height: 1.45;
   color: var(--text-2);
@@ -4650,7 +4650,7 @@ textarea:focus-visible {
   margin-bottom: 6px;
 }
 .v5b-places-hint {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px;
   line-height: 1.5;
@@ -4690,7 +4690,7 @@ textarea:focus-visible {
   flex-wrap: wrap;
 }
 .v5b-places-manual .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 12px;
   color: var(--text-3);
@@ -4727,7 +4727,7 @@ textarea:focus-visible {
   margin-bottom: 4px;
 }
 .v5-mp-head h2 em { font-style: italic; color: var(--accent); }
-.v5-mp-sub { font-family: 'Lora', serif; font-style: italic; font-size: 13px; color: var(--text-2); }
+.v5-mp-sub { font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; color: var(--text-2); }
 .v5-mp-mapwrap { flex: 1; min-height: 0; background: #efe9dd; }
 #manual-pin-map { width: 100%; height: 100%; }
 .v5-mp-foot {
@@ -4752,7 +4752,7 @@ textarea:focus-visible {
   font-weight: 600;
 }
 .v5-mp-coords-empty em {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-size: 13px;
   color: var(--text-3);
 }
@@ -4761,7 +4761,7 @@ textarea:focus-visible {
 /* Attachments (files + links) on slots and providers */
 .v5b-attachments { }
 .v5b-att-empty {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-3);
@@ -4882,7 +4882,7 @@ textarea:focus-visible {
 .v5c-psb-icon { font-size: 26px; line-height: 1; }
 .v5c-psb-title { font-family: 'Fraunces', serif; font-size: 19px; line-height: 1.3; color: var(--text-1); margin-bottom: 4px; }
 .v5c-psb-title strong { color: var(--accent-deep); font-weight: 500; }
-.v5c-psb-meta { font-family: 'Lora', serif; font-style: italic; font-size: 13px; color: var(--text-2); line-height: 1.45; }
+.v5c-psb-meta { font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; color: var(--text-2); line-height: 1.45; }
 
 /* Places scan modal */
 .v5-places-scan-overlay {
@@ -4915,7 +4915,7 @@ textarea:focus-visible {
   margin-bottom: 4px;
 }
 .v5-ps-head h2 em { font-style: italic; color: var(--accent); }
-.v5-ps-sub { font-family: 'Lora', serif; font-style: italic; font-size: 14px; color: var(--text-2); }
+.v5-ps-sub { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--text-2); }
 
 .v5-ps-progress { padding: 32px 26px; }
 .v5-ps-pbar { height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
@@ -5024,7 +5024,7 @@ textarea:focus-visible {
   color: var(--olive-deep);
   margin-bottom: 16px;
 }
-.v5-ps-done p { font-family: 'Lora', serif; font-size: 16px; color: var(--text-1); margin-bottom: 8px; }
+.v5-ps-done p { font-family: 'Fraunces', serif; font-size: 16px; color: var(--text-1); margin-bottom: 8px; }
 .v5-ps-done p strong { color: var(--accent-deep); }
 .v5-ps-done .muted { font-style: italic; color: var(--text-2); font-size: 14px; }
 
@@ -5108,7 +5108,7 @@ textarea:focus-visible {
   padding: 10px 12px;
   border-radius: 6px;
   cursor: pointer;
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-size: 13px;
   color: var(--accent-deep);
   margin-top: 6px;
@@ -5117,7 +5117,7 @@ textarea:focus-visible {
 .v5b-ac-google-trigger em { font-style: italic; color: var(--text-1); }
 .v5b-ac-loading {
   padding: 16px 12px;
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-2);
@@ -5329,7 +5329,7 @@ textarea:focus-visible {
 .v5-home-inner { max-width: 1280px; margin: 0 auto; }
 .v5-home-head { margin-bottom: 48px; padding: 16px 0 32px; }
 .v5-home-eyebrow {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px;
   letter-spacing: 0.08em;
@@ -5351,7 +5351,7 @@ textarea:focus-visible {
   font-weight: 400;
 }
 .v5-home-sub {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 17px;
   color: var(--text-2);
@@ -5453,7 +5453,7 @@ textarea:focus-visible {
   margin-bottom: 4px;
 }
 .v5-trip-card-region {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 14px;
   color: rgba(255,255,255,0.85);
@@ -5513,7 +5513,7 @@ textarea:focus-visible {
   letter-spacing: -0.01em;
 }
 .v5-home-new-btn em {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 14px;
   color: var(--text-3);
@@ -5533,7 +5533,7 @@ textarea:focus-visible {
 }
 .v5-home-newform h3 em { font-style: italic; color: var(--accent); }
 .v5-home-newform .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-3);
@@ -5602,7 +5602,7 @@ textarea:focus-visible {
 }
 .v5-wizard-head h3 em { font-style: italic; color: var(--accent); }
 .v5-wizard-head .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 14px;
   color: var(--text-3);
@@ -5662,7 +5662,7 @@ textarea:focus-visible {
   letter-spacing: -0.005em;
 }
 .v5-wiz-cat-desc {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-3);
@@ -5839,7 +5839,7 @@ textarea:focus-visible {
   flex: 1;
 }
 .v5-modal-body .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-3);
@@ -5886,7 +5886,7 @@ textarea:focus-visible {
   color: var(--text-1);
 }
 .v5-clone-option span {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 12.5px;
   color: var(--text-3);
@@ -5922,7 +5922,7 @@ textarea:focus-visible {
   margin-bottom: 3px;
 }
 .v5-template-card-body p {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-2);
@@ -6039,7 +6039,7 @@ textarea:focus-visible {
   line-height: 1.2;
 }
 .v5-lib-card-meta {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px;
   color: var(--text-2);
@@ -6139,7 +6139,7 @@ textarea:focus-visible {
   color: var(--text-3);
 }
 .v5-lib-import-meta {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 12.5px;
   color: var(--text-3);
@@ -6193,7 +6193,7 @@ textarea:focus-visible {
   color: var(--text-1);
 }
 .v5b-lib-body span {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 12px;
   color: var(--text-3);
@@ -6316,7 +6316,7 @@ textarea:focus-visible {
   background: color-mix(in oklab, var(--ok, #3c6b3c) 8%, var(--surface-0));
   border: 1px solid color-mix(in oklab, var(--ok, #3c6b3c) 25%, var(--line));
   border-radius: var(--radius-md);
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 12.5px;
   color: var(--text-2);
@@ -6409,7 +6409,7 @@ textarea:focus-visible {
   color: var(--accent);
 }
 .v5-login-sub {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13.5px;
   color: var(--text-3);
@@ -6452,7 +6452,7 @@ textarea:focus-visible {
   margin-top: 16px;
   padding: 10px 14px;
   border-radius: 6px;
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 13px;
   line-height: 1.4;
@@ -6673,7 +6673,7 @@ textarea:focus-visible {
   margin: 0;
 }
 .v5c-ruta-head .sub {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 12.5px;
   color: var(--text-3);
@@ -6773,7 +6773,7 @@ textarea:focus-visible {
   line-height: 1.3;
 }
 .v5c-ruta-slot .prov {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 12px;
   color: var(--text-3);
@@ -6966,7 +6966,7 @@ textarea:focus-visible {
 }
 .v5c-p2p-empty {
   padding: 12px;
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 12.5px;
   color: var(--text-3);
@@ -7070,7 +7070,7 @@ textarea:focus-visible {
   color: var(--text-2);
 }
 .v5c-p2p-summary .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 12px;
   color: var(--text-3);
@@ -7095,7 +7095,7 @@ textarea:focus-visible {
   pointer-events: none;
 }
 .v5c-p2p-empty-state .hint {
-  font-family: 'Lora', serif;
+  font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 14px;
   color: var(--text-2);
@@ -8251,7 +8251,7 @@ textarea:focus-visible {
     .bx-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-faint);letter-spacing:.04em}
     .bx-cat{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:3px 7px;border-radius:4px;border:1px solid var(--line-strong);color:var(--ink-soft)}
     .bx-clip{font-size:11px;color:var(--ink-faint)}
-    .bx-empty{padding:40px 16px;text-align:center;color:var(--ink-mute);font-family:'Lora',serif;font-style:italic}
+    .bx-empty{padding:40px 16px;text-align:center;color:var(--ink-mute);font-family:'Fraunces',serif;font-style:italic}
     .bx-detail{position:fixed;inset:0;max-width:640px;margin:0 auto;background:var(--bg);display:flex;flex-direction:column;z-index:200}
     .bx-dtop{display:flex;align-items:center;gap:12px;padding:18px 18px 12px;border-bottom:1px solid var(--line)}
     .bx-back{background:none;border:none;cursor:pointer;font-size:20px;color:var(--ink-soft);line-height:1;padding:2px}
@@ -8260,11 +8260,11 @@ textarea:focus-visible {
     .bx-dsubj{font-family:'Fraunces',serif;font-weight:500;font-size:23px;letter-spacing:-.015em;line-height:1.18}
     .bx-dmeta{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:var(--ink-mute);margin-top:10px;line-height:1.7}
     .bx-dmeta b{color:var(--ink-soft);font-weight:500}
-    .bx-dtext{font-family:'Lora',serif;font-size:15.5px;line-height:1.62;color:var(--ink-soft);margin-top:18px;white-space:pre-wrap}
+    .bx-dtext{font-family:'Fraunces',serif;font-size:15.5px;line-height:1.62;color:var(--ink-soft);margin-top:18px;white-space:pre-wrap}
     .bx-ai{margin-top:22px;border:1px dashed var(--line-strong);border-radius:10px;padding:14px;background:rgba(184,137,58,.05)}
     .bx-ai-h{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
     .bx-ai-soon{margin-left:auto;color:var(--ink-faint);text-transform:none;letter-spacing:.02em}
-    .bx-ai-body{font-family:'Lora',serif;font-style:italic;font-size:13.5px;color:var(--ink-mute);margin-top:9px;line-height:1.5}
+    .bx-ai-body{font-family:'Fraunces',serif;font-style:italic;font-size:13.5px;color:var(--ink-mute);margin-top:9px;line-height:1.5}
     .bx-compose{border-top:1px solid var(--line);padding:14px 16px;background:var(--paper)}
     .bx-ta{width:100%;min-height:74px;border:1px solid var(--line-strong);border-radius:8px;padding:11px 12px;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);background:#fff;resize:vertical}
     .bx-cactions{display:flex;gap:9px;margin-top:10px;align-items:center}
@@ -8768,7 +8768,7 @@ textarea:focus-visible {
         <h3 x-text="data.meta.basecamp?.label || 'Basecamp'"></h3>
         <div class="v5-progress-ratio" x-text="formatMoney(data.meta.basecamp?.cost || 0, data.meta.viewCurrency)"></div>
       </div>
-      <div style="font-family: 'Lora', serif; font-style: italic; font-size: 16px; color: var(--text-2); line-height: 1.45;">
+      <div style="font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; color: var(--text-2); line-height: 1.45;">
         <strong style="font-family: 'Fraunces', serif; font-style: normal; font-weight: 500; color: var(--text-1); display: block; margin-bottom: 4px;" x-text="data.meta.basecamp?.name"></strong>
         <span x-text="data.meta.basecamp?.address"></span>
       </div>
@@ -12780,13 +12780,13 @@ function app() {
     leadsDragging: null,
     leadsDragOverStage: null,
     leadStages: [
-      { key: 'new', label: 'Nuevos', color: '#2563eb' },
-      { key: 'contacted', label: 'Contactados', color: '#d97706' },
-      { key: 'qualified', label: 'Calificados', color: '#0891b2' },
-      { key: 'proposal', label: 'Propuesta', color: '#9333ea' },
-      { key: 'negotiating', label: 'Negociando', color: '#db2777' },
-      { key: 'booked', label: 'Reservados', color: '#16a34a' },
-      { key: 'lost', label: 'Perdidos', color: '#dc2626' }
+      { key: 'new', label: 'Nuevos', color: '#8C7B6A' },
+      { key: 'contacted', label: 'Contactados', color: '#C68A3C' },
+      { key: 'qualified', label: 'Calificados', color: '#B5673A' },
+      { key: 'proposal', label: 'Propuesta', color: '#9A5A3A' },
+      { key: 'negotiating', label: 'Negociando', color: '#7E4327' },
+      { key: 'booked', label: 'Reservados', color: '#5E7A52' },
+      { key: 'lost', label: 'Perdidos', color: '#A24B43' }
     ],
     actionFilter: 'all',
     actionTypeFilter: '',
@@ -16289,7 +16289,7 @@ function app() {
       } catch (e) {
         console.warn('Google Maps init failed:', e);
         const el = document.getElementById('trip-map');
-        if (el) el.innerHTML = '<div style="padding:32px; text-align:center; color: var(--text-3); font-family: Lora, serif; font-style: italic;">El mapa no pudo cargar. Verificá conexión y la API key restringida.</div>';
+        if (el) el.innerHTML = '<div style="padding:32px; text-align:center; color: var(--text-3); font-family: Fraunces, serif; font-style: italic;">El mapa no pudo cargar. Verificá conexión y la API key restringida.</div>';
       }
     },
 
