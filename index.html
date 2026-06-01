@@ -8264,6 +8264,20 @@ textarea:focus-visible {
     .bx-send:disabled{opacity:.5;cursor:default}
     .bx-toggle{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);cursor:pointer;display:flex;align-items:center;gap:6px}
     .bx-toggle .d{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+    .bx-stats{display:flex;gap:8px;padding:2px 8px 14px;flex-wrap:wrap}
+    .bx-stat{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 11px;cursor:pointer}
+    .bx-stat b{font-family:'Fraunces',serif;font-size:15px;color:var(--ink);margin-right:5px;font-weight:600}
+    .bx-stat.active{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+    .bx-stat.active b{color:var(--paper)}
+    .bx-tasks{padding:0 8px 24px}
+    .bx-task{display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:start;padding:13px 10px;border-bottom:1px solid var(--line)}
+    .bx-task-st{background:none;border:none;cursor:pointer;font-size:18px;line-height:1;padding:2px;color:var(--ink-mute)}
+    .bx-task-st.avanzado{color:var(--gold)}
+    .bx-task-st.hecho{color:#3f5a2e}
+    .bx-task-mid{min-width:0;cursor:pointer}
+    .bx-task-t{font-family:'Fraunces',serif;font-size:15.5px;font-weight:500;color:var(--ink);line-height:1.25}
+    .bx-task-d{font-size:12px;color:var(--ink-mute);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .bx-task-pri{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--sienna);border:1px solid rgba(154,90,58,.4);border-radius:4px;padding:2px 6px;white-space:nowrap}
   </style>
   <main class="v5-home" x-show="currentView === 'bandeja'" x-cloak>
     <div class="v5-home-inner">
@@ -8285,7 +8299,27 @@ textarea:focus-visible {
         <span class="bx-toggle" @click="bandejaOnlyUnread=!bandejaOnlyUnread"><span class="d" x-show="bandejaOnlyUnread"></span><span x-text="bandejaOnlyUnread ? 'No leídos' : 'Todos'"></span></span>
       </div>
 
-      <div class="bx-list">
+      <div class="bx-stats" x-show="bandejaStats">
+        <button class="bx-stat" :class="{active: bandejaOnlyUnread && !showTasks}" @click="showTasks=false; bandejaOnlyUnread=!bandejaOnlyUnread"><b x-text="bandejaStats?.unread ?? 0"></b> sin leer</button>
+        <button class="bx-stat" @click="showTasks=false; bandejaOnlyUnread=false"><b x-text="bandejaStats?.needs_reply ?? 0"></b> a responder</button>
+        <button class="bx-stat" :class="{active: showTasks}" @click="showTasks=!showTasks"><b x-text="bandejaStats?.tasks_pendientes ?? 0"></b> pendientes</button>
+      </div>
+
+      <div class="bx-tasks" x-show="showTasks" x-cloak>
+        <template x-for="t in tasksOpen" :key="t.id">
+          <div class="bx-task">
+            <button class="bx-task-st" :class="t.status" @click="cycleTask(t)" x-text="t.status==='pendiente' ? '\u25CB' : (t.status==='avanzado' ? '\u25D0' : '\u25CF')" :title="t.status"></button>
+            <div class="bx-task-mid" @click="openTaskEmail(t)">
+              <div class="bx-task-t" x-text="t.title"></div>
+              <div class="bx-task-d" x-text="t.detail"></div>
+            </div>
+            <span class="bx-task-pri" x-show="t.priority==='alta'">alta</span>
+          </div>
+        </template>
+        <div class="bx-empty" x-show="tasksOpen.length===0">Sin pendientes.</div>
+      </div>
+
+      <div class="bx-list" x-show="!showTasks">
         <template x-for="e in bandejaFiltered" :key="e.id">
           <div class="bx-item" :class="{unread: e.status==='unread'}" @click="openEmail(e)">
             <span class="bx-udot"></span>
@@ -12442,6 +12476,7 @@ function app() {
     forecastRows: [], cashflowRows: [], projLoading: false,  // Proyección
     // Bandeja (correo)
     emails: [], bandejaLoading: false, bandejaAcct: 'all', bandejaOnlyUnread: false, selectedEmail: null, replyText: '', replySending: false, _bandejaChannel: null,
+    tasks: [], bandejaStats: null, showTasks: false,
     clientsRows: [], clientsLoading: false,    // Clientes
     proposalBusy: false, proposalResult: null, // Propuesta desde el lead drawer
     leadDrawerPayments: [], paymentBusy: false, // Plan de pagos en el drawer
@@ -12820,6 +12855,24 @@ function app() {
     navigateToProyeccion() { if (window.location.hash !== '#/proyeccion/') window.location.hash = '#/proyeccion/'; },
     navigateToClientes() { if (window.location.hash !== '#/clientes/') window.location.hash = '#/clientes/'; },
     navigateToBandeja() { if (window.location.hash !== '#/bandeja/') window.location.hash = '#/bandeja/'; },
+    async loadTasks() {
+      if (!this._client) return;
+      try {
+        const { data } = await this._client.from('tasks').select('id,title,detail,status,priority,due_date,email_id,created_at').order('created_at', { ascending: false }).limit(200);
+        this.tasks = data || [];
+      } catch (e) { console.error('loadTasks', e); }
+    },
+    async loadStats() {
+      if (!this._client) return;
+      try { const { data } = await this._client.rpc('bandeja_stats'); this.bandejaStats = data || null; } catch (e) { console.error('loadStats', e); }
+    },
+    get tasksOpen() { return (this.tasks || []).filter(t => t.status !== 'hecho'); },
+    async cycleTask(t) {
+      const next = t.status === 'pendiente' ? 'avanzado' : (t.status === 'avanzado' ? 'hecho' : 'pendiente');
+      t.status = next;
+      try { await this._client.from('tasks').update({ status: next }).eq('id', t.id); this.loadStats(); } catch (e) { console.error('cycleTask', e); }
+    },
+    openTaskEmail(t) { if (!t.email_id) return; const e = this.emails.find(x => x.id === t.email_id); if (e) { this.showTasks = false; this.openEmail(e); } },
     async loadBandeja(force) {
       if (!this._client) return;
       this.bandejaLoading = true;
@@ -12833,7 +12886,7 @@ function app() {
         this.emails = data || [];
       } catch (e) { console.error('loadBandeja', e); if (this.toast) this.toast('No se pudo cargar la bandeja', 'error'); }
       finally { this.bandejaLoading = false; }
-      this.subscribeBandeja();
+      this.subscribeBandeja(); this.loadTasks(); this.loadStats();
     },
     get bandejaFiltered() {
       return (this.emails || []).filter(e =>
@@ -12858,7 +12911,7 @@ function app() {
         const accessToken = session?.session?.access_token;
         if (!accessToken) throw new Error('No hay sesión activa, recargá');
         const subj = (sel.subject || '').replace(/^\s*re:\s*/i, '');
-        const resp = await fetch(`${this.SUPABASE_URL}/functions/v1/email-send`, {
+        const resp = await fetch(`${this.SUPABASE_URL}/functions/v1/email-dispatch`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json', 'apikey': this.SUPABASE_KEY },
           body: JSON.stringify({ account: sel.account || 'info', to: [sel.from_addr], subject: 'Re: ' + subj, text: this.replyText, reply_to_email_id: sel.id })
