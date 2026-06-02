@@ -13,8 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-<script type="module" src="https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js"></script>
-<script src="https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js"></script>
+<!-- Google Maps (extended-component-library + markerclusterer): carga diferida al entrar a un viaje — ver _ensureMapsLib() -->
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 <script>
   // Apply persisted theme ASAP to avoid flash
@@ -13143,6 +13142,7 @@ function app() {
         // Trip view
         this.TRIP_ID = route.tripSlug;
         this.currentView = 'trip';
+        this._ensureMapsLib().catch(() => {}); // precargar el SDK de mapas en segundo plano (mapa + place-picker del drawer)
         await this._enterTripView();
       }
     },
@@ -16205,6 +16205,7 @@ function app() {
     mapSelectedDay: 0,       // index into data.itinerary
     mapBottomSheet: null,    // populated on marker click
     _gmap: null,             // google.maps.Map instance
+    _mapsLibPromise: null,   // cache de la promesa de carga diferida del SDK de mapas
     _gmapMarkers: [],        // google.maps.Marker[]
     _gmapPolylines: [],      // google.maps.Polyline[]
     _gmapChips: [],          // OverlayView[] for travel time chips
@@ -16224,6 +16225,40 @@ function app() {
       route: null            // { duration_min, distance_km, encoded_polyline }
     },
 
+    // Carga diferida del SDK de Google Maps (extended-component-library + markerclusterer).
+    // Se dispara al entrar a un viaje (en segundo plano) y la espera initMap. Idempotente.
+    _ensureMapsLib() {
+      if (window.google && window.google.maps && typeof window.google.maps.importLibrary === 'function') return Promise.resolve();
+      if (this._mapsLibPromise) return this._mapsLibPromise;
+      this._mapsLibPromise = new Promise((resolve, reject) => {
+        try {
+          if (!document.querySelector('script[data-maps-mc]')) {
+            const mc = document.createElement('script');
+            mc.src = 'https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js';
+            mc.setAttribute('data-maps-mc', '1');
+            document.head.appendChild(mc);
+          }
+          if (!document.querySelector('script[data-maps-gmpx]')) {
+            const gx = document.createElement('script');
+            gx.type = 'module';
+            gx.src = 'https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.11/index.min.js';
+            gx.setAttribute('data-maps-gmpx', '1');
+            gx.onerror = () => reject(new Error('No se pudo cargar la libreria de mapas'));
+            document.head.appendChild(gx);
+          }
+          const t0 = Date.now();
+          const poll = setInterval(() => {
+            if (window.google && window.google.maps && typeof window.google.maps.importLibrary === 'function') {
+              clearInterval(poll); resolve();
+            } else if (Date.now() - t0 > 15000) {
+              clearInterval(poll); reject(new Error('Timeout cargando Google Maps'));
+            }
+          }, 80);
+        } catch (e) { reject(e); }
+      });
+      return this._mapsLibPromise;
+    },
+
     // initMap is the public entry — called from nav buttons via $nextTick
     // Internally it delegates to the async _initGoogleMap.
     initMap() {
@@ -16235,7 +16270,13 @@ function app() {
         }, 100);
         return;
       }
-      this._initGoogleMap();
+      this._ensureMapsLib()
+        .then(() => this._initGoogleMap())
+        .catch((e) => {
+          console.error('maps lib load failed:', e);
+          const el = document.getElementById('trip-map');
+          if (el) el.innerHTML = '<div style="padding:32px; text-align:center; color: var(--text-3); font-family: Fraunces, serif; font-style: italic;">El mapa no pudo cargar. Verificá conexión y la API key restringida.</div>';
+        });
     },
 
     async _initGoogleMap() {
